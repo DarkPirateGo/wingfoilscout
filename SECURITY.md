@@ -56,8 +56,10 @@ state of 2.3.0 — and a single tag and release.
 **Cross-check afterwards:**
 `https://github.com/DarkPirateGo/wingfoilscout/commit/50fdee3` (2.1.0) and
 `https://github.com/DarkPirateGo/wingfoilscout/releases/tag/v2.1.0` must
-return 404. As in the addendum of 3 October: what GitHub keeps internally
-after a deletion cannot be checked from the outside.
+return 404. Checked the same day: the commit page returns 404, and fetching
+the commit by its full ID is refused (`not our ref`). As in the addendum of
+3 October: what GitHub keeps internally after a deletion cannot be checked
+from the outside.
 
 ### Addendum 4 October 2026: review of 2.1.0 — fixed in 2.1.0
 

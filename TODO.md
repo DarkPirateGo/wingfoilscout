@@ -1,8 +1,10 @@
 # TODO
 
-As of 4 October 2026, version 2.3.0 (856 tests): **licence PolyForm
-Noncommercial 1.0.0** instead of MIT, and the repository recreated with a
-fresh history that starts with 2.3.0 (`SECURITY.md`); **spot suggestions
+As of 4 October 2026, version 2.3.0 (856 tests), published the same day as
+the first commit of the recreated repository — release, Pages, About,
+ruleset and security settings set again; the old 2.1.0 commit is gone from
+GitHub. In it: **licence PolyForm Noncommercial 1.0.0** instead of MIT
+(`SECURITY.md`); **spot suggestions
 from the community** through a form on GitHub, opened from the app
 (`CONTRIBUTING.md`); **installation on a fresh Mac** rewritten — the
 Terminal way with `xcode-select --install` first, the ZIP way step by step
@@ -90,26 +92,14 @@ wasn't important enough to keep.
   language — “Destinations” should follow without a new search (a report
   from before 2.3.0 exists in one language only). Then try “Starting when?”
   with next Saturday: the hour grid should start on that day.
-- **Recreate the repository and publish 2.3.0** — step by step in
-  `Claude outputs/release-v2.3.0.md`: backup and fresh `main` with
-  `Claude outputs/neu-anlegen.sh`, delete and create the repository on
-  GitHub, give the token access to the new one, publish, then the settings
-  (Pages, About, ruleset, Advanced Security, Actions, label `spot`) and the
-  release text `Claude outputs/release-github-v2.3.0.md`. This also takes the
-  old history (earlier example values, catalogue notes, the commit e-mail of
-  that time) off GitHub.
 - **Try a spot suggestion once:** Catalogue → “Add a new spot”, fill in name
   and coordinate, click “Suggest it for everyone” — the form on GitHub should
   come up filled in. Submit a test only if you close it again afterwards
-  (issues are public).
+  (issues are public) — and check that it gets the label `spot`.
+- **Share the posts** when you like: `Claude outputs/werbung/beitraege.md`
+  (licence and spot form are in the texts).
 - **Decide: Park4Night** is queried with a browser User-Agent (as before). A
   question of that site's terms of use, not of security.
-- **Switch on GitHub Pages** (again after recreating the repository):
-  Settings → Pages → "Deploy from a branch", branch `main`, folder `/docs` →
-  Save. After a minute or two the
-  landing page is live at https://darkpiratego.github.io/wingfoilscout/ —
-  only then are the links in the README, the video and the release text
-  correct.
 - **Try the installation on a fresh Mac again** with the new guide. Tried on
   4 October: the ZIP's start file was blocked (“Apple could not verify …”,
   only “Move to Trash” and “Done”), and in Terminal `git clone` only asked
@@ -117,9 +107,6 @@ wasn't important enough to keep.
   (`xcode-select --install`, then the line from the README) runs through to
   the browser, and that “Open Anyway” under Privacy & Security lets the
   `.command` file start.
-- **"About" on GitHub** (again after recreating the repository):
-  description, website link to the landing page and topics (e.g. `wingfoil`,
-  `wind-forecast`, `weather`, `python`).
 - **Look at the map in the report on the Mac** — since 1.19.1 a Content
   Security Policy applies. Whether the map loads under it is not confirmed:
   its library comes from cdnjs, which is blocked in Claude's environment.
