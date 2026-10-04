@@ -1,0 +1,8 @@
+# geometry.json ist eine Ablage, kein Text: zwei unabhängige Rechenläufe
+# ergänzen sich. Der Treiber steht in tools/merge_geometry.py und wird von
+# tools/install-hooks.sh eingehängt.
+geometry.json merge=geometry
+
+# Diff-Rauschen vermeiden
+*.command text eol=lf
+*.sh text eol=lf

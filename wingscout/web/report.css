@@ -1,0 +1,266 @@
+
+:root{--ground:#EDF1F2;--surface:#FBFCFC;--surface-2:#DFEAEE;--ink:#14303C;--ink-2:#3A5966;
+--muted:#536E7A;--line:#C6D6DB;--line-soft:#DCE6E9;--accent:#AE1F68;--ok:#276B4F;--ok-soft:#DDEBE3;
+--warn:#8E650A;--warn-soft:#F2E9D2;--stop:#A33526;--stop-soft:#F4E0DC;}
+@media (prefers-color-scheme:dark){:root{--ground:#0C1920;--surface:#132630;--surface-2:#1A3541;
+--ink:#DCE8EC;--ink-2:#B0C6CE;--muted:#7E99A3;--line:#284754;--line-soft:#1E3A46;--accent:#F075AC;
+--ok:#6FC79B;--ok-soft:#152E27;--warn:#D9B35C;--warn-soft:#2C2617;--stop:#E88274;--stop-soft:#311D1B;}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:1120px;margin:0 auto;padding:32px 22px 80px}
+h1{font-size:1.9rem;margin:.1em 0 .1em;letter-spacing:-.02em}
+h2{font-size:1.12rem;margin:38px 0 14px;letter-spacing:-.01em}
+.sub{color:var(--muted);font-size:.88rem;margin:0 0 4px}
+.sub .nw{white-space:nowrap}
+.params{display:flex;flex-wrap:wrap;gap:6px 20px;font:12px/1.6 ui-monospace,Menlo,monospace;color:var(--muted);
+padding:12px 0 18px;border-bottom:1px solid var(--line)}
+.params b{color:var(--ink-2);font-weight:500}
+.banner{background:var(--warn-soft);color:var(--warn);border-left:3px solid var(--warn);padding:11px 15px;
+margin:18px 0 0;font-size:.9rem;border-radius:0 3px 3px 0}
+/* ── Ziele als Klappen (seit 1.20.0) ─────────────────────────────────────
+   Zugeklappt zwei Zeilen: Rang, Name, Plaketten und Fahrt/Wasser rechts;
+   darunter die beste Session. Aufgeklappt alles Weitere (.ausfuehrlich).
+   Der Pfeil rechts ist der einzige Hinweis auf die Klappe — die ganze
+   Kopfzeile ist die Schaltfläche. */
+.trip{background:var(--surface);border:1px solid var(--line-soft);border-radius:3px;margin-bottom:14px;overflow:hidden}
+.trip>summary{list-style:none;cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;
+padding:12px 40px 12px 16px;position:relative}
+.trip>summary::-webkit-details-marker{display:none}
+.trip>summary:hover{background:var(--ground)}
+.trip>summary::after{content:"";position:absolute;right:18px;top:19px;width:8px;height:8px;
+border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);transition:transform .15s}
+.trip[open]>summary::after{transform:rotate(-135deg);top:24px}
+.trip .name{font-weight:600;font-size:1.05rem}
+.trip .pills{display:inline-flex;flex-wrap:wrap;gap:5px}
+.trip .kern{flex:1 1 100%;padding-left:42px;color:var(--ink-2);font-size:.9rem;line-height:1.5}
+.trip .kern .nw{white-space:nowrap}
+.trip .mehrsess{color:var(--muted);font-size:.84rem;white-space:nowrap}
+.ausfuehrlich{border-top:1px solid var(--line-soft)}
+.metazeile{padding:8px 18px;font:12px/1.5 ui-monospace,monospace;color:var(--muted);border-bottom:1px solid var(--line-soft)}
+.rank{font:600 12px/1 ui-monospace,monospace;color:#fff;background:var(--accent);padding:5px 8px;border-radius:3px}
+.meta{margin-left:auto;font:12px/1.4 ui-monospace,monospace;color:var(--muted);text-align:right}
+/* Ansicht: Einfach (Klappen zu) oder Ausführlich (alles offen) — web/ansicht.js */
+.ansicht{display:flex;align-items:center;gap:6px;margin:6px 0 20px;font-size:.84rem;color:var(--muted)}
+.ansicht span{margin-right:4px}
+.ansicht button{font:inherit;padding:5px 11px;min-height:0;border:1px solid var(--line);background:var(--surface);
+color:var(--ink-2);border-radius:8px;cursor:pointer}
+.ansicht button.an{background:var(--accent);border-color:var(--accent);color:#fff}
+/* Abschnitte als Klappen: Überschrift und Hinweis bleiben, der Inhalt kommt auf Klick */
+details.abschnitt{margin-top:34px}
+details.abschnitt>summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 12px}
+details.abschnitt>summary::-webkit-details-marker{display:none}
+details.abschnitt>summary h2{margin:0;display:inline-flex;align-items:center;gap:10px}
+details.abschnitt>summary h2::before{content:"";width:7px;height:7px;border-right:2px solid var(--muted);
+border-bottom:2px solid var(--muted);transform:rotate(-45deg);transition:transform .15s;flex:none}
+details.abschnitt[open]>summary h2::before{transform:rotate(45deg)}
+details.abschnitt>summary:hover h2{color:var(--accent)}
+details.abschnitt .hint{color:var(--muted);font-size:.86rem}
+details.abschnitt>.inhalt{margin-top:12px}
+.sess{display:grid;grid-template-columns:auto 1fr;gap:0 16px;padding:0 18px 6px}
+.srow{display:grid;grid-template-columns:152px 58px 128px 148px 1fr;gap:10px;align-items:baseline;
+padding:9px 0;border-bottom:1px dashed var(--line-soft);font-size:.9rem}
+.srow:last-child{border-bottom:0}
+.srow .when{font-weight:600;text-wrap:balance}  /* „sam. 3 oct.“ / „08:00–19:00“ statt „… 08:00–“ / „19:00“ */
+.srow .num{font:12px/1.5 ui-monospace,monospace;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.srow .note{color:var(--muted);font-size:.84rem}
+.pill{display:inline-block;font-size:11px;letter-spacing:.04em;padding:2px 7px;border-radius:3px;white-space:nowrap}
+.p-flat{background:var(--ok-soft);color:var(--ok)}.p-chop{background:var(--warn-soft);color:var(--warn)}
+.p-wave{background:var(--stop-soft);color:var(--stop)}
+.geo{font:11px/1.5 ui-monospace,monospace;color:var(--muted);white-space:nowrap}
+.flags{display:flex;flex-wrap:wrap;gap:6px 14px;padding:8px 18px 4px;font-size:.84rem;color:var(--ink-2);border-bottom:1px solid var(--line-soft)}
+.kommentar{padding:6px 18px 6px;border-bottom:1px solid var(--line-soft)}
+.leaflet-popup-content .kmt{margin-top:6px;font-size:.8rem}
+.flags .pill{margin-right:2px}
+.p-alert{background:var(--stop-soft);color:var(--stop)}
+/* Tide am Ziel (1.18.0): Lage jetzt, dann die Scheitel je Tag, dann Hub und Fenster */
+.tide{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;padding:8px 18px 6px;font-size:.84rem;
+color:var(--ink-2);border-bottom:1px solid var(--line-soft)}
+.tide .pill{margin-right:2px}
+.tide-jetzt{font-weight:600;color:var(--ink)}
+.tide-tage{flex:1 1 100%;display:flex;flex-wrap:wrap;gap:2px 16px;font:12px/1.6 ui-monospace,Menlo,monospace;
+color:var(--ink-2);font-variant-numeric:tabular-nums}
+.tide-tage b{font-weight:600;color:var(--muted);margin-right:2px}
+.tide-tage .ev{white-space:nowrap}
+.tide-tage i{font-style:normal;color:var(--muted)}
+.tide-meta{flex:1 1 100%;font-size:.76rem;color:var(--muted)}
+.p-info{background:var(--surface-2);color:var(--ink-2)}
+.p-ok{background:var(--ok-soft);color:var(--ok)}
+.links{padding:10px 18px 14px;font-size:.82rem;display:flex;gap:14px;flex-wrap:wrap;border-top:1px solid var(--line-soft)}
+a{color:var(--accent)}
+table{border-collapse:collapse;width:100%;font-size:.88rem;background:var(--surface)}
+th{text-align:left;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);
+padding:9px 12px;border-bottom:1px solid var(--line)}
+td{padding:8px 12px;border-bottom:1px solid var(--line-soft);color:var(--ink-2)}
+td.n{font:12px/1.4 ui-monospace,monospace;font-variant-numeric:tabular-nums;white-space:nowrap}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:3px}
+#sesstab th[data-k]{cursor:pointer;user-select:none;white-space:nowrap}
+#sesstab th[data-k]:hover{color:var(--ink)}
+#sesstab th.sort{color:var(--accent)}
+#sesstab th.sort::after{content:" ↓"}
+#sesstab th.sort.auf::after{content:" ↑"}
+#sesstab tr.mehr{display:none}
+.hm{display:grid;gap:2px;grid-template-columns:242px 1fr;align-items:center;margin-bottom:3px}
+.hmname{font-size:.82rem;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;gap:7px;align-items:baseline;justify-content:space-between}
+.hmname a{color:inherit;text-decoration:none;overflow:hidden;text-overflow:ellipsis}
+.hmname a:hover{color:var(--accent);text-decoration:underline}
+.hmkm{font-size:.72rem;color:var(--muted);font-variant-numeric:tabular-nums;flex:none;padding-right:6px;text-decoration:none}
+.hmkm:hover{color:var(--accent);text-decoration:underline}
+.hmcells{display:grid;gap:1px}
+.cell{height:15px;border-radius:1px;background:var(--surface-2);cursor:pointer}
+.cell.gewaehlt{outline:2px solid var(--ink);outline-offset:-1px}
+/* Der Kasten, den ein Tipp auf eine Rasterzelle füllt (mobil.js, seit 1.19.0) */
+.zellinfo{margin:8px 0 0;padding:10px 14px;border-radius:10px;background:var(--surface);border:1px solid var(--line);
+font-size:.86rem;color:var(--ink);line-height:1.5}
+.zellinfo[hidden]{display:none}
+.hmaxis{font-size:.74rem;color:var(--ink-2);text-align:center;white-space:nowrap;overflow:hidden;border-bottom:1px solid var(--line-soft);padding-bottom:2px;margin-bottom:2px}
+.tick{position:relative;height:13px}
+.tick span{position:absolute;left:50%;top:0;transform:translateX(-50%);font-size:.63rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.hmunit{font-size:.68rem;color:var(--muted);text-align:right;padding-right:7px}
+.cell.dstart,.tick.dstart{box-shadow:-1px 0 0 var(--line)}
+.cell.tan{outline:1.5px solid rgba(122,66,10,.85);outline-offset:-1.5px}
+.thermname{font-size:.72rem;color:#D98A2B;flex:none;padding-right:6px;white-space:nowrap}
+.camp{margin-top:12px;padding-top:11px;border-top:1px solid var(--line-soft)}
+.camp h4{margin:0 0 8px;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.camprow{display:grid;grid-template-columns:64px 1fr auto;gap:10px;align-items:baseline;padding:4px 0;font-size:.88rem}
+.camprow + .camprow{border-top:1px dotted var(--line-soft)}
+.camprow a{color:var(--ink);text-decoration:none}
+.camprow a:hover{color:var(--accent);text-decoration:underline}
+.camproute{font-size:.78rem;color:var(--muted) !important;white-space:nowrap}
+.hmlegend{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-size:.78rem;color:var(--muted);margin:10px 0 4px}
+.hmschalter{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden;margin:2px 0 0}
+.hmschalter button{font:600 12px/1 inherit;padding:7px 14px;border:0;background:none;color:var(--muted);cursor:pointer}
+.hmschalter button + button{border-left:1px solid var(--line)}
+.hmschalter button.an{background:var(--accent);color:#fff}
+.hmschalter button:not(.an):hover{color:var(--ink)}
+.swatch{width:13px;height:13px;border-radius:2px;display:inline-block;margin-right:5px;vertical-align:-2px}
+#map{height:min(72vh,620px);border:1px solid var(--line);border-radius:3px;background:var(--surface-2);z-index:0}
+#map.voll{position:fixed;inset:0;height:100vh;width:100vw;z-index:900;border-radius:0;border:0}
+@media (prefers-color-scheme:dark){.leaflet-tile{filter:brightness(.72) saturate(.75) contrast(1.05)}}
+.leaflet-popup-content{font:13px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;margin:11px 13px;min-width:216px}
+.leaflet-popup-content b{font-size:14px}
+.leaflet-popup-content b .titel{color:inherit;text-decoration:none}
+.leaflet-popup-content b .titel:hover{color:var(--accent);text-decoration:underline}
+.leaflet-popup-content .pl{display:flex;flex-wrap:wrap;gap:4px 11px;margin-top:8px;font-size:12px}
+.leaflet-popup-content .koord{font:11px/1.4 ui-monospace,Menlo,monospace;color:var(--muted);cursor:pointer;
+border:0;background:none;padding:0;margin-top:6px;display:block}
+.leaflet-popup-content .koord:hover{color:var(--accent)}
+/* Das Stundenband im Popup — dieselbe Farbskala wie das Raster weiter unten,
+   damit man beides ohne Umdenken liest. */
+.mband{display:flex;gap:1px;margin-top:9px;height:22px;align-items:flex-end}
+.mband i{flex:1;min-width:1px;background:var(--surface-2);border-radius:1px}
+.mband i.tag{box-shadow:inset 1px 0 0 var(--line)}
+.mbandtag{display:flex;font:10px/1.3 -apple-system,sans-serif;color:var(--muted);margin-top:3px}
+.mbandtag span{flex:1;text-align:center;overflow:hidden;white-space:nowrap}
+/* Namensfahnen auf der Karte: lesbar, aber nicht dominant. */
+.leaflet-tooltip.spotname{background:rgba(255,255,255,.88);border:0;box-shadow:none;color:#14303C;
+font:600 11px/1.2 -apple-system,sans-serif;padding:1px 4px;border-radius:3px;white-space:nowrap}
+.leaflet-tooltip.spotname:before{display:none}
+@media (prefers-color-scheme:dark){.leaflet-tooltip.spotname{background:rgba(11,23,30,.85);color:#DCE8EC}}
+.maptools{display:flex;flex-wrap:wrap;gap:7px 16px;align-items:center;font-size:.78rem;margin:9px 0 0}
+.maptools label{display:inline-flex;align-items:center;gap:6px;cursor:pointer;color:var(--ink-2);user-select:none}
+.maptools input{accent-color:var(--accent);width:15px;height:15px;margin:0}
+.maptools i{width:12px;height:12px;border-radius:50%;display:inline-block;vertical-align:-1px}
+.maptools button{font:inherit;color:var(--ink-2);background:none;border:1px solid var(--line);
+border-radius:5px;padding:3px 9px;cursor:pointer}
+.maptools button:hover{border-color:var(--muted);color:var(--ink)}
+.maptools .trenner{flex-basis:100%;height:0}
+.maplegend{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;font-size:.78rem;color:var(--muted);margin:7px 0 0}
+.maplegend i{width:12px;height:12px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:-1px}
+.nomap{padding:16px;font-size:.88rem;color:var(--muted)}
+.wx td:first-child{color:var(--ink);font-weight:600;white-space:nowrap}
+.thliste{display:flex;flex-direction:column;gap:2px;margin-top:10px}
+.throw{display:grid;grid-template-columns:minmax(150px,1.4fr) auto minmax(110px,.9fr) minmax(110px,.9fr) 60px;
+gap:4px 14px;align-items:baseline;padding:9px 12px;background:var(--surface);border-radius:4px;font-size:.92rem}
+.throw:nth-child(odd){background:var(--surface-2)}
+.thname{display:flex;flex-direction:column;gap:1px;min-width:0}
+.thname a{color:var(--ink);text-decoration:none;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.thname a:hover{color:var(--accent);text-decoration:underline}
+.thwind{font-size:.75rem;color:var(--accent);letter-spacing:.02em}
+.thbar{font:12px/1 ui-monospace,Menlo,monospace;color:var(--accent);letter-spacing:-1px;white-space:nowrap}
+.throw .note{grid-column:1/-1;font-size:.8rem;color:var(--muted);margin-top:2px}
+@media (max-width:700px){.throw{grid-template-columns:1fr auto}}
+details.mehr{margin-top:26px;border:1px solid var(--line);border-radius:4px;background:var(--surface)}
+details.mehr > summary{list-style:none;cursor:pointer;padding:13px 16px;font-weight:600;font-size:.95rem;
+display:flex;align-items:center;gap:9px;color:var(--ink-2)}
+details.mehr > summary::-webkit-details-marker{display:none}
+details.mehr > summary::before{content:"";width:6px;height:6px;border-right:2px solid var(--muted);
+border-bottom:2px solid var(--muted);transform:rotate(-45deg);transition:transform .15s;flex:none}
+details.mehr[open] > summary::before{transform:rotate(45deg)}
+details.mehr > summary:hover{color:var(--ink)}
+details.mehr .zahl{font-weight:400;color:var(--muted);font-variant-numeric:tabular-nums}
+.mehrinhalt{padding:0 16px 16px}
+footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);font-size:.8rem}
+/* Unter dem Fuß: Logo des Erstellers und Versionsnummer (seit 1.19.1) —
+   `p.marke`, nicht `.marke`: über den Server trägt der Report auch die
+   Reiterleiste mit ihrer eigenen Marke (`span.marke`, reiter.css) */
+p.marke{display:flex;align-items:center;gap:9px;margin:16px 0 0;color:var(--muted);font-size:.8rem;
+font-variant-numeric:tabular-nums}
+p.marke img{display:block;height:26px;width:auto;border-radius:6px}
+
+/* ── Der Report am Handy (seit 1.17.0) ──────────────────────────────────────
+   Gemessen am iPhone 13 mini (375 pt): die Sessionzeile brauchte 681 px in
+   329 px sichtbarer Breite, die Übersichtstabelle 942 px — beides schnitt
+   rechts ab, ohne es zu zeigen. Hier bricht alles um, was umbrechen kann;
+   was breit bleiben muss (Stundenraster, große Tabellen), wird gewischt und
+   behält seine erste Spalte stehen. */
+.zu-am-handy > summary{list-style:none;cursor:pointer;font-weight:600;font-size:.92rem;color:var(--ink-2);
+padding:10px 0;display:flex;align-items:center;gap:8px}
+.zu-am-handy > summary::-webkit-details-marker{display:none}
+.zu-am-handy > summary::before{content:"";width:6px;height:6px;border-right:2px solid var(--muted);
+border-bottom:2px solid var(--muted);transform:rotate(-45deg);transition:transform .15s;flex:none}
+.zu-am-handy[open] > summary::before{transform:rotate(45deg)}
+.wischen{display:none}
+
+@media (max-width:700px){
+  .wrap{padding:14px 14px 28px;padding-left:calc(14px + env(safe-area-inset-left));
+    padding-right:calc(14px + env(safe-area-inset-right))}
+  h1{font-size:1.5rem}
+  h2{font-size:1.02rem;margin:26px 0 10px}
+  /* Sessionzeile: Zeit, darunter die Zahlen in einer Zeile, darunter die
+     Plaketten. Fünf feste Spalten brauchten 681 px. */
+  .srow{display:flex;flex-wrap:wrap;gap:1px 9px;align-items:baseline;padding:11px 0}
+  .srow .when{flex:1 1 100%;font-size:.95rem}
+  .srow .num{font-size:12.5px;line-height:1.6}
+  /* Trenner hinten anhängen, nicht vorn — sonst beginnt eine umgebrochene
+     Zeile mit einem Mittelpunkt. */
+  .srow .num:not(:last-of-type)::after{content:" ·";color:var(--muted)}
+  .srow .note{flex:1 1 100%;margin-top:4px;line-height:1.7}
+  .sess{grid-template-columns:1fr;padding:0 14px 6px}
+  /* Klappenkopf am Handy: Rang und Name in einer Zeile, darunter Plaketten,
+     beste Session und Fahrt/Wasser jeweils eigene Zeilen, eingerückt */
+  .trip>summary{padding:11px 34px 11px 14px;gap:5px 8px}
+  .trip>summary::after{right:14px;top:17px}
+  .trip[open]>summary::after{top:21px}
+  .trip .name{font-size:1rem;flex:1 1 calc(100% - 48px)}
+  .trip .pills,.trip .kern,.trip .meta{flex:1 1 100%;padding-left:40px}
+  .trip .meta{order:5;margin-left:0;text-align:left}
+  .metazeile{padding:8px 14px}
+  .ansicht{margin:4px 0 16px}
+  details.abschnitt{margin-top:26px}
+  .flags,.kommentar,.tide{padding-left:14px;padding-right:14px}
+  .links{padding:10px 14px 14px;gap:10px 14px}
+  /* Stellplätze: Entfernung über den Namen, Weg darunter */
+  .camprow{grid-template-columns:1fr;gap:2px;padding:8px 0}
+  .camproute{white-space:normal}
+  /* Wischbare Bereiche: erste Spalte bleibt stehen, Hinweis darüber */
+  .wischen{display:block;font-size:.76rem;color:var(--muted);margin:0 0 4px}
+  .scroll{-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+  .scroll table{font-size:.82rem}
+  .scroll th,.scroll td{padding:7px 9px}
+  .scroll table th:first-child,.scroll table td:first-child{position:sticky;left:0;z-index:1;
+    background:var(--surface);box-shadow:1px 0 0 var(--line-soft)}
+  /* Stundenraster: der Name schmaler und stehend, die Stunden breit genug,
+     dass ihre Beschriftung lesbar bleibt — dafür wird gewischt. Bei 375 pt
+     wären 72 Stunden sonst 3 px breit und die Uhrzeiten übereinander. */
+  .hm{grid-template-columns:112px minmax(520px,1fr)}
+  .hmname{font-size:.76rem;position:sticky;left:0;z-index:2;background:var(--surface);
+    padding-right:4px}
+  .hmaxis{position:relative}
+  .hmkm{display:none}
+  .hmunit{position:sticky;left:0;background:var(--surface);z-index:2}
+  .hmlegend{font-size:.72rem;gap:6px 10px}
+  .params{gap:4px 14px;font-size:11.5px;padding:8px 0 12px}
+  .banner{font-size:.88rem}
+  #map{height:52svh;min-height:280px}
+}
+@supports (height:100dvh){@media (max-width:700px){#map{height:52dvh}}}

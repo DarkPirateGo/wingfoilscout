@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Wingfoilscout</title>
+<meta name="description" content="Finds wingfoil sessions around you: where it blows, when, with which wing – and whether the drive is worth it. Free for noncommercial use, runs on your own computer.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Wingfoilscout – find your next session">
+<meta property="og:description" content="Where it blows. When. Which wing. And whether the drive is worth it. Free for noncommercial use.">
+<meta property="og:url" content="https://darkpiratego.github.io/wingfoilscout/">
+<meta property="og:image" content="https://darkpiratego.github.io/wingfoilscout/bilder/vorschau.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#071118">
+<link rel="icon" href="bilder/icon.png">
+<!-- Wingfoilscout landing page (GitHub Pages from docs/). Loads nothing from
+     other servers – no fonts, no scripts, no counters; images and videos come
+     from this repository. The small script at the bottom only draws the wind
+     lines in the header. -->
+<style>
+:root{
+  --bg:#F3F6F7; --surface:#FFFFFF; --ink:#14303C; --ink-2:#3A5966; --muted:#536E7A;
+  --line:#D5E0E4; --accent:#AE1F68; --accent-ink:#FFFFFF; --accent-soft:#F9E8F0;
+  --ok:#276B4F; --hero:#071118; --hero-ink:#E8F1F4; --hero-muted:#9DB6C0; --pink:#F075AC;
+  --schatten:0 1px 2px rgba(20,48,60,.06),0 14px 40px rgba(20,48,60,.10);
+  --text:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0B171E; --surface:#132630; --ink:#DCE8EC; --ink-2:#B0C6CE; --muted:#86A3AE;
+  --line:#24404D; --accent:#F075AC; --accent-ink:#2A0718; --accent-soft:#33162A; --ok:#6FC79B;
+  --schatten:0 1px 2px rgba(0,0,0,.3),0 14px 40px rgba(0,0,0,.35); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0B171E; --surface:#132630; --ink:#DCE8EC; --ink-2:#B0C6CE; --muted:#86A3AE;
+  --line:#24404D; --accent:#F075AC; --accent-ink:#2A0718; --accent-soft:#33162A; --ok:#6FC79B;
+  --schatten:0 1px 2px rgba(0,0,0,.3),0 14px 40px rgba(0,0,0,.35); color-scheme:dark}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 var(--text);-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-underline-offset:3px}
+a:focus-visible,.btn:focus-visible{outline:3px solid var(--pink);outline-offset:3px;border-radius:6px}
+h1,h2,h3{text-wrap:balance;letter-spacing:-.02em;line-height:1.15}
+h2{font-size:clamp(1.7rem,4.4vw,2.3rem);margin:0 0 .4em}
+h3{font-size:1.08rem;margin:0 0 .25em;letter-spacing:-.01em}
+p{margin:0 0 1em}
+code{font:.88em/1.4 var(--mono);background:var(--accent-soft);padding:.1em .35em;border-radius:5px}
+.wrap{max-width:1080px;margin:0 auto;padding-inline:20px}
+.leser{max-width:68ch}
+
+/* ── Header: always dark, with wind lines ───────────────────────────── */
+.hero{position:relative;overflow:hidden;background:radial-gradient(120% 90% at 50% 20%,#123241 0,#0A1A22 55%,#04090D 100%);color:var(--hero-ink)}
+.hero canvas{position:absolute;inset:0;width:100%;height:100%}
+.hero .wrap{position:relative;padding-block:22px 0}
+.top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;font-size:.95rem}
+.top .zeichen{display:flex;align-items:center;gap:10px;color:var(--hero-ink);text-decoration:none;font-weight:700;letter-spacing:-.01em}
+.top .zeichen img{width:30px;height:30px;border-radius:8px}
+.top nav{display:flex;gap:18px;flex-wrap:wrap}
+.top nav a{color:var(--hero-muted);text-decoration:none}
+.top nav a:hover{color:var(--hero-ink)}
+.buehne{padding-block:clamp(56px,11vw,120px) clamp(48px,8vw,90px);text-align:center}
+.buehne h1{margin:0;font-size:clamp(2.9rem,11vw,6.2rem);font-weight:800;letter-spacing:-.045em;line-height:1}
+.buehne h1 span,.top .wm span{color:var(--pink)}
+.claim{text-wrap:balance;margin:.55em auto 0;font-size:clamp(1.25rem,3.6vw,1.9rem);line-height:1.3;color:var(--hero-ink);font-weight:500;letter-spacing:-.015em}
+.claim em{font-style:normal;color:var(--pink)}
+.lede{max-width:40em;margin:1.4em auto 0;color:var(--hero-muted);font-size:1.05rem}
+.cta{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin-top:28px}
+.btn{display:inline-flex;align-items:center;gap:10px;padding:14px 24px;border-radius:12px;font-weight:600;
+  text-decoration:none;border:2px solid rgba(232,241,244,.35);color:var(--hero-ink);background:rgba(7,17,24,.35)}
+.btn.heiss{background:var(--pink);border-color:var(--pink);color:#2A0718;box-shadow:0 0 30px rgba(240,117,172,.35)}
+.btn:hover{border-color:var(--hero-ink)}
+.fein{margin-top:18px;font-size:.88rem;color:var(--hero-muted)}
+
+/* ── Three phones ────────────────────────────────────────────────────── */
+.handys{padding-block:56px 12px}
+.handys .reihe{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px;align-items:start}
+.handys figure{margin:0;min-width:0}
+.handy{border-radius:44px;padding:11px;background:linear-gradient(150deg,#33464F,#0D161B 30%,#0A1216 70%,#25363E);
+  box-shadow:var(--schatten),inset 0 0 0 2px rgba(255,255,255,.08)}
+.handy img{display:block;width:100%;height:auto;border-radius:34px}
+.handys figcaption{margin-top:18px;display:grid;grid-template-columns:auto 1fr;column-gap:12px;align-items:start}
+.handys figcaption b{grid-row:span 2;width:34px;height:34px;border-radius:50%;background:var(--accent);color:var(--accent-ink);
+  display:flex;align-items:center;justify-content:center;font-size:1rem}
+.handys figcaption strong{font-size:1.1rem;letter-spacing:-.01em}
+.handys figcaption span{color:var(--muted);font-size:.95rem;line-height:1.45}
+.notiz{margin:22px 0 0;text-align:center;color:var(--muted);font-size:.86rem}
+@media (max-width:820px){
+  .handys .reihe{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:18px;padding-bottom:10px;
+    margin-inline:-20px;padding-inline:20px;scrollbar-width:thin}
+  .handys figure{flex:0 0 min(74vw,300px);scroll-snap-align:center}
+}
+
+/* ── Two videos: portrait intro next to the landscape app tour ───────── */
+/* 81:256 = (9/16):(16/9) – both videos end up the same height side by side */
+.filme .reihe{display:grid;grid-template-columns:minmax(200px,81fr) minmax(0,256fr);gap:28px;align-items:start;margin-top:26px}
+.filme figure{margin:0;min-width:0}
+.filme video{display:block;width:100%;height:auto;border-radius:16px;background:var(--hero);box-shadow:var(--schatten)}
+.filme .hoch video{aspect-ratio:9/16}
+.filme .quer video{aspect-ratio:16/9}
+.filme figcaption{margin-top:14px;display:grid;gap:2px}
+.filme figcaption strong{font-size:1.1rem;letter-spacing:-.01em}
+.filme figcaption span{color:var(--muted);font-size:.95rem;line-height:1.45}
+@media (max-width:820px){
+  .filme .reihe{grid-template-columns:minmax(0,1fr);gap:34px}
+  .filme .hoch{justify-self:center;width:min(100%,300px)}
+}
+
+/* ── Sections ───────────────────────────────────────────────────────── */
+section{padding-block:56px}
+section+section{border-top:1px solid var(--line)}
+.raster{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px;margin-top:26px}
+.karte{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px 22px;min-width:0}
+.karte .zahl{display:block;font-size:1.65rem;font-weight:800;letter-spacing:-.03em;color:var(--accent);line-height:1.1;margin-bottom:6px;font-variant-numeric:tabular-nums}
+.karte p{margin:0;color:var(--ink-2);font-size:.97rem;line-height:1.5}
+.schritte{list-style:none;margin:26px 0 0;padding:0;display:grid;gap:14px;counter-reset:s}
+.schritte li{counter-increment:s;display:grid;grid-template-columns:44px 1fr;gap:14px;background:var(--surface);
+  border:1px solid var(--line);border-radius:16px;padding:18px 20px;min-width:0}
+.schritte li::before{content:counter(s);width:44px;height:44px;border-radius:50%;background:var(--accent);color:var(--accent-ink);
+  display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.15rem}
+.schritte li p{margin:0;color:var(--ink-2)}
+.schritte li div{min-width:0}
+.schritte li p+pre{margin-top:10px}
+.schritte li pre+p{margin-top:10px}
+.kasten{margin-top:18px;border-left:4px solid var(--accent);background:var(--accent-soft);border-radius:0 12px 12px 0;padding:14px 18px;font-size:.96rem}
+.kasten p:last-child{margin:0}
+pre{margin:14px 0 0;overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font:.88rem/1.55 var(--mono)}
+.liste{padding-left:1.2em;margin:0}
+.liste li{margin-bottom:.55em}
+footer{padding-block:34px 44px;border-top:1px solid var(--line);color:var(--muted);font-size:.92rem}
+footer .wrap{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+footer img{height:46px;border-radius:6px}
+@media (prefers-reduced-motion:reduce){.hero canvas{display:none}}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <canvas id="wind" aria-hidden="true"></canvas>
+  <div class="wrap">
+    <div class="top">
+      <a class="zeichen" href="./"><img src="bilder/icon.png" alt=""><span class="wm">Wingfoil<span>scout</span></span></a>
+      <nav aria-label="Pages">
+        <a href="demo.html">Example report</a>
+        <a href="bewertung.html">How it calculates</a>
+        <a href="https://github.com/DarkPirateGo/wingfoilscout">GitHub</a>
+      </nav>
+    </div>
+    <div class="buehne">
+      <h1>Wingfoil<span>scout</span></h1>
+      <p class="claim">Where it blows. When. Which wing.<br><em>And whether the drive is worth it.</em></p>
+      <p class="lede">From your starting point, Wingfoilscout finds the best wingfoil sessions of the
+      coming days – using three weather models, 278 spots and your own quiver. Free for noncommercial
+      use, source code on GitHub, on your own computer, no account.</p>
+      <div class="cta">
+        <a class="btn heiss" href="#start">How to start</a>
+        <a class="btn" href="demo.html">See an example report</a>
+      </div>
+      <p class="fein">For the Mac, with Python 3.9 or newer · English, German, French and Spanish · PolyForm Noncommercial licence</p>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="handys">
+    <div class="wrap">
+      <div class="reihe">
+        <figure>
+          <div class="handy"><picture><source media="(prefers-color-scheme: dark)" srcset="bilder/en/search-dark.png"><img src="bilder/en/search-light.png" width="780" height="1594" alt="The search: starting point, start time and three presets – Spontaneous, Weekend, Overnight trip"></picture></div>
+          <figcaption><b>1</b><strong>Pick a time frame</strong><span>Spontaneous, Weekend or Overnight trip – one tap, then “Find spots”.</span></figcaption>
+        </figure>
+        <figure>
+          <div class="handy"><picture><source media="(prefers-color-scheme: dark)" srcset="bilder/en/destinations-dark.png"><img src="bilder/en/destinations-light.png" width="780" height="1594" alt="The best three destinations with time window, wind speed, wing size and drive time"></picture></div>
+          <figcaption><b>2</b><strong>The best destinations</strong><span>When, how much wind, which wing from your quiver – and whether it’s worth the drive.</span></figcaption>
+        </figure>
+        <figure>
+          <div class="handy"><picture><source media="(prefers-color-scheme: dark)" srcset="bilder/en/grid-dark.png"><img src="bilder/en/grid-light.png" width="780" height="1594" alt="Hourly grid: every spot hour by hour, coloured by rating"></picture></div>
+          <figcaption><b>3</b><strong>Hour by hour</strong><span>Every spot in the hourly grid, plus wind angle, waves, tide and weather for each session.</span></figcaption>
+        </figure>
+      </div>
+      <p class="notiz">Example view with made-up weather data · starting point Hamburg</p>
+    </div>
+  </div>
+
+  <section id="video" class="filme" aria-labelledby="filme-titel">
+    <div class="wrap">
+      <h2 id="filme-titel">See it in action</h2>
+      <div class="reihe">
+        <figure class="hoch">
+          <video controls playsinline preload="none" poster="video/promo-poster.jpg" width="1080" height="1920">
+            <source src="video/wingfoilscout-promo-en.mp4" type="video/mp4">
+            Your browser can’t play this video – <a href="video/wingfoilscout-promo-en.mp4">download it (MP4)</a>.
+          </video>
+          <figcaption><strong>30-second intro</strong><span>What Wingfoilscout does, in half a minute.</span></figcaption>
+        </figure>
+        <figure class="quer">
+          <video controls playsinline preload="none" poster="video/desktop-poster.jpg" width="1920" height="1080">
+            <source src="video/wingfoilscout-desktop-en.mp4" type="video/mp4">
+            Your browser can’t play this video – <a href="video/wingfoilscout-desktop-en.mp4">download it (MP4)</a>.
+          </video>
+          <figcaption><strong>The app on your computer</strong><span>About a minute with the app in the browser.</span></figcaption>
+        </figure>
+      </div>
+      <p class="notiz">Each video loads only when you press play.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="drin">
+    <div class="wrap">
+      <h2 id="drin">What’s inside</h2>
+      <p class="leser">Not a black box that spits out a number: Wingfoilscout combines weather models
+      with what you need to know about a spot – which wind directions work there, how much open water
+      lies in front of it, and whether tide or thermal wind plays a part.</p>
+      <div class="raster">
+        <div class="karte"><span class="zahl">278 spots</span><p>North Sea, Baltic, Atlantic, Channel, Mediterranean and lakes – maintained by hand, mostly with their source, editable in the Catalogue. Missing one? <a href="https://github.com/DarkPirateGo/wingfoilscout/issues/new?template=spot.yml">Suggest it for everyone</a>.</p></div>
+        <div class="karte"><span class="zahl">3 models + ensemble</span><p>ICON, GFS and ECMWF via Open-Meteo, plus regional models. The ensemble tells you how reliable a session is.</p></div>
+        <div class="karte"><span class="zahl">36 directions</span><p>Shoreline geometry from OpenStreetMap, every 10 degrees: onshore, side-shore or offshore, fetch and wave height.</p></div>
+        <div class="karte"><span class="zahl">Tides &amp; thermals</span><p>Tide state for the hour shown (from a model, not an official tide table) and thermal-wind knowledge for known spots.</p></div>
+        <div class="karte"><span class="zahl">Drive time</span><p>Routed, not guessed – and weighed against your hours on the water. Overnight spots nearby come with it.</p></div>
+        <div class="karte"><span class="zahl">Review</span><p>Forecasts checked against measurements from DWD, KNMI, Rijkswaterstaat, GeoSphere, DMI and Météo-France. The Logbook learns from your sessions.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="start" aria-labelledby="los">
+    <div class="wrap">
+      <h2 id="los">How to start</h2>
+      <p class="leser">Wingfoilscout runs on your Mac and opens in your browser – in English, German, French
+      or Spanish, following your browser’s language until you pick one yourself. Your iPhone can join
+      over the same Wi-Fi (use the start file with “iPhone” in its name); the Mac does the computing.</p>
+      <ol class="schritte">
+        <li><div><h3>Open Terminal</h3><p>It’s in Applications → Utilities, or type “Terminal” into Spotlight. Two lines to paste – that’s all it takes.</p></div></li>
+        <li><div><h3>Apple’s command line tools – once per Mac</h3><p>They bring Python and git. Paste this line and press Return:</p>
+<pre>xcode-select --install</pre>
+          <p>In the window that appears, click “Install”, accept the licence and wait until it’s done – a few minutes. If Terminal says they’re already installed, go on.</p></div></li>
+        <li><div><h3>Fetch and start</h3><p>Paste this line – all of it at once:</p>
+<pre>cd ~ &amp;&amp; git clone https://github.com/DarkPirateGo/wingfoilscout.git &amp;&amp; cd wingfoilscout &amp;&amp; bash "Wingfoilscout starten.command"</pre>
+          <p>It creates the folder <code>wingfoilscout</code> in your home folder, installs its only extra package (PyYAML) and opens the app in your browser. From then on, double-click <strong>Wingfoilscout starten</strong> in that folder (German for “start Wingfoilscout”); <strong>Neuen Stand holen</strong> gets new versions.</p></div></li>
+        <li><div><h3>Set up and search</h3><p>Choose your starting point in the app – and, if you plan ahead, a start time; the language switcher (DE · EN · FR · ES) sits next to the logo and version number at the top right (on phones, in the page footer). Enter your wings once in <code>config.yaml</code> – a text file in the same folder, created on first start; each wing gets its size in m² and its wind range in knots. Then hit “Find spots”.</p></div></li>
+      </ol>
+      <div class="kasten">
+        <p><strong>Rather without Terminal?</strong> On the <a href="https://github.com/DarkPirateGo/wingfoilscout/releases/latest">releases page</a>,
+        under “Assets”, download <strong>Source code (zip)</strong>, unzip it and double-click
+        <strong>Wingfoilscout starten.command</strong>. The first time, macOS refuses because the file comes from the
+        internet unsigned: click “Done”, open System Settings → Privacy &amp; Security, scroll down to Security,
+        click “Open Anyway” and then “Open” (up to macOS 14, right-click → Open is enough). If it offers the command
+        line developer tools, install them and double-click again. Each double-click file needs this once,
+        and new versions come as a new ZIP.</p>
+      </div>
+      <p style="margin-top:14px;color:var(--muted);font-size:.95rem">The Python package is still called <code>wingscout</code>, the project’s name until version 2.0. On Windows there is <code>wingfoilscout.bat</code> – untested there so far.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="wie">
+    <div class="wrap"><div class="leser">
+      <h2 id="wie">Transparent, not guesswork</h2>
+      <p>Every threshold, every weighting and every exclusion is out in the open: which hours
+      qualify at all, how the rating is built from wind, direction, water, weather and gustiness,
+      when hours become a session, and why one destination ranks above another.</p>
+      <p><a href="bewertung.html">How Wingfoilscout calculates</a> – illustrated ·
+      <a href="https://github.com/DarkPirateGo/wingfoilscout/blob/main/SCORING.md">SCORING.md</a> –
+      the same walk-through as text · <a href="demo.html">Example report</a> – what a result looks like.</p>
+    </div></div>
+  </section>
+
+  <section aria-labelledby="wissen">
+    <div class="wrap"><div class="leser">
+      <h2 id="wissen">Good to know</h2>
+      <ul class="liste">
+        <li><strong>It doesn’t replace looking at the water.</strong> Forecasts can be wrong, spots change,
+        and local rules apply on site – protected areas, swimming zones, dogs, access.</li>
+        <li><strong>Built and tested on a Mac only.</strong> Your iPhone joins over Wi-Fi; Windows is
+        untested.</li>
+        <li><strong>Drive times can be estimates.</strong> The Python that comes with the Mac is built
+        against LibreSSL 2.8.3 from 2018 and can’t connect to the routing server; the drive time is
+        then estimated from the straight-line distance and marked “(estimated)” in the report – weather
+        and report are not affected. A current Python (<code>brew install python</code> or the installer
+        from python.org) fixes it.</li>
+        <li><strong>The data comes from free services</strong> – Open-Meteo, OpenStreetMap, OSRM,
+        national weather services – under their terms of use. Wingfoilscout asks sparingly and caches what it gets.</li>
+        <li><strong>No account, no ads, no tracking.</strong> What you enter is stored only on your computer.</li>
+      </ul>
+    </div></div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <img src="bilder/dark-logo.png" alt="DARK" width="169" height="46">
+    <span>Wingfoilscout is a project by DARK · <a href="https://github.com/DarkPirateGo/wingfoilscout/blob/main/LICENSE">PolyForm Noncommercial licence</a> ·
+    <a href="https://github.com/DarkPirateGo/wingfoilscout">Source code on GitHub</a></span>
+  </div>
+</footer>
+
+<script>
+/* Wind lines in the header: a few hundred particles in a gentle westerly.
+   With “Reduce motion” the area stays still (see CSS). */
+(function () {
+  var c = document.getElementById('wind');
+  if (!c || !c.getContext || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
+  var g = c.getContext('2d'), w = 0, h = 0, teile = [], t = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
+  function groesse() {
+    var r = c.getBoundingClientRect(); w = r.width; h = r.height;
+    c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    var n = Math.round(Math.min(700, w * h / 1400)); teile = [];
+    for (var i = 0; i < n; i++) teile.push(neu({}, true));
+  }
+  function neu(p, irgendwo) {
+    p.x = irgendwo ? Math.random() * w : -20 - Math.random() * 80; p.y = Math.random() * h;
+    p.a = 0; p.l = 60 + Math.random() * 140; p.s = Math.random(); p.r = Math.random() < .12; return p;
+  }
+  function feld(x, y) { return -.14 + .2 * Math.sin(y * .006 + t * .35) + .13 * Math.sin(x * .004 - y * .003 + t * .22); }
+  function schritt() {
+    t += 1 / 60;
+    g.globalCompositeOperation = 'destination-out'; g.fillStyle = 'rgba(0,0,0,.09)'; g.fillRect(0, 0, w, h);
+    g.globalCompositeOperation = 'source-over'; g.lineCap = 'round';
+    for (var i = 0; i < teile.length; i++) {
+      var p = teile[i], a = feld(p.x, p.y), v = 1.6 + 2.4 * p.s;
+      var nx = p.x + Math.cos(a) * v, ny = p.y + Math.sin(a) * v;
+      var la = Math.max(0, Math.min(1, p.a / 18, (p.l - p.a) / 18));
+      g.strokeStyle = p.r ? 'rgba(240,117,172,' + (.55 * la) + ')' : 'rgba(200,226,235,' + (.26 * la) + ')';
+      g.lineWidth = p.r ? 1.8 : 1.2;
+      g.beginPath(); g.moveTo(p.x, p.y); g.lineTo(nx, ny); g.stroke();
+      p.x = nx; p.y = ny; p.a++;
+      if (p.a > p.l || p.x > w + 20 || p.y < -20 || p.y > h + 20) neu(p, Math.random() < .5);
+    }
+    requestAnimationFrame(schritt);
+  }
+  groesse(); addEventListener('resize', groesse); requestAnimationFrame(schritt);
+})();
+</script>
+</body>
+</html>

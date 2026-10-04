@@ -1,0 +1,904 @@
+{
+ "version": "1.8.1",
+ "gesetzt": "2026-09-16 21:19",
+ "zeitraum": [
+  "2026-08-01",
+  "2026-08-31"
+ ],
+ "schwelle_kn": 12.0,
+ "paare": [
+  {
+   "spot": "de-pelzerhaken",
+   "quelle": "DWD",
+   "station": {
+    "id": "03897",
+    "name": "Pelzerhaken",
+    "lat": 54.0893,
+    "lon": 10.8773
+   },
+   "km": 0.3
+  },
+  {
+   "spot": "bodensee-fussach",
+   "quelle": "GeoSphere",
+   "station": {
+    "id": "11146",
+    "name": "Rohrspitz",
+    "lat": 47.49722,
+    "lon": 9.63
+   },
+   "km": 0.2
+  },
+  {
+   "spot": "nl-ijmuiden-zone1",
+   "quelle": "KNMI",
+   "station": {
+    "id": "225",
+    "name": "IJmuiden",
+    "lat": 52.463,
+    "lon": 4.555
+   },
+   "km": 0.8
+  },
+  {
+   "spot": "jd-chiemsee-3",
+   "quelle": "DWD",
+   "station": {
+    "id": "00856",
+    "name": "Chieming",
+    "lat": 47.8843,
+    "lon": 12.5404
+   },
+   "km": 0.5
+  },
+  {
+   "spot": "at-podersdorf",
+   "quelle": "GeoSphere",
+   "station": {
+    "id": "7912",
+    "name": "Podersdorf Strandbad",
+    "lat": 47.86611,
+    "lon": 16.83444
+   },
+   "km": 2.2
+  },
+  {
+   "spot": "nl-cadzand-west",
+   "quelle": "KNMI",
+   "station": {
+    "id": "308",
+    "name": "Cadzand",
+    "lat": 51.381,
+    "lon": 3.379
+   },
+   "km": 1.2
+  },
+  {
+   "spot": "de-epplesee",
+   "quelle": "DWD",
+   "station": {
+    "id": "04177",
+    "name": "Rheinstetten",
+    "lat": 48.9726,
+    "lon": 8.3301
+   },
+   "km": 0.7
+  },
+  {
+   "spot": "jd-achensee-1",
+   "quelle": "GeoSphere",
+   "station": {
+    "id": "151",
+    "name": "Achenkirch",
+    "lat": 47.49944,
+    "lon": 11.70667
+   },
+   "km": 5.0
+  },
+  {
+   "spot": "sankt-peter-ording",
+   "quelle": "DWD",
+   "station": {
+    "id": "04393",
+    "name": "Sankt Peter-Ording",
+    "lat": 54.3279,
+    "lon": 8.6031
+   },
+   "km": 1.0
+  }
+ ],
+ "ergebnisse": {
+  "de-pelzerhaken": {
+   "reihen": {
+    "ICON": {
+     "n": 724,
+     "bias": 2.53,
+     "mae": 2.88,
+     "richtung_n": 207,
+     "richtung": 0.98,
+     "fahrbar_n": 361,
+     "gemessen_fahrbar": 19,
+     "gesagt_fahrbar": 102,
+     "precision": 0.19,
+     "recall": 1.0,
+     "f1": 0.31
+    },
+    "GFS": {
+     "n": 724,
+     "bias": 4.16,
+     "mae": 4.49,
+     "richtung_n": 207,
+     "richtung": 0.98,
+     "fahrbar_n": 361,
+     "gemessen_fahrbar": 19,
+     "gesagt_fahrbar": 144,
+     "precision": 0.12,
+     "recall": 0.95,
+     "f1": 0.22
+    },
+    "ECMWF": {
+     "n": 724,
+     "bias": 1.72,
+     "mae": 2.62,
+     "richtung_n": 207,
+     "richtung": 0.99,
+     "fahrbar_n": 361,
+     "gemessen_fahrbar": 19,
+     "gesagt_fahrbar": 85,
+     "precision": 0.2,
+     "recall": 0.89,
+     "f1": 0.33
+    },
+    "ICON-D2": {
+     "n": 724,
+     "bias": 2.53,
+     "mae": 2.88,
+     "richtung_n": 207,
+     "richtung": 0.98,
+     "fahrbar_n": 361,
+     "gemessen_fahrbar": 19,
+     "gesagt_fahrbar": 102,
+     "precision": 0.19,
+     "recall": 1.0,
+     "f1": 0.31
+    },
+    "Wingfoilscout": {
+     "n": 724,
+     "bias": 2.53,
+     "mae": 2.88,
+     "richtung_n": 207,
+     "richtung": 0.98,
+     "fahrbar_n": 361,
+     "gemessen_fahrbar": 19,
+     "gesagt_fahrbar": 102,
+     "precision": 0.19,
+     "recall": 1.0,
+     "f1": 0.31
+    }
+   },
+   "sessions": {
+    "n": 724,
+    "bias": -3.69,
+    "mae": 5.15,
+    "richtung_n": 0,
+    "richtung": null,
+    "fahrbar_n": 361,
+    "gemessen_fahrbar": 19,
+    "gesagt_fahrbar": 152,
+    "precision": 0.12,
+    "recall": 0.95,
+    "f1": 0.21
+   },
+   "station": {
+    "id": "03897",
+    "name": "Pelzerhaken"
+   },
+   "quelle": "DWD",
+   "km": 0.3
+  },
+  "bodensee-fussach": {
+   "reihen": {
+    "ICON": {
+     "n": 742,
+     "bias": 1.12,
+     "mae": 2.18,
+     "richtung_n": 71,
+     "richtung": 0.96,
+     "fahrbar_n": 372,
+     "gemessen_fahrbar": 4,
+     "gesagt_fahrbar": 15,
+     "precision": 0.27,
+     "recall": 1.0,
+     "f1": 0.42
+    },
+    "GFS": {
+     "n": 742,
+     "bias": -0.18,
+     "mae": 2.62,
+     "richtung_n": 71,
+     "richtung": 0.62,
+     "fahrbar_n": 372,
+     "gemessen_fahrbar": 4,
+     "gesagt_fahrbar": 8,
+     "precision": 0.25,
+     "recall": 0.5,
+     "f1": 0.33
+    },
+    "ECMWF": {
+     "n": 742,
+     "bias": -1.5,
+     "mae": 2.31,
+     "richtung_n": 71,
+     "richtung": 0.66,
+     "fahrbar_n": 372,
+     "gemessen_fahrbar": 4,
+     "gesagt_fahrbar": 2,
+     "precision": 1.0,
+     "recall": 0.5,
+     "f1": 0.67
+    },
+    "AROME-AT": {
+     "n": 742,
+     "bias": 1.47,
+     "mae": 2.65,
+     "richtung_n": 71,
+     "richtung": 0.79,
+     "fahrbar_n": 372,
+     "gemessen_fahrbar": 4,
+     "gesagt_fahrbar": 15,
+     "precision": 0.13,
+     "recall": 0.5,
+     "f1": 0.21
+    },
+    "Wingfoilscout": {
+     "n": 742,
+     "bias": 1.47,
+     "mae": 2.65,
+     "richtung_n": 71,
+     "richtung": 0.79,
+     "fahrbar_n": 372,
+     "gemessen_fahrbar": 4,
+     "gesagt_fahrbar": 15,
+     "precision": 0.13,
+     "recall": 0.5,
+     "f1": 0.21
+    }
+   },
+   "sessions": {
+    "n": 742,
+    "bias": -3.86,
+    "mae": 4.18,
+    "richtung_n": 0,
+    "richtung": null,
+    "fahrbar_n": 372,
+    "gemessen_fahrbar": 4,
+    "gesagt_fahrbar": 18,
+    "precision": 0.22,
+    "recall": 1.0,
+    "f1": 0.36
+   },
+   "station": {
+    "id": "11146",
+    "name": "Rohrspitz"
+   },
+   "quelle": "GeoSphere",
+   "km": 0.2
+  },
+  "nl-ijmuiden-zone1": {
+   "reihen": {
+    "ICON": {
+     "n": 742,
+     "bias": -2.27,
+     "mae": 2.72,
+     "richtung_n": 489,
+     "richtung": 0.97,
+     "fahrbar_n": 372,
+     "gemessen_fahrbar": 164,
+     "gesagt_fahrbar": 124,
+     "precision": 0.95,
+     "recall": 0.72,
+     "f1": 0.82
+    },
+    "GFS": {
+     "n": 742,
+     "bias": -2.04,
+     "mae": 2.84,
+     "richtung_n": 489,
+     "richtung": 0.94,
+     "fahrbar_n": 372,
+     "gemessen_fahrbar": 164,
+     "gesagt_fahrbar": 128,
+     "precision": 0.9,
+     "recall": 0.7,
+     "f1": 0.79
+    },
+    "ECMWF": {
+     "n": 742,
+     "bias": -1.47,
+     "mae": 2.52,
+     "richtung_n": 489,
+     "richtung": 0.97,
+     "fahrbar_n": 372,
+     "gemessen_fahrbar": 164,
+     "gesagt_fahrbar": 146,
+     "precision": 0.86,
+     "recall": 0.76,
+     "f1": 0.81
+    },
+    "HARMONIE": {
+     "n": 742,
+     "bias": -2.32,
+     "mae": 2.95,
+     "richtung_n": 489,
+     "richtung": 0.95,
+     "fahrbar_n": 372,
+     "gemessen_fahrbar": 164,
+     "gesagt_fahrbar": 112,
+     "precision": 0.93,
+     "recall": 0.63,
+     "f1": 0.75
+    },
+    "Wingfoilscout": {
+     "n": 742,
+     "bias": -2.32,
+     "mae": 2.95,
+     "richtung_n": 489,
+     "richtung": 0.95,
+     "fahrbar_n": 372,
+     "gemessen_fahrbar": 164,
+     "gesagt_fahrbar": 112,
+     "precision": 0.93,
+     "recall": 0.63,
+     "f1": 0.75
+    }
+   },
+   "sessions": {
+    "n": 742,
+    "bias": -9.03,
+    "mae": 9.16,
+    "richtung_n": 0,
+    "richtung": null,
+    "fahrbar_n": 372,
+    "gemessen_fahrbar": 164,
+    "gesagt_fahrbar": 157,
+    "precision": 0.78,
+    "recall": 0.75,
+    "f1": 0.77
+   },
+   "station": {
+    "id": "225",
+    "name": "IJmuiden"
+   },
+   "quelle": "KNMI",
+   "km": 0.8
+  },
+  "jd-chiemsee-3": {
+   "reihen": {
+    "ICON": {
+     "n": 742,
+     "bias": -1.3,
+     "mae": 1.88,
+     "richtung_n": 124,
+     "richtung": 0.96,
+     "fahrbar_n": 372,
+     "gemessen_fahrbar": 10,
+     "gesagt_fahrbar": 7,
+     "precision": 0.57,
+     "recall": 0.4,
+     "f1": 0.47
+    },
+    "GFS": {
+     "n": 742,
+     "bias": -1.48,
+     "mae": 2.08,
+     "richtung_n": 124,
+     "richtung": 0.89,
+     "fahrbar_n": 372,
+     "gemessen_fahrbar": 10,
+     "gesagt_fahrbar": 1,
+     "precision": 1.0,
+     "recall": 0.1,
+     "f1": 0.18
+    },
+    "ECMWF": {
+     "n": 742,
+     "bias": -1.23,
+     "mae": 2.0,
+     "richtung_n": 124,
+     "richtung": 0.9,
+     "fahrbar_n": 372,
+     "gemessen_fahrbar": 10,
+     "gesagt_fahrbar": 5,
+     "precision": 0.8,
+     "recall": 0.4,
+     "f1": 0.53
+    },
+    "ICON-D2": {
+     "n": 742,
+     "bias": -1.3,
+     "mae": 1.88,
+     "richtung_n": 124,
+     "richtung": 0.96,
+     "fahrbar_n": 372,
+     "gemessen_fahrbar": 10,
+     "gesagt_fahrbar": 7,
+     "precision": 0.57,
+     "recall": 0.4,
+     "f1": 0.47
+    },
+    "Wingfoilscout": {
+     "n": 742,
+     "bias": -1.3,
+     "mae": 1.88,
+     "richtung_n": 124,
+     "richtung": 0.96,
+     "fahrbar_n": 372,
+     "gemessen_fahrbar": 10,
+     "gesagt_fahrbar": 7,
+     "precision": 0.57,
+     "recall": 0.4,
+     "f1": 0.47
+    }
+   },
+   "sessions": {
+    "n": 742,
+    "bias": -5.21,
+    "mae": 5.28,
+    "richtung_n": 0,
+    "richtung": null,
+    "fahrbar_n": 372,
+    "gemessen_fahrbar": 10,
+    "gesagt_fahrbar": 9,
+    "precision": 0.44,
+    "recall": 0.4,
+    "f1": 0.42
+   },
+   "station": {
+    "id": "00856",
+    "name": "Chieming"
+   },
+   "quelle": "DWD",
+   "km": 0.5
+  },
+  "at-podersdorf": {
+   "reihen": {
+    "ICON": {
+     "n": 739,
+     "bias": 0.35,
+     "mae": 1.95,
+     "richtung_n": 147,
+     "richtung": 0.99,
+     "fahrbar_n": 369,
+     "gemessen_fahrbar": 29,
+     "gesagt_fahrbar": 18,
+     "precision": 0.5,
+     "recall": 0.31,
+     "f1": 0.38
+    },
+    "GFS": {
+     "n": 739,
+     "bias": 2.98,
+     "mae": 3.57,
+     "richtung_n": 147,
+     "richtung": 0.97,
+     "fahrbar_n": 369,
+     "gemessen_fahrbar": 29,
+     "gesagt_fahrbar": 92,
+     "precision": 0.27,
+     "recall": 0.86,
+     "f1": 0.41
+    },
+    "ECMWF": {
+     "n": 739,
+     "bias": 0.02,
+     "mae": 2.1,
+     "richtung_n": 147,
+     "richtung": 0.97,
+     "fahrbar_n": 369,
+     "gemessen_fahrbar": 29,
+     "gesagt_fahrbar": 18,
+     "precision": 0.22,
+     "recall": 0.14,
+     "f1": 0.17
+    },
+    "AROME-AT": {
+     "n": 739,
+     "bias": 1.38,
+     "mae": 2.5,
+     "richtung_n": 147,
+     "richtung": 0.94,
+     "fahrbar_n": 369,
+     "gemessen_fahrbar": 29,
+     "gesagt_fahrbar": 66,
+     "precision": 0.3,
+     "recall": 0.69,
+     "f1": 0.42
+    },
+    "Wingfoilscout": {
+     "n": 739,
+     "bias": 1.38,
+     "mae": 2.5,
+     "richtung_n": 147,
+     "richtung": 0.94,
+     "fahrbar_n": 369,
+     "gemessen_fahrbar": 29,
+     "gesagt_fahrbar": 66,
+     "precision": 0.3,
+     "recall": 0.69,
+     "f1": 0.42
+    }
+   },
+   "sessions": {
+    "n": 739,
+    "bias": -4.37,
+    "mae": 4.85,
+    "richtung_n": 0,
+    "richtung": null,
+    "fahrbar_n": 369,
+    "gemessen_fahrbar": 29,
+    "gesagt_fahrbar": 70,
+    "precision": 0.31,
+    "recall": 0.76,
+    "f1": 0.44
+   },
+   "station": {
+    "id": "7912",
+    "name": "Podersdorf Strandbad"
+   },
+   "quelle": "GeoSphere",
+   "km": 2.2
+  },
+  "nl-cadzand-west": {
+   "reihen": {
+    "ICON": {
+     "n": 742,
+     "bias": 0.0,
+     "mae": 1.8,
+     "richtung_n": 420,
+     "richtung": 0.97,
+     "fahrbar_n": 372,
+     "gemessen_fahrbar": 127,
+     "gesagt_fahrbar": 153,
+     "precision": 0.73,
+     "recall": 0.87,
+     "f1": 0.79
+    },
+    "GFS": {
+     "n": 742,
+     "bias": -0.24,
+     "mae": 1.97,
+     "richtung_n": 420,
+     "richtung": 0.98,
+     "fahrbar_n": 372,
+     "gemessen_fahrbar": 127,
+     "gesagt_fahrbar": 133,
+     "precision": 0.78,
+     "recall": 0.82,
+     "f1": 0.8
+    },
+    "ECMWF": {
+     "n": 742,
+     "bias": -2.26,
+     "mae": 2.9,
+     "richtung_n": 420,
+     "richtung": 0.93,
+     "fahrbar_n": 372,
+     "gemessen_fahrbar": 127,
+     "gesagt_fahrbar": 63,
+     "precision": 0.89,
+     "recall": 0.44,
+     "f1": 0.59
+    },
+    "HARMONIE": {
+     "n": 742,
+     "bias": -0.27,
+     "mae": 1.98,
+     "richtung_n": 420,
+     "richtung": 0.96,
+     "fahrbar_n": 372,
+     "gemessen_fahrbar": 127,
+     "gesagt_fahrbar": 123,
+     "precision": 0.79,
+     "recall": 0.76,
+     "f1": 0.78
+    },
+    "Wingfoilscout": {
+     "n": 742,
+     "bias": -0.27,
+     "mae": 1.98,
+     "richtung_n": 420,
+     "richtung": 0.96,
+     "fahrbar_n": 372,
+     "gemessen_fahrbar": 127,
+     "gesagt_fahrbar": 123,
+     "precision": 0.79,
+     "recall": 0.76,
+     "f1": 0.78
+    }
+   },
+   "sessions": {
+    "n": 742,
+    "bias": -7.18,
+    "mae": 7.44,
+    "richtung_n": 0,
+    "richtung": null,
+    "fahrbar_n": 372,
+    "gemessen_fahrbar": 127,
+    "gesagt_fahrbar": 169,
+    "precision": 0.66,
+    "recall": 0.88,
+    "f1": 0.76
+   },
+   "station": {
+    "id": "308",
+    "name": "Cadzand"
+   },
+   "quelle": "KNMI",
+   "km": 1.2
+  },
+  "de-epplesee": {
+   "reihen": {
+    "ICON": {
+     "n": 742,
+     "bias": -0.79,
+     "mae": 1.36,
+     "richtung_n": 209,
+     "richtung": 0.98,
+     "fahrbar_n": 372,
+     "gemessen_fahrbar": 19,
+     "gesagt_fahrbar": 5,
+     "precision": 0.6,
+     "recall": 0.16,
+     "f1": 0.25
+    },
+    "GFS": {
+     "n": 742,
+     "bias": -0.52,
+     "mae": 1.6,
+     "richtung_n": 209,
+     "richtung": 0.96,
+     "fahrbar_n": 372,
+     "gemessen_fahrbar": 19,
+     "gesagt_fahrbar": 15,
+     "precision": 0.6,
+     "recall": 0.47,
+     "f1": 0.53
+    },
+    "ECMWF": {
+     "n": 742,
+     "bias": -0.85,
+     "mae": 1.55,
+     "richtung_n": 209,
+     "richtung": 0.98,
+     "fahrbar_n": 372,
+     "gemessen_fahrbar": 19,
+     "gesagt_fahrbar": 10,
+     "precision": 0.9,
+     "recall": 0.47,
+     "f1": 0.62
+    },
+    "ICON-D2": {
+     "n": 742,
+     "bias": -0.79,
+     "mae": 1.36,
+     "richtung_n": 209,
+     "richtung": 0.98,
+     "fahrbar_n": 372,
+     "gemessen_fahrbar": 19,
+     "gesagt_fahrbar": 5,
+     "precision": 0.6,
+     "recall": 0.16,
+     "f1": 0.25
+    },
+    "Wingfoilscout": {
+     "n": 742,
+     "bias": -0.79,
+     "mae": 1.36,
+     "richtung_n": 209,
+     "richtung": 0.98,
+     "fahrbar_n": 372,
+     "gemessen_fahrbar": 19,
+     "gesagt_fahrbar": 5,
+     "precision": 0.6,
+     "recall": 0.16,
+     "f1": 0.25
+    }
+   },
+   "sessions": {
+    "n": 742,
+    "bias": -5.52,
+    "mae": 5.54,
+    "richtung_n": 0,
+    "richtung": null,
+    "fahrbar_n": 372,
+    "gemessen_fahrbar": 19,
+    "gesagt_fahrbar": 15,
+    "precision": 0.6,
+    "recall": 0.47,
+    "f1": 0.53
+   },
+   "station": {
+    "id": "04177",
+    "name": "Rheinstetten"
+   },
+   "quelle": "DWD",
+   "km": 0.7
+  },
+  "jd-achensee-1": {
+   "reihen": {
+    "ICON": {
+     "n": 742,
+     "bias": -0.42,
+     "mae": 2.11,
+     "richtung_n": 70,
+     "richtung": 0.97,
+     "fahrbar_n": 372,
+     "gemessen_fahrbar": 7,
+     "gesagt_fahrbar": 1,
+     "precision": 1.0,
+     "recall": 0.14,
+     "f1": 0.25
+    },
+    "GFS": {
+     "n": 742,
+     "bias": -0.78,
+     "mae": 2.08,
+     "richtung_n": 70,
+     "richtung": 0.6,
+     "fahrbar_n": 372,
+     "gemessen_fahrbar": 7,
+     "gesagt_fahrbar": 0,
+     "precision": null,
+     "recall": 0.0,
+     "f1": null
+    },
+    "ECMWF": {
+     "n": 742,
+     "bias": -1.72,
+     "mae": 2.29,
+     "richtung_n": 70,
+     "richtung": 0.59,
+     "fahrbar_n": 372,
+     "gemessen_fahrbar": 7,
+     "gesagt_fahrbar": 1,
+     "precision": 0.0,
+     "recall": 0.0,
+     "f1": null
+    },
+    "AROME-AT": {
+     "n": 742,
+     "bias": 0.08,
+     "mae": 2.08,
+     "richtung_n": 70,
+     "richtung": 0.71,
+     "fahrbar_n": 372,
+     "gemessen_fahrbar": 7,
+     "gesagt_fahrbar": 4,
+     "precision": 0.25,
+     "recall": 0.14,
+     "f1": 0.18
+    },
+    "Wingfoilscout": {
+     "n": 742,
+     "bias": 1.34,
+     "mae": 2.76,
+     "richtung_n": 70,
+     "richtung": 0.74,
+     "fahrbar_n": 372,
+     "gemessen_fahrbar": 7,
+     "gesagt_fahrbar": 88,
+     "precision": 0.03,
+     "recall": 0.43,
+     "f1": 0.06
+    }
+   },
+   "sessions": {
+    "n": 742,
+    "bias": -2.66,
+    "mae": 4.02,
+    "richtung_n": 0,
+    "richtung": null,
+    "fahrbar_n": 372,
+    "gemessen_fahrbar": 7,
+    "gesagt_fahrbar": 81,
+    "precision": 0.02,
+    "recall": 0.29,
+    "f1": 0.05
+   },
+   "station": {
+    "id": "151",
+    "name": "Achenkirch"
+   },
+   "quelle": "GeoSphere",
+   "km": 5.0
+  },
+  "sankt-peter-ording": {
+   "reihen": {
+    "ICON": {
+     "n": 735,
+     "bias": 1.52,
+     "mae": 2.06,
+     "richtung_n": 478,
+     "richtung": 1.0,
+     "fahrbar_n": 365,
+     "gemessen_fahrbar": 136,
+     "gesagt_fahrbar": 185,
+     "precision": 0.72,
+     "recall": 0.98,
+     "f1": 0.83
+    },
+    "GFS": {
+     "n": 735,
+     "bias": 1.87,
+     "mae": 2.6,
+     "richtung_n": 478,
+     "richtung": 0.99,
+     "fahrbar_n": 365,
+     "gemessen_fahrbar": 136,
+     "gesagt_fahrbar": 183,
+     "precision": 0.71,
+     "recall": 0.96,
+     "f1": 0.82
+    },
+    "ECMWF": {
+     "n": 735,
+     "bias": 1.87,
+     "mae": 2.44,
+     "richtung_n": 478,
+     "richtung": 1.0,
+     "fahrbar_n": 365,
+     "gemessen_fahrbar": 136,
+     "gesagt_fahrbar": 172,
+     "precision": 0.77,
+     "recall": 0.97,
+     "f1": 0.86
+    },
+    "ICON-D2": {
+     "n": 735,
+     "bias": 1.52,
+     "mae": 2.06,
+     "richtung_n": 478,
+     "richtung": 1.0,
+     "fahrbar_n": 365,
+     "gemessen_fahrbar": 136,
+     "gesagt_fahrbar": 185,
+     "precision": 0.72,
+     "recall": 0.98,
+     "f1": 0.83
+    },
+    "Wingfoilscout": {
+     "n": 735,
+     "bias": 1.52,
+     "mae": 2.06,
+     "richtung_n": 478,
+     "richtung": 1.0,
+     "fahrbar_n": 365,
+     "gemessen_fahrbar": 136,
+     "gesagt_fahrbar": 185,
+     "precision": 0.72,
+     "recall": 0.98,
+     "f1": 0.83
+    }
+   },
+   "sessions": {
+    "n": 735,
+    "bias": -6.29,
+    "mae": 6.98,
+    "richtung_n": 0,
+    "richtung": null,
+    "fahrbar_n": 365,
+    "gemessen_fahrbar": 136,
+    "gesagt_fahrbar": 219,
+    "precision": 0.57,
+    "recall": 0.91,
+    "f1": 0.7
+   },
+   "station": {
+    "id": "04393",
+    "name": "Sankt Peter-Ording"
+   },
+   "quelle": "DWD",
+   "km": 1.0
+  }
+ }
+}

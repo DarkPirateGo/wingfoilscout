@@ -1,0 +1,1035 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<!-- How Wingfoilscout calculates — part of the project site (GitHub Pages, docs/), the same page
+     as the published version. No scripts, no external requests. -->
+<title>How Wingfoilscout calculates</title>
+<style>
+  /* Layout: one reading column; figures may be wider and scroll within their own
+     frame; the section numbers follow the path of an hour through the program.
+     System fonts only — the page also lives as a file in the repository and
+     should be readable offline, without any requests to third parties. */
+  :root{
+    --schrift-titel:"Iowan Old Style","Charter","Palatino Linotype",Palatino,Georgia,serif;
+    --schrift-text:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,Roboto,sans-serif;
+    --schrift-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+    --papier:#F5F3EE;
+    --flaeche:#FFFFFF;
+    --tinte:#131C19;
+    --gedaempft:#5E6B66;
+    --linie:#DAD6CB;
+    --linie-zart:#E9E5DC;
+    --gruen:#3B8F63;
+    --orange:#C67A1E;
+    --rot:#C24A38;
+    --dunkelrot:#7A1F14;
+    --petrol:#1F4E5A;
+    --raster:#E4E0D5;
+    color-scheme:light;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --papier:#0E1513;
+      --flaeche:#151E1B;
+      --tinte:#E6E3DA;
+      --gedaempft:#98A69F;
+      --linie:#27342F;
+      --linie-zart:#1D2825;
+      --gruen:#5CB585;
+      --orange:#E0A24A;
+      --rot:#E07260;
+      --dunkelrot:#C0554A;
+      --petrol:#78B6C4;
+      --raster:#23302B;
+      color-scheme:dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --papier:#0E1513;
+    --flaeche:#151E1B;
+    --tinte:#E6E3DA;
+    --gedaempft:#98A69F;
+    --linie:#27342F;
+    --linie-zart:#1D2825;
+    --gruen:#5CB585;
+    --orange:#E0A24A;
+    --rot:#E07260;
+    --dunkelrot:#C0554A;
+    --petrol:#78B6C4;
+    --raster:#23302B;
+    color-scheme:dark;
+  }
+
+  body{
+    background:var(--papier);
+    color:var(--tinte);
+    font-family:var(--schrift-text);
+    font-size:16px;
+    line-height:1.62;
+    -webkit-font-smoothing:antialiased;
+  }
+  .huelle{
+    max-width:1000px;
+    margin:0 auto;
+    padding-inline:16px;
+    padding-block:0 96px;
+  }
+  .schmal{max-width:66ch;}
+
+  h1,h2,h3{font-family:var(--schrift-titel);text-wrap:balance;margin:0;}
+  h1{font-size:clamp(2rem,6vw,3.1rem);font-weight:600;line-height:1.08;letter-spacing:-.018em;}
+  h2{font-size:clamp(1.35rem,3.4vw,1.75rem);font-weight:600;line-height:1.2;letter-spacing:-.01em;}
+  h3{font-size:1.02rem;font-weight:600;line-height:1.35;margin-bottom:.2em;}
+  p{margin:0 0 1em;}
+  a{color:var(--petrol);}
+
+  /* Header */
+  header.kopf{
+    border-bottom:1px solid var(--linie);
+    padding-block:clamp(44px,9vw,84px) clamp(28px,5vw,44px);
+    margin-bottom:clamp(34px,6vw,60px);
+  }
+  .eyebrow{
+    font-family:var(--schrift-mono);
+    font-size:.72rem;letter-spacing:.13em;text-transform:uppercase;
+    color:var(--gedaempft);margin:0 0 1.1em;
+  }
+  .lead{font-size:clamp(1.02rem,2.2vw,1.2rem);color:var(--tinte);max-width:62ch;margin-top:1.1em;}
+  .stempel{
+    font-family:var(--schrift-mono);
+    font-size:.76rem;color:var(--gedaempft);
+    display:flex;flex-wrap:wrap;gap:6px 22px;margin-top:2em;
+  }
+
+  /* Sections */
+  section{margin-bottom:clamp(46px,8vw,86px);scroll-margin-top:24px;}
+  .abschnittkopf{display:flex;gap:16px;align-items:baseline;margin-bottom:1.1em;}
+  .nummer{
+    font-family:var(--schrift-mono);
+    font-size:.82rem;color:var(--gruen);font-weight:500;
+    padding-top:.2em;flex:0 0 auto;
+  }
+
+  /* Figures */
+  figure{margin:2em 0;}
+  .figrahmen{
+    background:var(--flaeche);
+    border:1px solid var(--linie);
+    border-radius:3px;
+    padding:20px 18px 14px;
+    overflow-x:auto;
+  }
+  figure svg{display:block;height:auto;color:var(--tinte);}
+  figcaption{
+    font-size:.86rem;color:var(--gedaempft);margin-top:.85em;max-width:62ch;
+  }
+  .svgtext{font-family:var(--schrift-text);font-size:12px;fill:currentColor;}
+  .svgmono{font-family:var(--schrift-mono);font-size:11px;fill:currentColor;}
+  .svgklein{font-family:var(--schrift-mono);font-size:10px;fill:var(--gedaempft);}
+
+  /* Tables */
+  .tabellenrahmen{overflow-x:auto;margin:1.8em 0;}
+  table{border-collapse:collapse;width:100%;min-width:520px;font-size:.9rem;}
+  th,td{text-align:left;padding:9px 14px 9px 0;border-bottom:1px solid var(--linie-zart);vertical-align:top;}
+  th{
+    font-family:var(--schrift-mono);font-size:.72rem;letter-spacing:.09em;
+    text-transform:uppercase;color:var(--gedaempft);font-weight:500;
+    border-bottom:1px solid var(--linie);
+  }
+  td.zahl{font-family:var(--schrift-mono);font-variant-numeric:tabular-nums;white-space:nowrap;}
+
+  code,.formel{font-family:var(--schrift-mono);}
+  code{font-size:.88em;background:var(--linie-zart);padding:.1em .34em;border-radius:2px;}
+  .formel{
+    display:block;background:var(--flaeche);border-left:2px solid var(--gruen);
+    padding:13px 16px;margin:1.4em 0;font-size:.88rem;line-height:1.75;
+    overflow-x:auto;white-space:pre;
+  }
+
+  ul{margin:0 0 1em;padding-left:1.1em;}
+  li{margin-bottom:.45em;}
+
+  .marke{
+    display:inline-block;font-family:var(--schrift-mono);font-size:.72rem;
+    padding:1px 7px;border-radius:2px;border:1px solid currentColor;
+    letter-spacing:.03em;white-space:nowrap;
+  }
+  .m-veto{color:var(--rot);}
+  .m-daempf{color:var(--orange);}
+  .m-gruen{color:var(--gruen);}
+
+  .notiz{
+    border-top:1px solid var(--linie);
+    padding-top:1.1em;margin-top:2em;font-size:.9rem;color:var(--gedaempft);
+    max-width:62ch;
+  }
+  .grenzen li{margin-bottom:.8em;}
+  .grenzen strong{color:var(--tinte);font-weight:600;}
+
+  hr{border:0;border-top:1px solid var(--linie);margin:0;}
+
+  @media (prefers-reduced-motion:no-preference){
+    a{transition:color .15s ease;}
+  }
+  a:focus-visible,summary:focus-visible{outline:2px solid var(--gruen);outline-offset:3px;}
+</style>
+<style>body{margin:0}</style>
+</head>
+<body>
+<div class="huelle">
+
+<header class="kopf">
+  <p class="eyebrow"><a href="index.html">Wingfoilscout</a> · Methodology</p>
+  <h1>How Wingfoilscout calculates</h1>
+  <p class="lead">From eight data sources to three destinations: every threshold, every weighting
+  and every exclusion that is actually in the code — and the places where the tool estimates
+  instead of knowing.</p>
+  <div class="stempel">
+    <span>Version 2.1.0</span>
+    <span>278 spots in the catalogue</span>
+    <span>Values from config.example.yaml</span>
+    <span>Same numbers as SCORING.md</span>
+  </div>
+</header>
+
+<!-- ============================ 00 ============================ -->
+<section id="pipeline">
+  <div class="abschnittkopf"><span class="nummer">00</span><h2>The path of an hour</h2></div>
+  <div class="schmal">
+    <p>Wingfoilscout does not rate spots, it rates <strong>hours</strong>. Every hour at every
+    spot gets a score between 0 and 1; hard exclusions set it to 0 and record a reason. Everything
+    else — sessions, destinations, ranking — is built from these hourly values by aggregating them.
+    None of it is a black box: every hour knows why it is what it is.</p>
+  </div>
+
+  <figure>
+    <div class="figrahmen">
+      <svg viewBox="0 0 900 690" style="min-width:660px;max-width:900px;width:100%" role="img" aria-label="Flow chart: 278 spots are prefiltered by radius, season, water type and drive time; then forecast, regional model, wind factor, thermal wind and, at the sea, water temperature, waves and tide are added; every hour is scored, and from that come sessions, destinations and the ranking.">
+        <defs>
+          <marker id="pf" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,1 L9,5 L0,9 z" fill="currentColor"/>
+          </marker>
+        </defs>
+
+        <!-- Left column: sources -->
+        <text class="svgklein" x="8" y="18">SOURCES</text>
+        <g stroke="currentColor" stroke-width="1" fill="none" opacity=".45">
+          <rect x="8" y="30" width="150" height="26" rx="2"/>
+          <rect x="8" y="64" width="150" height="26" rx="2"/>
+          <rect x="8" y="196" width="150" height="26" rx="2"/>
+          <rect x="8" y="230" width="150" height="26" rx="2"/>
+          <rect x="8" y="282" width="150" height="26" rx="2"/>
+          <rect x="8" y="316" width="150" height="26" rx="2"/>
+          <rect x="8" y="512" width="150" height="26" rx="2"/>
+          <rect x="8" y="546" width="150" height="26" rx="2"/>
+        </g>
+        <g class="svgmono">
+          <text x="18" y="47">spots.yaml</text>
+          <text x="18" y="81">OSRM (drive time)</text>
+          <text x="18" y="213">Open-Meteo ×3</text>
+          <text x="18" y="247">Regional model</text>
+          <text x="18" y="299">Open-Meteo Marine</text>
+          <text x="18" y="333">OSM / Overpass</text>
+          <text x="18" y="529">ICON-EPS (40)</text>
+          <text x="18" y="563">Park4Night</text>
+        </g>
+
+        <!-- Main column -->
+        <g stroke="currentColor" stroke-width="1.4" fill="none">
+          <rect x="300" y="26" width="300" height="46" rx="3"/>
+          <rect x="300" y="118" width="300" height="46" rx="3"/>
+          <rect x="300" y="210" width="300" height="46" rx="3"/>
+          <rect x="300" y="302" width="300" height="46" rx="3"/>
+        </g>
+        <rect x="300" y="394" width="300" height="46" rx="3" fill="none" stroke="var(--gruen)" stroke-width="2"/>
+        <g stroke="currentColor" stroke-width="1.4" fill="none">
+          <rect x="300" y="486" width="300" height="46" rx="3"/>
+          <rect x="300" y="578" width="300" height="46" rx="3"/>
+        </g>
+
+        <g class="svgtext" text-anchor="middle">
+          <text x="450" y="47">Prefilter</text>
+          <text x="450" y="139">Drive time per spot</text>
+          <text x="450" y="231">Hourly wind series</text>
+          <text x="450" y="323">Direction &amp; water state</text>
+          <text x="450" y="415" fill="var(--gruen)">Hourly score 0 … 1</text>
+          <text x="450" y="507">Sessions per day</text>
+          <text x="450" y="599">Destinations, ranked</text>
+        </g>
+        <g class="svgklein" text-anchor="middle">
+          <text x="450" y="63">Radius · season · water type · drive time (+35%)</text>
+          <text x="450" y="155">OSRM, else straight line × 1.22 · then exact</text>
+          <text x="450" y="247">3 models + regional · wind factor · thermal</text>
+          <text x="450" y="339">Fetch rose, else catalogue sectors</text>
+          <text x="450" y="431">5 sub-scores × model agreement</text>
+          <text x="450" y="523">≥ 0.55 · ≥ 2 h · daylight · one day</text>
+          <text x="450" y="615">Rating × drive × duration · Plan B</text>
+        </g>
+
+        <!-- Arrows, main column -->
+        <g stroke="currentColor" stroke-width="1.4" marker-end="url(#pf)">
+          <line x1="450" y1="72" x2="450" y2="112"/>
+          <line x1="450" y1="164" x2="450" y2="204"/>
+          <line x1="450" y1="256" x2="450" y2="296"/>
+          <line x1="450" y1="348" x2="450" y2="388"/>
+          <line x1="450" y1="440" x2="450" y2="480"/>
+          <line x1="450" y1="532" x2="450" y2="572"/>
+        </g>
+
+        <!-- Inflows from the sources -->
+        <g stroke="currentColor" stroke-width="1" opacity=".55" marker-end="url(#pf)">
+          <path d="M158,43 H230 V49 H294" fill="none"/>
+          <path d="M158,77 H250 V141 H294" fill="none"/>
+          <path d="M158,209 H230 V233 H294" fill="none"/>
+          <path d="M158,243 H250 V237 H294" fill="none"/>
+          <path d="M158,295 H240 V316 H294" fill="none"/>
+          <path d="M158,329 H250 V325 H294" fill="none"/>
+          <path d="M158,525 H230 V601 H294" fill="none"/>
+          <path d="M158,559 H250 V607 H294" fill="none"/>
+        </g>
+
+        <!-- Right: vetoes and damping -->
+        <text class="svgklein" x="640" y="18">INTERVENTIONS</text>
+        <g stroke="var(--rot)" stroke-width="1.3" fill="none">
+          <rect x="640" y="382" width="250" height="70" rx="3"/>
+        </g>
+        <text class="svgmono" x="652" y="401" fill="var(--rot)">Vetoes → score 0</text>
+        <text class="svgklein" x="652" y="417">past · night · water below 7 °C</text>
+        <text class="svgklein" x="652" y="431">tide window · no wing · offshore</text>
+        <text class="svgklein" x="652" y="445">thunderstorm · air temperature</text>
+        <line x1="636" y1="417" x2="604" y2="417" stroke="var(--rot)" stroke-width="1.3" marker-end="url(#pf)"/>
+
+        <g stroke="var(--orange)" stroke-width="1.3" fill="none">
+          <rect x="640" y="566" width="250" height="84" rx="3"/>
+        </g>
+        <text class="svgmono" x="652" y="585" fill="var(--orange)">Ensemble damping</text>
+        <text class="svgklein" x="652" y="601">40 runs of the same weather</text>
+        <text class="svgklein" x="652" y="615">factor 0.5 … 1.0 on the score</text>
+        <text class="svgklein" x="652" y="629">for the top 20 destinations</text>
+        <text class="svgklein" x="652" y="643">thermal: the spot’s reliability</text>
+        <line x1="636" y1="601" x2="604" y2="601" stroke="var(--orange)" stroke-width="1.3" marker-end="url(#pf)"/>
+
+        <!-- Footnote inside the figure -->
+        <text class="svgklein" x="8" y="672">Any source may fail: if one is missing, Wingfoilscout carries on without it and notes it in the log.</text>
+      </svg>
+    </div>
+    <figcaption>The whole run in one picture. On the left the sources, in the middle the seven stages,
+    on the right the two places where something is subtracted rather than added. The green stage is
+    the only one where real calculating happens — everything above it collects numbers, everything
+    below it aggregates them.</figcaption>
+  </figure>
+</section>
+
+<!-- ============================ 01 ============================ -->
+<section id="quellen">
+  <div class="abschnittkopf"><span class="nummer">01</span><h2>Where the numbers come from</h2></div>
+  <div class="schmal">
+    <p>Eight sources, all without an API key or an account. None of them is load-bearing: if one
+    fails, the report runs without it and says in the log what is missing. That is deliberate — a
+    tool that delivers nothing at all when someone else’s server goes down is worthless at the
+    decisive moment.</p>
+  </div>
+
+  <div class="tabellenrahmen">
+    <table>
+      <thead>
+        <tr><th>Source</th><th>provides</th><th>resolution</th><th>if it fails</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Open-Meteo Forecast</td><td>wind, gust, direction, temperature, rain, CAPE, weather code, cloud cover, solar radiation, sunrise and sunset</td><td class="zahl">7–25 km</td><td>no report</td></tr>
+        <tr><td>Regional models</td><td>the same wind series, finer — overrides it hour by hour</td><td class="zahl">1–2.5 km</td><td>the coarse model stays</td></tr>
+        <tr><td>ICON-EPS ensemble</td><td>40 runs of the same situation → probability</td><td class="zahl">coarser</td><td>no damping, raw score only</td></tr>
+        <tr><td>Open-Meteo Marine</td><td>water temperature, wave height, water level (sea and lagoon)</td><td class="zahl">8 km</td><td>no tide, no wetsuit hint, no cold-water veto</td></tr>
+        <tr><td>OpenStreetMap / Overpass</td><td>shoreline → fetch rose per spot, protected areas</td><td class="zahl">36 directions, 25 km</td><td>sectors from the catalogue</td></tr>
+        <tr><td>OSRM</td><td>real drive time and road distance</td><td class="zahl">—</td><td>straight line × 1.22 at 85 km/h, marked “(estimated)”</td></tr>
+        <tr><td>Park4Night</td><td>overnight spots, dogs must be allowed</td><td class="zahl">top 8 destinations</td><td>destinations without a list of overnight spots</td></tr>
+        <tr><td>MeteoAlarm</td><td>official severe-weather warnings per region</td><td class="zahl">—</td><td>no warning badges</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="schmal">
+    <p>The <strong>prefilter</strong> runs before any network request and throws out whatever is
+    out of the question anyway, in this order: reference spot only, disabled in the catalogue,
+    excluded water type, heavy seagrass, standing depth throughout, dog ban and wingfoiling ban (both
+    only if you have switched that on), out of season, outside the radius, too far to drive. It
+    checks radius and drive time with the estimate (straight line × 1.22 at 85 km/h) plus a 35%
+    allowance, so that a spot does not fail because of an overly pessimistic rule of thumb. Only
+    after that are the real drive times fetched, and with them radius and upper limit apply exactly.
+    Spots with an unknown water type deliberately stay in; the shoreline geometry later clarifies
+    what kind of water the point lies in.</p>
+  </div>
+</section>
+
+<!-- ============================ 02 ============================ -->
+<section id="modelle">
+  <div class="abschnittkopf"><span class="nummer">02</span><h2>Which model provides the wind</h2></div>
+  <div class="schmal">
+    <p>Three global models always run: <code>dwd_icon_seamless</code> as the primary model, with
+    <code>ncep_gfs_seamless</code> and <code>ecmwf_ifs</code> alongside. The primary model provides
+    the value, the others fill gaps — and above all, they measure the <strong>agreement</strong>.
+    Both requests, coarse and fine, explicitly use the <em>nearest</em> grid cell: otherwise
+    Open-Meteo would move a coordinate to a cell of similar elevation <em>on land</em>, and over
+    land the wind is systematically weaker because of surface roughness.</p>
+    <p>Before anything is scored, the spot’s <strong>wind factor</strong> (<code>wind_factor</code>
+    in the catalogue) scales wind and gusts. It is meant for spots where experience shows it blows
+    more or less than the models say; the logbook suggests it from the sessions you have logged.
+    1.15 means: it blows 15% more there. Currently it is set to 1.0 at all spots.</p>
+  </div>
+
+  <figure>
+    <div class="figrahmen">
+      <svg viewBox="0 0 880 330" style="min-width:640px;max-width:880px;width:100%" role="img" aria-label="Decision tree: Is the spot covered by a regional model? Is it the model of the spot’s country (by country code, otherwise by home country)? The country’s own model wins over a finer neighbouring model.">
+        <defs>
+          <marker id="pf2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,1 L9,5 L0,9 z" fill="currentColor"/>
+          </marker>
+        </defs>
+
+        <rect x="10" y="130" width="150" height="44" rx="3" fill="none" stroke="currentColor" stroke-width="1.4"/>
+        <text class="svgtext" x="85" y="149" text-anchor="middle">Spot (lat, lon)</text>
+        <text class="svgklein" x="85" y="164" text-anchor="middle">+ country code</text>
+
+        <line x1="160" y1="152" x2="208" y2="152" stroke="currentColor" stroke-width="1.4" marker-end="url(#pf2)"/>
+
+        <rect x="212" y="122" width="176" height="60" rx="3" fill="none" stroke="currentColor" stroke-width="1.4"/>
+        <text class="svgtext" x="300" y="145" text-anchor="middle">Covered by</text>
+        <text class="svgtext" x="300" y="161" text-anchor="middle">a regional model?</text>
+
+        <!-- no -->
+        <line x1="300" y1="182" x2="300" y2="248" stroke="currentColor" stroke-width="1.2" marker-end="url(#pf2)"/>
+        <text class="svgklein" x="308" y="212">no</text>
+        <rect x="212" y="252" width="176" height="40" rx="3" fill="none" stroke="currentColor" stroke-width="1" opacity=".6"/>
+        <text class="svgmono" x="300" y="277" text-anchor="middle" opacity=".75">global models only</text>
+
+        <!-- yes -->
+        <line x1="388" y1="152" x2="436" y2="152" stroke="currentColor" stroke-width="1.4" marker-end="url(#pf2)"/>
+        <text class="svgklein" x="396" y="143">yes</text>
+
+        <rect x="440" y="122" width="176" height="60" rx="3" fill="none" stroke="currentColor" stroke-width="1.4"/>
+        <text class="svgtext" x="528" y="143" text-anchor="middle">Model of the</text>
+        <text class="svgtext" x="528" y="159" text-anchor="middle">spot’s country?</text>
+        <text class="svgklein" x="528" y="175" text-anchor="middle">code, else home country</text>
+
+        <line x1="616" y1="140" x2="664" y2="118" stroke="var(--gruen)" stroke-width="1.6" marker-end="url(#pf2)"/>
+        <text class="svgklein" x="624" y="112" fill="var(--gruen)">yes</text>
+        <rect x="668" y="78" width="200" height="56" rx="3" fill="none" stroke="var(--gruen)" stroke-width="1.8"/>
+        <text class="svgtext" x="768" y="100" text-anchor="middle" fill="var(--gruen)">The country’s model</text>
+        <text class="svgklein" x="768" y="118" text-anchor="middle">if several: the finest</text>
+
+        <line x1="616" y1="166" x2="664" y2="192" stroke="currentColor" stroke-width="1.3" marker-end="url(#pf2)"/>
+        <text class="svgklein" x="624" y="196">no</text>
+        <rect x="668" y="172" width="200" height="56" rx="3" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".75"/>
+        <text class="svgtext" x="768" y="194" text-anchor="middle">Neighbouring model</text>
+        <text class="svgklein" x="768" y="212" text-anchor="middle">comes second, even if finer</text>
+
+        <text class="svgklein" x="10" y="308">Why this order: at the edge of its domain, a model is not the better source, even with a finer grid —</text>
+        <text class="svgklein" x="10" y="322">there, the provider lacks the weather stations its calculations rely on.</text>
+      </svg>
+    </div>
+    <figcaption>The first test run gave Lake Garda the Swiss 1 km model and Zeeland the French one:
+    both respond there because their domains extend far beyond the national border. Since 1.4.1,
+    responsibility decides first, then resolution; since 1.8.1, the spot’s country code counts
+    first, and only without a code the rectangle — Fehmarn lies in both, the German and the Danish
+    one, and gets ICON-D2. The regional models reach at most three days ahead.</figcaption>
+  </figure>
+
+  <div class="tabellenrahmen">
+    <table>
+      <thead><tr><th>Regional model</th><th>Short name</th><th>Grid</th><th>Home country</th></tr></thead>
+      <tbody>
+        <tr><td>meteoswiss_icon_ch1</td><td class="zahl">CH1</td><td class="zahl">1.0 km</td><td>Switzerland</td></tr>
+        <tr><td>meteofrance_arome_france_hd</td><td class="zahl">AROME-HD</td><td class="zahl">1.5 km</td><td>France</td></tr>
+        <tr><td>italia_meteo_arpae_icon_2i</td><td class="zahl">ICON-2I</td><td class="zahl">2.0 km</td><td>Italy</td></tr>
+        <tr><td>dwd_icon_d2</td><td class="zahl">ICON-D2</td><td class="zahl">2.0 km</td><td>Germany</td></tr>
+        <tr><td>knmi_harmonie_arome_netherlands</td><td class="zahl">HARMONIE</td><td class="zahl">2.0 km</td><td>Netherlands</td></tr>
+        <tr><td>dmi_harmonie_arome_europe</td><td class="zahl">DMI</td><td class="zahl">2.0 km</td><td>Denmark</td></tr>
+        <tr><td>geosphere_arome_austria</td><td class="zahl">AROME-AT</td><td class="zahl">2.5 km</td><td>Austria</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="schmal">
+    <p>Which model covers which point is <strong>documented nowhere by Open-Meteo</strong> — the docs
+    just say “Central Europe”. And a point outside the domain is answered with HTTP 400 instead of
+    empty values, which in a batch request for twenty coordinates takes all the others down with it.
+    Wingfoilscout therefore halves rejected groups until the outliers are pinned down, and remembers
+    the result for each spot. This dance happens once, not on every run.</p>
+  </div>
+
+  <figure>
+    <div class="figrahmen">
+      <svg viewBox="0 0 360 200" style="min-width:320px;max-width:400px;width:100%" role="img" aria-label="Curve: up to a 3-knot spread between the models, agreement is 1.0; from a 9-knot spread it is down to 0.4 and stays there.">
+        <g stroke="var(--raster)" stroke-width="1">
+          <line x1="40" y1="30" x2="340" y2="30"/>
+          <line x1="40" y1="65" x2="340" y2="65"/>
+          <line x1="40" y1="100" x2="340" y2="100"/>
+          <line x1="40" y1="135" x2="340" y2="135"/>
+        </g>
+        <line x1="40" y1="170" x2="340" y2="170" stroke="currentColor" stroke-width="1"/>
+        <line x1="40" y1="30" x2="40" y2="170" stroke="currentColor" stroke-width="1"/>
+        <polyline points="40,42.7 104.3,42.7 232.9,119.1 340,119.1" fill="none" stroke="var(--gruen)" stroke-width="2"/>
+        <g class="svgklein" text-anchor="end">
+          <text x="34" y="46">1.0</text>
+          <text x="34" y="123">0.4</text>
+          <text x="34" y="174">0</text>
+        </g>
+        <g class="svgklein" text-anchor="middle">
+          <text x="40" y="188">0</text>
+          <text x="104" y="188">3</text>
+          <text x="233" y="188">9</text>
+          <text x="340" y="188">14 kn</text>
+        </g>
+        <text class="svgklein" x="190" y="16" text-anchor="middle">Agreement vs. model spread</text>
+      </svg>
+    </div>
+    <figcaption>The spread is the maximum minus the minimum of the models in that hour, including the
+    regional model when it provides the wind. The agreement multiplies the finished hourly score
+    by <code>0.7 + 0.3 · agreement</code> — you don’t plan a drive around an outlier. Since the
+    agreement never drops below 0.4, an hour on which the models disagree completely still keeps
+    82% of its score.</figcaption>
+  </figure>
+</section>
+
+<!-- ============================ 03 ============================ -->
+<section id="stundenscore">
+  <div class="abschnittkopf"><span class="nummer">03</span><h2>The hourly score</h2></div>
+  <div class="schmal">
+    <p>Five sub-scores, each between 0 and 1, summed with their weights and divided by the sum of
+    the weights. Then the model agreement as a factor. The weights are in the configuration and are
+    an opinion, not a measurement — wind and direction together carry 58%, because without those
+    two nothing works at all.</p>
+  </div>
+
+  <figure>
+    <div class="figrahmen">
+      <svg viewBox="0 0 860 168" style="min-width:600px;max-width:860px;width:100%" role="img" aria-label="Weight bars: wind 0.34, direction 0.24, water 0.16, weather 0.14, gustiness 0.12.">
+        <rect x="10" y="40" width="272" height="42" fill="var(--gruen)" opacity=".85"/>
+        <rect x="282" y="40" width="192" height="42" fill="var(--petrol)" opacity=".8"/>
+        <rect x="474" y="40" width="128" height="42" fill="currentColor" opacity=".38"/>
+        <rect x="602" y="40" width="112" height="42" fill="currentColor" opacity=".26"/>
+        <rect x="714" y="40" width="96" height="42" fill="currentColor" opacity=".16"/>
+        <g class="svgtext" text-anchor="middle" fill="var(--tinte)">
+          <text x="146" y="30">Wind</text>
+          <text x="378" y="30">Direction</text>
+          <text x="538" y="30">Water</text>
+          <text x="658" y="30">Weather</text>
+          <text x="762" y="30">Gusts</text>
+        </g>
+        <g class="svgmono" text-anchor="middle" font-size="12">
+          <text x="146" y="100">0.34</text>
+          <text x="378" y="100">0.24</text>
+          <text x="538" y="100">0.16</text>
+          <text x="658" y="100">0.14</text>
+          <text x="762" y="100">0.12</text>
+        </g>
+        <text class="svgklein" x="10" y="124">× model agreement: total score × (0.7 + 0.3 · agreement)</text>
+        <text class="svgklein" x="10" y="142">× thunderstorm shadow: up to 2 h before and after a thunderstorm hour, an extra × 0.4</text>
+        <text class="svgklein" x="10" y="160">A veto sets the score to 0 — the weighting never even comes into play.</text>
+      </svg>
+    </div>
+    <figcaption>The weights from <code>config.example.yaml</code>. You can change them without having
+    to adjust anything anywhere else — the sum is always normalised.</figcaption>
+  </figure>
+
+  <h3>Wind: wing centre times comfort band</h3>
+  <div class="schmal">
+    <p>Two questions in one number. First: is the wind in the middle of a wing’s range or at its
+    edge? Second: is it within the comfort band you have set? The sawtooth in the chart is not a
+    bug, it is the quiver — with every change of wing, the centrality starts over.</p>
+  </div>
+
+  <figure>
+    <div class="figrahmen">
+      <svg viewBox="0 0 480 210" style="min-width:420px;max-width:520px;width:100%" role="img" aria-label="Wind score against wind speed: zero below 10 knots, full within the band from 14 to 28 knots, then falling in a sawtooth, zero above 43 knots.">
+        <rect x="108" y="30" width="159" height="140" fill="var(--gruen)" opacity=".1"/>
+        <g stroke="var(--raster)" stroke-width="1">
+          <line x1="40" y1="30" x2="470" y2="30"/>
+          <line x1="40" y1="65" x2="470" y2="65"/>
+          <line x1="40" y1="100" x2="470" y2="100"/>
+          <line x1="40" y1="135" x2="470" y2="135"/>
+        </g>
+        <line x1="40" y1="170" x2="470" y2="170" stroke="currentColor" stroke-width="1"/>
+        <line x1="40" y1="30" x2="40" y2="170" stroke="currentColor" stroke-width="1"/>
+        <g transform="translate(40,30)">
+          <polyline fill="none" stroke="var(--gruen)" stroke-width="2" points="0.0,140.0 11.4,140.0 17.0,140.0 22.7,89.1 28.4,72.5 34.1,55.0 39.7,36.7 45.4,25.5 51.1,22.3 56.8,19.1 62.4,15.9 68.1,12.7 73.8,12.7 79.5,12.7 85.1,12.7 90.8,12.7 96.5,12.7 102.2,12.7 107.8,12.7 113.5,12.7 119.2,12.7 124.9,12.7 130.5,12.7 136.2,12.7 141.9,12.7 147.6,12.7 153.2,12.7 158.9,12.7 164.6,12.7 170.3,12.7 175.9,12.7 181.6,12.7 187.3,12.7 193.0,12.7 198.6,12.7 204.3,12.7 210.0,12.7 215.7,12.7 221.4,12.7 227.0,12.7 232.7,26.2 238.4,36.9 244.1,32.7 249.7,28.8 255.4,28.6 261.1,31.8 266.8,35.0 272.4,38.2 278.1,41.4 283.8,44.5 289.5,47.7 295.1,50.9 300.8,54.1 306.5,57.3 312.2,60.5 317.8,63.6 323.5,63.6 329.2,63.6 334.9,63.6 340.5,63.6 346.2,63.6 351.9,65.9 357.6,70.4 363.2,74.8 368.9,79.4 374.6,83.9 380.3,88.3 385.9,92.8 391.6,97.4 397.3,101.8 403.0,140.0 408.6,140.0 414.3,140.0"/>
+        </g>
+        <g class="svgklein" text-anchor="end">
+          <text x="34" y="46">1.0</text>
+          <text x="34" y="104">0.5</text>
+          <text x="34" y="174">0</text>
+        </g>
+        <g class="svgklein" text-anchor="middle">
+          <text x="63" y="188">10</text>
+          <text x="108" y="188">14</text>
+          <text x="267" y="188">28</text>
+          <text x="437" y="188">43 kn</text>
+        </g>
+        <text class="svgklein" x="188" y="163" text-anchor="middle" fill="var(--gruen)">comfort band 14–28 kn</text>
+        <text class="svgklein" x="40" y="16">Wind score · quiver 6.5 / 5.0 / 4.2 / 3.5 / 2.5 m²</text>
+        <text class="svgklein" x="46" y="204">below 10 and above 43 kn: no suitable wing → veto</text>
+      </svg>
+    </div>
+    <figcaption>Outside the band the score tapers off gently (to no less than 0.6 of the centrality
+    value), not to zero — 12 knots is not a great day, but not a reason for exclusion either. The
+    hard cut only comes when no wing fits any more.</figcaption>
+  </figure>
+
+  <h3>Gustiness: gust divided by mean wind</h3>
+  <figure>
+    <div class="figrahmen">
+      <svg viewBox="0 0 360 200" style="min-width:320px;max-width:400px;width:100%" role="img" aria-label="Gustiness score: full score up to a factor of 1.25, then falling linearly to 0.3 at a factor of 1.60, constant at 0.3 above that.">
+        <g stroke="var(--raster)" stroke-width="1">
+          <line x1="40" y1="30" x2="340" y2="30"/>
+          <line x1="40" y1="65" x2="340" y2="65"/>
+          <line x1="40" y1="100" x2="340" y2="100"/>
+          <line x1="40" y1="135" x2="340" y2="135"/>
+        </g>
+        <line x1="40" y1="170" x2="340" y2="170" stroke="currentColor" stroke-width="1"/>
+        <line x1="40" y1="30" x2="40" y2="170" stroke="currentColor" stroke-width="1"/>
+        <g transform="translate(40,30)">
+          <polyline points="0.0,12.7 62.5,12.7 150.0,101.8 300.0,101.8" fill="none" stroke="var(--orange)" stroke-width="2"/>
+        </g>
+        <g class="svgklein" text-anchor="end">
+          <text x="34" y="46">1.0</text>
+          <text x="34" y="135">0.3</text>
+          <text x="34" y="174">0</text>
+        </g>
+        <g class="svgklein" text-anchor="middle">
+          <text x="40" y="188">1.0</text>
+          <text x="103" y="188">1.25</text>
+          <text x="190" y="188">1.60</text>
+          <text x="332" y="188">2.2</text>
+        </g>
+        <text class="svgklein" x="190" y="16" text-anchor="middle">Gustiness score vs. gust factor</text>
+      </svg>
+    </div>
+    <figcaption>Additionally capped at 0.25 if the gust is more than 6 knots above the top of the
+    quiver’s range — then even a good mean wind no longer helps.</figcaption>
+  </figure>
+
+  <h3>Vetoes: the cascade before the calculation</h3>
+  <div class="schmal">
+    <p>A veto is not a downgrade but a stop: score 0, reason recorded, next hour. The order in the
+    code is chosen deliberately — whatever makes the hour impossible in principle is checked
+    first.</p>
+  </div>
+
+  <div class="tabellenrahmen">
+    <table>
+      <thead><tr><th>#</th><th>Check</th><th>Threshold</th><th>Effect</th></tr></thead>
+      <tbody>
+        <tr><td class="zahl">1</td><td>Hour already past</td><td class="zahl">time of the run</td><td><span class="marke m-veto">Veto</span></td></tr>
+        <tr><td class="zahl">2</td><td>Water temperature — sea and lagoon only, with the “Water temperature and wave model” box ticked</td><td class="zahl">&lt; 7 °C</td><td><span class="marke m-veto">Veto</span></td></tr>
+        <tr><td class="zahl">3</td><td>Daylight</td><td class="zahl">sunrise + 30 min … sunset − 30 min</td><td><span class="marke m-veto">Veto</span></td></tr>
+        <tr><td class="zahl">4</td><td>Tide window — only where the catalogue sets one</td><td class="zahl">e.g. HW ± 2 h</td><td><span class="marke m-veto">Veto</span></td></tr>
+        <tr><td class="zahl">5</td><td>Suitable wing in the quiver</td><td class="zahl">10 … 43 kn</td><td><span class="marke m-veto">Veto</span></td></tr>
+        <tr><td class="zahl">6</td><td>Offshore with a lot of water downwind — only with <code>offshore_veto_km</code> above 0, off by default</td><td class="zahl">km of open water downwind</td><td><span class="marke m-veto">Veto</span></td></tr>
+        <tr><td class="zahl">7</td><td>Thunderstorm reported or air temperature out of range</td><td class="zahl">WMO 95 / 96 / 99 · 7 … 35 °C</td><td><span class="marke m-veto">Veto</span></td></tr>
+        <tr><td class="zahl">—</td><td>Close to a temperature limit</td><td class="zahl">&lt; 3 °C away</td><td><span class="marke m-daempf">× 0.8</span></td></tr>
+        <tr><td class="zahl">—</td><td>Rain</td><td class="zahl">from 0.6 mm/h · from 3.0 mm/h</td><td><span class="marke m-daempf">linear … × 0.2</span></td></tr>
+        <tr><td class="zahl">—</td><td>Thunderstorm potential (CAPE)</td><td class="zahl">from 1200 · from 2000 J/kg</td><td><span class="marke m-daempf">× 0.7 · × 0.35</span></td></tr>
+        <tr><td class="zahl">—</td><td>Thunderstorm shadow</td><td class="zahl">± 2 h around a thunderstorm hour</td><td><span class="marke m-daempf">× 0.4</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="schmal">
+    <p>The <strong>thunderstorm shadow</strong> is where the tool goes beyond a forecast portal:
+    the model only flags the hour in which it calculates a thunderstorm at that grid point — out on
+    the water, the window around it matters just as much.</p>
+  </div>
+</section>
+
+<!-- ============================ 04 ============================ -->
+<section id="geometrie">
+  <div class="abschnittkopf"><span class="nummer">04</span><h2>Direction and water from the shoreline geometry</h2></div>
+  <div class="schmal">
+    <p>Maintaining wind sectors by hand does not scale to 278 spots — currently 29 have them.
+    Wingfoilscout therefore measures the wind angle from OpenStreetMap: from the spot’s coordinate,
+    in 36 directions, up to 25 km each, until it hits land. That gives the <strong>fetch
+    rose</strong> — how far the wind has travelled over water, from every direction.
+    Hand-maintained sectors beat the geometry when both exist.</p>
+    <p>Everything else follows from two numbers of the rose: the fetch <em>upwind</em> and the room
+    <em>downwind</em>.</p>
+  </div>
+
+  <figure>
+    <div class="figrahmen">
+      <svg viewBox="0 0 860 258" style="min-width:640px;max-width:860px;width:100%" role="img" aria-label="Scale of the ratio of upwind fetch to downwind room: below 0.15 offshore, 0.35 to 2.9 side-shore with full score, above 6.7 onshore.">
+        <text class="svgklein" x="10" y="24">Ratio: upwind fetch ÷ downwind room</text>
+
+        <rect x="10" y="44" width="150" height="46" fill="var(--orange)" opacity=".16"/>
+        <rect x="160" y="44" width="110" height="46" fill="currentColor" opacity=".08"/>
+        <rect x="270" y="44" width="300" height="46" fill="var(--gruen)" opacity=".2"/>
+        <rect x="570" y="44" width="130" height="46" fill="currentColor" opacity=".08"/>
+        <rect x="700" y="44" width="150" height="46" fill="var(--rot)" opacity=".14"/>
+        <rect x="10" y="44" width="840" height="46" fill="none" stroke="currentColor" stroke-width="1"/>
+        <g stroke="currentColor" stroke-width="1" opacity=".5">
+          <line x1="160" y1="44" x2="160" y2="90"/>
+          <line x1="270" y1="44" x2="270" y2="90"/>
+          <line x1="570" y1="44" x2="570" y2="90"/>
+          <line x1="700" y1="44" x2="700" y2="90"/>
+        </g>
+
+        <g class="svgtext" text-anchor="middle">
+          <text x="85" y="72">offshore</text>
+          <text x="215" y="72">side-on</text>
+          <text x="420" y="72">side-shore</text>
+          <text x="635" y="72">side-on</text>
+          <text x="775" y="72">onshore</text>
+        </g>
+        <g class="svgmono" text-anchor="middle" font-size="11" opacity=".8">
+          <text x="85" y="110">0.50</text>
+          <text x="215" y="110">0.88</text>
+          <text x="420" y="110">1.00</text>
+          <text x="635" y="110">0.88</text>
+          <text x="775" y="110">0.55</text>
+        </g>
+        <g class="svgklein" text-anchor="middle">
+          <text x="160" y="128">0.15</text>
+          <text x="270" y="128">0.35</text>
+          <text x="570" y="128">2.9</text>
+          <text x="700" y="128">6.7</text>
+        </g>
+        <text class="svgklein" x="10" y="148">flat, but you drift out</text>
+        <text class="svgklein" x="850" y="148" text-anchor="end">waves and shore break right in front of you</text>
+
+        <line x1="10" y1="176" x2="850" y2="176" stroke="var(--linie)" stroke-width="1"/>
+        <text class="svgklein" x="10" y="198">First, two hard limits from the rose:</text>
+        <text class="svgmono" x="10" y="218">Upwind ≤ 400 m → offshore   ·   downwind ≤ 500 m → onshore   ·   both blocked → “no open water”, score 0.10</text>
+        <text class="svgklein" x="10" y="242">The number under each field is the direction score that goes into the weighted sum.</text>
+      </svg>
+    </div>
+    <figcaption>The same rose answers both questions that matter at a spot: is the wind coming from a
+    good direction, and how much water is in front of me if something goes wrong?</figcaption>
+  </figure>
+
+  <div class="schmal">
+    <p>The upwind fetch also yields the wave height, via the fetch-limited engineering approximation
+    from the Shore Protection Manual:</p>
+  </div>
+
+  <div class="formel">H_s = 0.0016 · U · √(F / g)        U in m/s, F in m, g = 9.81 m/s²
+
+H_s &lt; 0.25 m  →  flat     water score 1.00
+H_s &lt; 0.60 m  →  chop     water score 0.80
+otherwise     →  wave     water score 0.59</div>
+
+  <div class="schmal">
+    <p>The water scores come from the chop aversion in the configuration (default 0.7): at 0 the
+    water state does not matter, at 1 only flat water counts. Above 22 knots, everything except
+    <code>flat</code> loses another 10%.</p>
+    <p>This is explicitly an approximation. It assumes that the wind has been blowing from the same
+    direction for long enough, and it uses the 10-metre wind instead of the wind stress factor. At
+    the sea it is therefore replaced by Open-Meteo’s <strong>wave model</strong> wherever that
+    provides a value — with swell, tide and seabed profile; the fetch is still used for the wind
+    angle. On inland lakes the approximation remains. Where hand-maintained sectors apply, the water
+    state comes from the sector and the wave model is shown for information only.</p>
+    <p>If a spot has neither a rose nor sectors, the direction is scored <strong>0.6</strong> —
+    neutral. If it has sectors but none of them matches, it is <strong>0.2</strong>: that is a
+    statement, not a gap. The difference matters, because otherwise every imported spot without
+    maintained sectors would become invisible.</p>
+  </div>
+</section>
+
+<!-- ============================ 05 ============================ -->
+<section id="thermik">
+  <div class="abschnittkopf"><span class="nummer">05</span><h2>Thermal wind: where the models fail</h2></div>
+  <div class="schmal">
+    <p>Ora, Maloja wind, Breva, Maestral: at these spots the circulation is smaller than the model
+    grid. The model sees 5 knots where there are actually 18. For 71 spots, the catalogue therefore
+    records which thermal wind blows there, when, from which direction, how strongly and how
+    reliably — with a source. From that, Wingfoilscout calculates whether it will blow
+    <em>today</em>.</p>
+    <p>Three quantities decide that, and all three are backed by sources rather than guessed:</p>
+  </div>
+
+  <figure>
+    <div class="figrahmen">
+      <svg viewBox="0 0 800 210" style="min-width:660px;max-width:800px;width:100%" role="img" aria-label="Two curves: on the left the opposing-wind factor, which rises to 1.15 at 3 knots and is zero from 9 knots; on the right the daily cycle within the thermal window.">
+        <!-- left: opposing wind -->
+        <g stroke="var(--raster)" stroke-width="1">
+          <line x1="40" y1="30" x2="340" y2="30"/><line x1="40" y1="65" x2="340" y2="65"/>
+          <line x1="40" y1="100" x2="340" y2="100"/><line x1="40" y1="135" x2="340" y2="135"/>
+        </g>
+        <line x1="40" y1="170" x2="340" y2="170" stroke="currentColor" stroke-width="1"/>
+        <line x1="40" y1="30" x2="40" y2="170" stroke="currentColor" stroke-width="1"/>
+        <g transform="translate(40,30)">
+          <polyline points="0.0,23.3 75.0,5.8 150.0,23.3 162.5,59.0 175.0,88.1 187.5,110.8 200.0,127.0 212.5,136.8 225.0,140.0 300.0,140.0" fill="none" stroke="var(--gruen)" stroke-width="2"/>
+        </g>
+        <line x1="40" y1="53.3" x2="340" y2="53.3" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3" opacity=".45"/>
+        <g class="svgklein" text-anchor="end">
+          <text x="34" y="40">1.15</text><text x="34" y="57">1.0</text><text x="34" y="174">0</text>
+        </g>
+        <g class="svgklein" text-anchor="middle">
+          <text x="40" y="188">0</text><text x="115" y="188">3</text><text x="190" y="188">6</text>
+          <text x="265" y="188">9</text><text x="332" y="188">12 kn</text>
+        </g>
+        <text class="svgklein" x="40" y="16">Opposing-wind factor vs. offshore gradient wind</text>
+        <text class="svgklein" x="46" y="204">light opposing wind boosts · no breeze from 9 kn</text>
+
+        <!-- right: daily cycle -->
+        <g stroke="var(--raster)" stroke-width="1">
+          <line x1="460" y1="30" x2="760" y2="30"/><line x1="460" y1="65" x2="760" y2="65"/>
+          <line x1="460" y1="100" x2="760" y2="100"/><line x1="460" y1="135" x2="760" y2="135"/>
+        </g>
+        <line x1="460" y1="170" x2="760" y2="170" stroke="currentColor" stroke-width="1"/>
+        <line x1="460" y1="30" x2="460" y2="170" stroke="currentColor" stroke-width="1"/>
+        <g transform="translate(460,30)">
+          <polyline points="0.0,93.3 75.0,23.3 210.0,23.3 300.0,110.8" fill="none" stroke="var(--orange)" stroke-width="2"/>
+        </g>
+        <g class="svgklein" text-anchor="end">
+          <text x="454" y="57">1.0</text><text x="454" y="127">0.4</text><text x="454" y="174">0</text>
+        </g>
+        <g class="svgklein" text-anchor="middle">
+          <text x="460" y="188">12:00</text><text x="535" y="188">13:45</text><text x="670" y="188">16:54</text><text x="752" y="188">19:00</text>
+        </g>
+        <text class="svgklein" x="460" y="16">Daily cycle in the stored window (here 12:00–19:00)</text>
+        <text class="svgklein" x="466" y="204">rises from 0.4, plateau 25–70%, fades to 0.25</text>
+      </svg>
+    </div>
+    <figcaption>The kink at 3 knots is not a cosmetic flaw: a weak offshore gradient wind
+    <em>strengthens</em> the sea breeze instead of weakening it (Arritt 1993). Only above that does
+    it tip over, and from about 7–8 knots offshore, according to the Centro Meteo Ligure, nothing is
+    left at all.</figcaption>
+  </figure>
+
+  <div class="schmal">
+    <p>The third quantity is the <strong>solar energy received since sunrise</strong>, not the
+    sunshine in that hour: the thermal lives on how much heat the morning has already put into the
+    ground. From 1800 Wh/m² it counts as full; if the model has no radiation data, cloud cover is
+    the fallback.</p>
+  </div>
+
+  <div class="formel">Hourly potential = daily cycle · energy · opposing wind          (0 … 1.15)
+
+Daily potential  = Σ hourly potential ÷ Σ daily cycle · reliability
+
+Assumed wind = typical strength · trust · hourly potential
+               — only if that is above what the model shows anyway</div>
+
+  <div class="schmal">
+    <p>Reliability is no longer part of the assumed wind: up to 1.6.1, 16 knots at 70% gave 11 knots,
+    a number that never occurs on any day — if the Ora blows, it is 16, otherwise 0. Reliability is
+    a probability, and it now goes where probabilities belong: into the ranking of destinations, in
+    place of the ensemble (section 07).</p>
+    <p>In the daily potential, the daily cycle cancels out. What remains is what actually differs
+    today: solar radiation and opposing wind, times the spot’s reliability. Up to 1.5.1 this was the
+    maximum over the session — and on every sunny day, that is the one hour in which all three
+    ingredients happen to line up. In the run of 16 September, all five thermal destinations were
+    therefore between 96 and 100%.</p>
+    <p>And one rule that is not a curve: some thermals are killed off by a particular background
+    flow. For the Maloja wind, according to SRF Meteo, an upper-level flow from north to south-east
+    is enough, and then it practically never blows. Such sectors are recorded for 28 spots in the catalogue
+    (<code>suppressed_by</code>) and set the potential hard to zero from 6 knots out of that
+    direction. Below 8 knots of background wind, the thermal also sets the direction; above that,
+    the model’s direction stays.</p>
+    <p><strong>Wingfoilscout does not invent thermals.</strong> It only calculates them at spots
+    where the catalogue says there is one. Where no source gives a strength — Chiemsee, Lake
+    Constance, Lake Thun — <em>none is assumed</em>; the spot only appears as a candidate. Assumed
+    wind is always marked as an assumption in the report, never as a measurement.</p>
+  </div>
+</section>
+
+<!-- ============================ 06 ============================ -->
+<section id="tide">
+  <div class="abschnittkopf"><span class="nummer">06</span><h2>Tides: always shown, decisive only on request</h2></div>
+  <div class="schmal">
+    <p>At the sea and in lagoons, Wingfoilscout fetches the water level from Open-Meteo’s marine
+    model and calculates high and low tide from it to the minute: a parabola through the three hours
+    around each turning point. The model itself is not accurate to the minute — it works on an 8 km
+    grid, combines tide and wind set-up, and is not an official tide table. How far it deviates from
+    a tide gauge has not yet been checked against a table.</p>
+    <p><strong>Whether the tide applies at a spot</strong> is decided by the catalogue:
+    <code>tidal: true</code> or <code>false</code>, otherwise automatically — sea or lagoon with a
+    modelled tidal range of at least 0.5 m (<code>tide.auto_hub_min</code>). Currently nine spots
+    are set to “yes” by hand, and two lagoons behind dams to “no”, because there the 8 km grid sees
+    the open sea in front of them.</p>
+    <p><strong>Without a tide window, the tide does not change any score.</strong> It is shown at the
+    destination and in the hourly grid, and the report recalculates the tide state when you open it:
+    “Now rising · high tide at 14:50”. Only a window in the catalogue turns it into a veto:</p>
+  </div>
+
+  <div class="tabellenrahmen">
+    <table>
+      <thead><tr><th>tide: fahrbar</th><th>rideable during</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td class="zahl">hochwasser</td><td>the hours around each high tide</td><td class="zahl">HW ± 2 h</td></tr>
+        <tr><td class="zahl">niedrigwasser</td><td>the hours around each low tide</td><td class="zahl">LW ± 2 h</td></tr>
+        <tr><td class="zahl">auflaufend</td><td>from low to high tide, turning point to turning point</td><td class="zahl">LW → HW</td></tr>
+        <tr><td class="zahl">ablaufend</td><td>from high to low tide</td><td class="zahl">HW → LW</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="schmal">
+    <p>What counts is the middle of the hour: “13:00” stands for 13:00 to 14:00 and, with high tide at
+    14:25 and ± 2 h, is included. Wingfoilscout does not ship any windows — which one a spot needs
+    is known only to those who know the spot. Currently no spot has one set.</p>
+  </div>
+</section>
+
+<!-- ============================ 07 ============================ -->
+<section id="ziele">
+  <div class="abschnittkopf"><span class="nummer">07</span><h2>From hours to destinations</h2></div>
+  <div class="schmal">
+    <p>Scored hours become consecutive blocks, blocks become destinations, destinations become a
+    ranking. Every stage throws information away — and exactly at these points arise the errors
+    that you can no longer see in the report.</p>
+  </div>
+
+  <figure>
+    <div class="figrahmen">
+      <svg viewBox="0 0 860 300" style="min-width:660px;max-width:860px;width:100%" role="img" aria-label="Three stages: hours become sessions, sessions become destinations, and destinations are ranked by rating, drive and duration.">
+        <defs>
+          <marker id="pf3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,1 L9,5 L0,9 z" fill="currentColor"/>
+          </marker>
+        </defs>
+
+        <text class="svgklein" x="10" y="20">HOURS</text>
+        <g>
+          <rect x="10" y="32" width="18" height="26" fill="currentColor" opacity=".12"/>
+          <rect x="30" y="32" width="18" height="26" fill="currentColor" opacity=".12"/>
+          <rect x="50" y="32" width="18" height="26" fill="var(--gruen)" opacity=".75"/>
+          <rect x="70" y="32" width="18" height="26" fill="var(--gruen)" opacity=".9"/>
+          <rect x="90" y="32" width="18" height="26" fill="var(--gruen)" opacity=".9"/>
+          <rect x="110" y="32" width="18" height="26" fill="var(--gruen)" opacity=".6"/>
+          <rect x="130" y="32" width="18" height="26" fill="currentColor" opacity=".12"/>
+          <rect x="150" y="32" width="18" height="26" fill="var(--gruen)" opacity=".8"/>
+          <rect x="170" y="32" width="18" height="26" fill="var(--gruen)" opacity=".7"/>
+          <rect x="190" y="32" width="18" height="26" fill="currentColor" opacity=".12"/>
+        </g>
+        <text class="svgklein" x="218" y="50">green = score ≥ 0.55 and no veto</text>
+
+        <line x1="100" y1="68" x2="100" y2="98" stroke="currentColor" stroke-width="1.3" marker-end="url(#pf3)"/>
+
+        <rect x="10" y="102" width="330" height="80" rx="3" fill="none" stroke="currentColor" stroke-width="1.4"/>
+        <text class="svgtext" x="24" y="124">Session</text>
+        <text class="svgklein" x="24" y="141">at least 2 consecutive hours,</text>
+        <text class="svgklein" x="24" y="155">in daylight, within a single day;</text>
+        <text class="svgklein" x="24" y="169">a single near-miss hour in between is bridged</text>
+
+        <line x1="340" y1="133" x2="386" y2="133" stroke="currentColor" stroke-width="1.4" marker-end="url(#pf3)"/>
+
+        <rect x="390" y="102" width="330" height="62" rx="3" fill="none" stroke="currentColor" stroke-width="1.4"/>
+        <text class="svgtext" x="404" y="124">Destination</text>
+        <text class="svgklein" x="404" y="141">all sessions of a spot · hours on the water per day</text>
+        <text class="svgklein" x="404" y="155">capped at 5 h (“no wishful thinking”)</text>
+
+        <line x1="555" y1="164" x2="555" y2="198" stroke="currentColor" stroke-width="1.4" marker-end="url(#pf3)"/>
+
+        <rect x="390" y="202" width="460" height="82" rx="3" fill="none" stroke="var(--gruen)" stroke-width="1.8"/>
+        <text class="svgtext" x="404" y="224" fill="var(--gruen)">Ranking</text>
+        <text class="svgmono" x="404" y="245">Rank = rating × drive × min(1, 0.55 + 0.15 · hours)</text>
+        <text class="svgklein" x="404" y="263">Rating = hour-weighted mean of the session scores</text>
+        <text class="svgklein" x="404" y="277">Drive = 1.0 within the rule, otherwise falling to 0</text>
+
+        <rect x="10" y="202" width="330" height="82" rx="3" fill="none" stroke="var(--orange)" stroke-width="1.3"/>
+        <text class="svgtext" x="24" y="224" fill="var(--orange)">Drive rule</text>
+        <text class="svgmono" x="24" y="245">3 h of driving per 1 h on the water a day</text>
+        <text class="svgklein" x="24" y="263">+ 50% per night away, hard cap at 12 h</text>
+        <text class="svgklein" x="24" y="277">beyond that the rank falls, to zero at +125%</text>
+        <line x1="340" y1="243" x2="386" y2="243" stroke="var(--orange)" stroke-width="1.3" marker-end="url(#pf3)"/>
+      </svg>
+    </div>
+    <figcaption>The 5-hour cap per day is the most important of the three simplifications: without
+    it, every spot where the wind blows moderately for twelve hours would beat the one where it is
+    perfect for four. Bridging applies to a single hour up to 0.1 below the threshold between two
+    qualifying hours, without a veto — up to 1.6.1, a single 0.54 in mid-afternoon cut five hours
+    into two blocks of two. The drive factor is 1 − 0.8 × excess ÷ allowed time: one hour too many
+    with four allowed costs 20%, and at 125% over the allowed time (2.25 times the allowed drive)
+    the factor is zero.</figcaption>
+  </figure>
+
+  <h3>The ensemble damps the ranking</h3>
+  <div class="schmal">
+    <p>The same weather, calculated forty times with slightly perturbed initial conditions
+    (ICON-EPS). The share of runs that reach the lower end of your quiver in at least two hours of
+    the session is a more honest number than any single value — it tells you how stable the
+    situation is. For this, the threshold is converted back for the regional model and the wind
+    factor, so that the ensemble judges the same number that is shown in the report. Since 1.5.0
+    the share is not only shown in the report, it also has a say:</p>
+  </div>
+
+  <div class="formel">Factor = (1 − weight) + weight · share        default: weight = 0.5
+
+Share 100%  →  factor 1.00   score unchanged
+Share  50%  →  factor 0.75
+Share   0%  →  factor 0.50   half the score, but not gone</div>
+
+  <div class="schmal">
+    <p>Multiplying by the raw share would empty the report whenever the weather is uncertain — it
+    would show nothing, even though there is something to decide. <code>weight: 0.0</code> restores
+    the behaviour up to 1.4.3: the badge is shown and changes nothing.</p>
+    <p>There is a limitation: the probability is only fetched for the top 20 destinations. Anything
+    ranked below that is neither rewarded nor penalised — and can therefore overtake a damped
+    destination.</p>
+    <p><strong>For thermal sessions</strong>, the spot’s reliability from the catalogue
+    (<code>reliability</code>, 0.6 if not specified) takes the place of the ensemble, with the same
+    damped factor and for all thermal sessions, not just the top twenty. There, the ensemble sees
+    the model wind of 5 knots and reported 0% — up to 1.6.1, that halved precisely the sessions the
+    tool had specifically corrected.</p>
+    <p>Finally, each destination comes with a <strong>Plan B</strong>: the best other destination
+    within 120 km of estimated road distance (<code>drive.plan_b_km</code>, straight line × 1.22)
+    with at least one day in common.</p>
+  </div>
+</section>
+
+<!-- ============================ 08 ============================ -->
+<section id="grenzen">
+  <div class="abschnittkopf"><span class="nummer">08</span><h2>What the tool cannot do</h2></div>
+  <div class="schmal">
+    <p>This list is not small print but part of the method. Each item is a place where a number in
+    the report looks more confident than it is.</p>
+  </div>
+
+  <ul class="grenzen schmal">
+    <li><strong>The wave height is an approximation.</strong> The SPM relation assumes steady wind
+    from a constant direction. It separates flat from choppy; it does not forecast waves.</li>
+
+    <li><strong>Thermal reliability is mostly guesswork.</strong> In all the literature reviewed,
+    there are only two quantified figures — Maloja wind 95% given the right conditions, and the
+    northern Adriatic 40–60%. All other values in the catalogue are deliberately cautious
+    assumptions, and 25 of the 71 thermal spots have no strength given at all.</li>
+
+    <li><strong>The domains of the regional models are unknown.</strong> Wingfoilscout narrowed them
+    down by trial and error. The stored rectangles are compromises, not the providers’ maps.</li>
+
+    <li><strong>The ensemble runs on a coarser grid.</strong> At Brouwersdam the request lands 15 km
+    from the spot, the deterministic ICON within 3 km. That is why only a probability is derived
+    from it, and no wind value is ever overwritten.</li>
+
+    <li><strong>The model badge shows the median, not the effect.</strong> It says how far the fine
+    model deviates from the coarse one — not which of the two is right. In the run of 16 September,
+    only CH1 in the Alps made a consistent difference (median +5 kn); ICON-D2 on flat German inland
+    lakes made none, and that is the control group showing that the calculation is right.</li>
+
+    <li><strong>Without routing, the drive is straight line times 1.22.</strong> In Zeeland there are
+    dams and ferries in between, in the Alps mountain passes — there the estimate is often 20 to 50%
+    off. Affected destinations are marked “(estimated)” in the report.</li>
+
+    <li><strong>The tide is a model, not a tide table.</strong> 8 km grid, tide and wind set-up
+    combined; in bays and estuaries it is probably further off than on an open coast — by how much
+    has not yet been checked against a tide gauge. It is good enough for “rising until 15:00”, not
+    for walking the mudflats.</li>
+
+    <li><strong>Hand-maintained wind sectors exist for 29 spots.</strong> All others get their wind
+    angle and water state from the shoreline geometry. By now all coordinates have been confirmed;
+    where a geometry does not match the coordinate, the spot shows up on the “Check coordinates”
+    page.</li>
+  </ul>
+
+  <p class="notiz">All numbers on this page come from the code and from
+  <code>config.example.yaml</code>, as of version 2.1.0; <code>SCORING.md</code> in the repository
+  says the same in text form, step by step. Anyone who changes the weights, thresholds or the
+  comfort band has to change this page as well — it describes the defaults, not a law of nature.
+  A test in the repository will remind you when a number is no longer right.</p>
+</section>
+
+</div>
+</body>
+</html>

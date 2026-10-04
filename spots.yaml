@@ -1,0 +1,8859 @@
+# ─────────────────────────────────────────────────────────────────────────────
+#  Wingfoilscout · Spot catalogue
+#
+#  Origin of the entries:
+#   · Windfinder spot pages (community-driven, `popularity` = rank by
+#     visits there) — coordinate documented, source in `source`
+#   · Google Maps list "Wingfoil Spots" by Jens Dee, 213 places
+#     https://maps.app.goo.gl/5QM64ZbUbmcit8rf6 — placed pins with an exact
+#     coordinate, but without names and without known wind directions
+#   · my own estimates (`verified: false`) — please check them via the map link
+#
+#  `geo_ok: true` means: the shoreline geometry looked suspicious, someone checked
+#  it on the map and found it to be correct. Set by the check page
+#  (“Check coordinates” under Data sources); the spot then no longer appears
+#  in the list of findings.
+#
+#  `sectors_unknown: true` means: the coordinate is right, but the usable wind
+#  directions are missing. Such spots are ranked with a neutral direction score and
+#  marked in the report. As soon as you enter sectors, the marker disappears.
+#
+#  sectors.from/.to = direction the wind COMES FROM (degrees, 0 = north),
+#                     may wrap around north (from: 320, to: 40)
+#  quality          = best | good | ok | bad
+#  water            = flat | chop | wave
+#  shallow          = none | inshore | widespread
+#  seagrass         = none | some | heavy
+# ─────────────────────────────────────────────────────────────────────────────
+#
+#  New fields (revision of 5 Sep):
+#  wind_factor  1.0 = take the model as it is; 1.15 = "the spot always delivers more
+#               than Windguru says" — your calibration knob per spot
+#  thermal      empirical values for thermal spots (Ora, Breva, Maloja): months,
+#               time window, direction, typical strength, reliability 0–1
+#  tidal        true = the tide applies here (times in the report), false = never;
+#               leave out = automatic for sea/lagoon from 0.5 m range (1.18.0)
+#  tide         tide window, makes the tide a rule (1.18.0):
+#                 fahrbar: hochwasser | niedrigwasser | auflaufend | ablaufend
+#                 stunden: 2   (± around high/low tide, only with hochwasser/niedrigwasser)
+#               Hours outside are dropped with a veto. Without the block, display only.
+#  region       area name for weather warnings (MeteoAlarm), e.g. "Zeeland"
+
+- id: brouwersdam
+  shorebreak:
+    status: "possible"
+    note: "Nur auf der Nordseeseite des Damms: bei auflandigem Wind Welle und Shorebreak möglich; die Grevelingenseite ist flach."
+    source: "Spotwissen — unbelegt, bitte prüfen"
+  thermal:
+    name: "Zeewind"
+    kind: "seewind"
+    months: [4, 5, 6, 7]
+    from: 13
+    to: 20
+    reliability: 0.4
+    source: "weeronline.nl, KNMI"
+    note: "Vor allem Frühjahr und Frühsommer, wenn das Wasser noch kalt und das Land schon warm ist; setzt erst im Lauf des Nachmittags ein. Ab Windstärke 2 ablandig hat sie keine Chance. Keine Quelle nennt Stärken"
+  name: Brouwersdam
+  country: NL
+  lat: 51.7625
+  lon: 3.854
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors:
+  - from: 190
+    to: 250
+    quality: good
+    water: wave
+  - from: 250
+    to: 320
+    quality: best
+    water: chop
+  - from: 320
+    to: 20
+    quality: ok
+    water: chop
+  notes: 'Referenzspot. Windfinder: meistbesuchter Spot der Niederlande, weltweit Platz 3, vorherrschend
+    WSW. Der Punkt liegt auf Dammhöhe — für die reine Nordseeseite ein Stück nach Westen schieben.'
+  popularity: '#1 Niederlande · #3 weltweit (Windfinder)'
+  source: https://www.windfinder.com/forecast/brouwersdam
+  verified: true
+  tidal: true
+  region: Zeeland
+  wind_factor: 1.0
+- id: renesse-kabbelaarsbank
+  tidal: false
+  thermal:
+    name: "Zeewind"
+    kind: "seewind"
+    months: [4, 5, 6, 7]
+    from: 13
+    to: 20
+    reliability: 0.4
+    source: "weeronline.nl, KNMI"
+    note: "Vor allem Frühjahr und Frühsommer, wenn das Wasser noch kalt und das Land schon warm ist; setzt erst im Lauf des Nachmittags ein. Ab Windstärke 2 ablandig hat sie keine Chance. Keine Quelle nennt Stärken"
+  name: Renesse – Kabbelaarsbank (Grevelingen-Seite)
+  country: NL
+  lat: 51.7559
+  lon: 3.8491
+  water_body: lagoon
+  shallow: inshore
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors:
+  - from: 200
+    to: 300
+    quality: best
+    water: flat
+  - from: 300
+    to: 20
+    quality: good
+    water: flat
+  - from: 60
+    to: 140
+    quality: ok
+    water: chop
+  notes: Die flache Innenseite hinter dem Brouwersdam, kein Tidenhub. Windfinder ordnet den Spot nur Zeeland
+    zu — die Zuordnung zur Grevelingen-Seite ist meine Schlussfolgerung aus der Lage östlich des Damms.
+    Bitte auf der Karte prüfen.
+  popularity: '#2 Zeeland · #9 Niederlande · #79 weltweit (Windfinder)'
+  source: https://www.windfinder.com/forecast/renesse_kabbelarsbank
+  verified: true
+  region: Zeeland
+  wind_factor: 1.0
+- id: oesterdam
+  thermal:
+    name: "Zeewind"
+    kind: "seewind"
+    months: [4, 5, 6, 7]
+    from: 13
+    to: 20
+    reliability: 0.4
+    source: "weeronline.nl, KNMI"
+    note: "Vor allem Frühjahr und Frühsommer, wenn das Wasser noch kalt und das Land schon warm ist; setzt erst im Lauf des Nachmittags ein. Ab Windstärke 2 ablandig hat sie keine Chance. Keine Quelle nennt Stärken"
+  name: Oosterschelde – Oesterdam
+  country: NL
+  lat: 51.5
+  lon: 4.184
+  water_body: sea
+  shallow: inshore
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors:
+  - from: 190
+    to: 260
+    quality: best
+    water: flat
+  - from: 340
+    to: 60
+    quality: good
+    water: flat
+  notes: Dammspot in der Oosterschelde, im Lee des Damms flach. Tidenhub relevant.
+  popularity: '#6 Zeeland · #31 Niederlande (Windfinder)'
+  source: https://www.windfinder.com/forecast/oosterschelde_oesterdam
+  verified: true
+  tidal: true
+  region: Zeeland
+  wind_factor: 1.0
+- id: vrouwenpolder
+  shorebreak:
+    status: "possible"
+    note: "Nordseestrand am Veerse Dam; bei Nordwest schnell Welle (siehe Notiz), Shorebreak je nach Tide möglich."
+    source: "Spotwissen — unbelegt, bitte prüfen"
+  thermal:
+    name: "Zeewind"
+    kind: "seewind"
+    months: [4, 5, 6, 7]
+    from: 13
+    to: 20
+    reliability: 0.4
+    source: "weeronline.nl, KNMI"
+    note: "Vor allem Frühjahr und Frühsommer, wenn das Wasser noch kalt und das Land schon warm ist; setzt erst im Lauf des Nachmittags ein. Ab Windstärke 2 ablandig hat sie keine Chance. Keine Quelle nennt Stärken"
+  name: Vrouwenpolder – Veerse Dam
+  country: NL
+  lat: 51.577123
+  lon: 3.630466
+  water_body: sea
+  shallow: inshore
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors:
+  - from: 200
+    to: 280
+    quality: good
+    water: wave
+  - from: 280
+    to: 40
+    quality: best
+    water: chop
+  notes: Nordseestrand am Veerse Dam. Tide relevant, bei Nordwest schnell Welle.
+  popularity: '#13 Zeeland · #62 Niederlande (Windfinder)'
+  source: https://www.windfinder.com/forecast/vrouwenpolder
+  verified: true
+  tidal: true
+  region: Zeeland
+  wind_factor: 1.0
+- id: makkum
+  name: Makkum – Holle Poarte
+  country: NL
+  lat: 53.0454
+  lon: 5.3844
+  water_body: lake
+  shallow: widespread
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors:
+  - from: 240
+    to: 320
+    quality: best
+    water: flat
+  - from: 60
+    to: 120
+    quality: ok
+    water: flat
+  notes: Spotnetz beschreibt das Flachwasser als über viele Meter kniehoch mit feinem Sandgrund — für
+    Windsurf-Anfänger ideal, für den Foil das Gegenteil. West bis Nordwest ist die gute Richtung, Ost
+    spiegelglatt, aber auflandig mit Windschatten. Fliegt wegen shallow=widespread aus dem Ranking
+    und bleibt als dokumentierte Absage im Katalog.
+  popularity: '#9 Friesland · #42 Niederlande (Windfinder)'
+  source: https://www.windfinder.com/forecast/makkum
+  source2: https://www.spotnetz.de/Makkum
+  verified: true
+  region: Friesland
+  wind_factor: 1.0
+- id: workum
+  name: Workum – IJsselmeer
+  country: NL
+  lat: 53.071288
+  lon: 5.342188
+  water_body: lake
+  shallow: inshore
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors:
+  - from: 160
+    to: 260
+    quality: best
+    water: flat
+  - from: 260
+    to: 340
+    quality: good
+    water: chop
+  notes: Süßwasser, kein Tidenhub. Von Spotnetz als Kite-Revier geführt. Uferzone flach — Einstieg prüfen.
+  popularity: '#20 Friesland · #98 Niederlande (Windfinder)'
+  source: https://www.windfinder.com/forecast/workum
+  verified: true
+  region: Friesland
+  wind_factor: 1.0
+- id: hindeloopen
+  name: Hindeloopen – IJsselmeer
+  country: NL
+  lat: 52.9421
+  lon: 5.4008
+  water_body: lake
+  shallow: inshore
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors:
+  - from: 160
+    to: 250
+    quality: best
+    water: flat
+  - from: 250
+    to: 330
+    quality: good
+    water: chop
+  notes: Klassiker am IJsselmeer, südlich von Workum. Bei Südwest ablandig-schräg und dadurch glatt.
+  popularity: '#21 Friesland · #103 Niederlande (Windfinder)'
+  source: https://www.windfinder.com/forecast/hindeloopen
+  verified: true
+  region: Friesland
+  wind_factor: 1.0
+- id: fehmarn-gruener-brink
+  name: Fehmarn – Grüner Brink
+  country: DE
+  lat: 54.5092
+  lon: 11.197
+  water_body: sea
+  shallow: inshore
+  seagrass: some
+  season:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  sectors:
+  - from: 240
+    to: 320
+    quality: best
+    water: flat
+  - from: 320
+    to: 40
+    quality: good
+    water: chop
+  notes: Nordküste Fehmarns, bei West bis Nordwest ablandig-schräg und flach. Seegras auf Fehmarn saisonal
+    — wie in Gold.
+  popularity: '#41 Schleswig-Holstein · #80 Deutschland (Windfinder)'
+  source: https://www.windfinder.com/forecast/fehmarn_gruener_brink
+  verified: true
+  region: Schleswig-Holstein
+  wind_factor: 1.0
+- id: fehmarn-wallnau
+  name: Fehmarn – Wallnau
+  country: DE
+  lat: 54.4848
+  lon: 11.0157
+  water_body: sea
+  shallow: inshore
+  seagrass: some
+  season:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  sectors:
+  - from: 130
+    to: 210
+    quality: best
+    water: flat
+  - from: 210
+    to: 290
+    quality: good
+    water: chop
+  notes: Westküste Fehmarns, nördlich von Gold. Bei Süd bis Südwest ablandig-schräg. Vogelschutzgebiet
+    in der Nähe — Zugang vor Ort prüfen. Jens Dee hat hier ebenfalls einen Pin (239 m entfernt).
+  source: https://www.windfinder.com/forecast/wallnau
+  verified: true
+  region: Schleswig-Holstein
+  wind_factor: 1.0
+- id: torbole
+  name: Gardasee – Torbole
+  country: IT
+  lat: 45.8695
+  lon: 10.8756
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  sectors:
+  - from: 160
+    to: 220
+    quality: best
+    water: chop
+  - from: 340
+    to: 30
+    quality: good
+    water: flat
+  notes: Ora ab Mittag aus Süd, Peler morgens aus Nord — die verlässlichste Thermik Europas. Tief, kein
+    Stehbereich.
+  popularity: '#5 Trentino-Südtirol (Windfinder)'
+  source: https://www.windfinder.com/forecast/torbole
+  verified: true
+  thermal:
+    name: "Ora"
+    kind: "talwind"
+    months: [4, 5, 6, 7, 8, 9, 10]
+    from: 13
+    to: 20
+    dir: 180
+    typical_kn: 16
+    peak_kn: 21
+    reliability: 0.7
+    suppressed_by: [0]
+    source: "gardatrentino.it, gardasee.de, 360gardalife.com"
+    note: "Ora aus Süd ab Mittag, hält bis Sonnenuntergang; Peler nachts aus Nord (nicht modelliert)"
+  wind_factor: 1.0
+- id: domaso
+  name: Comer See – Domaso
+  country: IT
+  lat: 46.1485
+  lon: 9.3323
+  water_body: lake
+  shallow: inshore
+  seagrass: none
+  season:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  sectors:
+  - from: 150
+    to: 220
+    quality: best
+    water: flat
+  - from: 330
+    to: 30
+    quality: ok
+    water: flat
+  notes: Breva am Nachmittag aus Süd, thermisch und sehr zuverlässig im Sommer.
+  popularity: '#1 Lombardei · #125 Italien (Windfinder)'
+  source: https://www.windfinder.com/forecast/domaso_lago_di_como
+  verified: true
+  thermal:
+    name: "Breva"
+    kind: "talwind"
+    months: [3, 4, 5, 6, 7, 8, 9]
+    from: 12
+    to: 18
+    dir: 195
+    typical_kn: 16
+    peak_kn: 20
+    reliability: 0.7
+    suppressed_by: [0]
+    source: "unhooked.ch, faehrencomersee.com, northlakecomo.net"
+    note: "Breva aus Süd, dreht nachmittags westlicher; ab Mitte Juli schwächer und böiger"
+  wind_factor: 1.0
+- id: silvaplana
+  name: Silvaplanersee
+  country: CH
+  lat: 46.4492
+  lon: 9.7952
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 6
+  - 7
+  - 8
+  - 9
+  sectors:
+  - from: 200
+    to: 260
+    quality: best
+    water: chop
+  notes: Malojawind ab Mittag im Sommer, sehr verlässlich. 1800 m Höhe — Wasser bleibt dauerhaft
+    kalt. Nordföhn blockt den Malojawind, Südföhn unterstützt ihn — aus Jens Dees Liste, deren
+    Pin 780 m entfernt lag und am 16.09.2026 zugunsten dieses Eintrags entfernt wurde.
+  popularity: '#2 Graubünden · #25 Schweiz (Windfinder)'
+  source: https://www.windfinder.com/forecast/lake_silvaplana
+  verified: true
+  thermal:
+    name: "Malojawind"
+    kind: "talwind"
+    months: [5, 6, 7, 8, 9, 10]
+    from: 12
+    to: 19
+    dir: 225
+    typical_kn: 16
+    peak_kn: 27
+    reliability: 0.8
+    suppressed_by: [0, 45, 90, 135]
+    source: "SRF Meteo, unhooked.ch, kitesailing.ch"
+    note: "Sehr verlässlich, solange die Höhenströmung nicht von Nord bis Südost kommt; eine Quelle nennt 95 Prozent unter dieser Bedingung"
+  wind_factor: 1.0
+- id: leucate-la-franqui
+  thermal:
+    name: "Brise de mer"
+    kind: "seewind"
+    months: [6, 7, 8, 9]
+    from: 13
+    to: 19
+    dir: 120
+    typical_kn: 7
+    reliability: 0.45
+    source: "kitesurf66.fr, hisse-et-oh (Forum)"
+    note: "Schwache nachmittägliche Seebrise aus Ost bis Südost, 5 bis 10 kn. Die Tramontane am selben Spot ist Gradientwind, keine Thermik"
+  name: Leucate – La Franqui
+  country: FR
+  lat: 42.9318
+  lon: 3.0357
+  water_body: sea
+  shallow: inshore
+  seagrass: some
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors:
+  - from: 280
+    to: 350
+    quality: best
+    water: chop
+  - from: 90
+    to: 160
+    quality: good
+    water: wave
+  notes: Tramontane aus Nordwest, häufig und kräftig, in der Bucht ablandig-schräg und relativ glatt.
+    Marin aus Südost bringt Welle.
+  popularity: '#14 Okzitanien · #106 Frankreich (Windfinder)'
+  source: https://www.windfinder.com/forecast/leucate_la_franqui
+  verified: true
+  wind_factor: 1.0
+- id: hyeres-almanarre
+  thermal:
+    name: "Brise thermique"
+    kind: "seewind"
+    months: [6, 7, 8, 9]
+    from: 11
+    to: 18
+    dir: 300
+    typical_kn: 12
+    reliability: 0.5
+    suppressed_by: [90]
+    source: "varactu.fr, apprendrelekitesurf.fr"
+    note: "Ab 10 bis 11 Uhr mit 5 bis 6 kn, Maximum 14 bis 15 Uhr, Ende 17 bis 18 Uhr; an Kaps durch Düseneffekt 20 bis 25. Mistral und Levant sind Gradientwinde, keine Thermik"
+  name: Hyères – L'Almanarre
+  country: FR
+  lat: 43.0615
+  lon: 6.1315
+  water_body: sea
+  shallow: inshore
+  seagrass: some
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors:
+  - from: 240
+    to: 320
+    quality: best
+    water: chop
+  - from: 90
+    to: 150
+    quality: good
+    water: wave
+  notes: Referenzspot — und laut Windfinder der meistbesuchte Spot Frankreichs. Mistral aus West bis
+    Nordwest. Ufernah flach, Posidonia-Seegras vorhanden.
+  popularity: '#1 Frankreich · #67 weltweit (Windfinder)'
+  source: https://www.windfinder.com/forecast/hyeres_almanarre
+  verified: true
+  wind_factor: 1.0
+- id: etang-de-berre
+  name: Étang de Berre
+  country: FR
+  lat: 43.4781
+  lon: 5.1704
+  water_body: lagoon
+  shallow: inshore
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors:
+  - from: 290
+    to: 30
+    quality: best
+    water: flat
+  - from: 100
+    to: 160
+    quality: ok
+    water: chop
+  notes: Referenzspot. Mistral aus Nordwest, flach, brackig. Koordinate liegt grob in der Mitte der
+    Lagune — gehört auf einen Einstieg verschoben (Le Jaï oder La Romaniquette). Koordinate ist der Windfinder-Punkt
+    Berre-l'Étang am Nordostufer.
+  verified: true
+  popularity: '#116 PACA (Windfinder)'
+  source: https://www.windfinder.com/forecast/berre-l-etang
+  wind_factor: 1.0
+- id: salagou
+  name: Lac du Salagou
+  country: FR
+  lat: 43.6549
+  lon: 3.3678
+  water_body: reservoir
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors:
+  - from: 280
+    to: 20
+    quality: best
+    water: flat
+  - from: 120
+    to: 180
+    quality: good
+    water: flat
+  notes: 'VERMUTUNG: der gemeinte Stausee bei Béziers — vermutlich der Salagou, ca. 50 km nördlich. Bitte bestätigen
+    oder korrigieren. Windfinder führt den Salagou als eigenen Spot — das stützt meine Vermutung, ersetzt
+    aber die Bestätigung vor Ort nicht.'
+  verified: true
+  popularity: '#29 Okzitanien (Windfinder)'
+  source: https://www.windfinder.com/forecast/lac_du_salagou
+  wind_factor: 1.0
+- id: naxos-agios-georgios
+  name: Naxos – Agios Georgios (nahe Hafen)
+  country: GR
+  lat: 37.097736
+  lon: 25.373225
+  water_body: sea
+  shallow: inshore
+  seagrass: none
+  season:
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  sectors:
+  - from: 320
+    to: 50
+    quality: best
+    water: chop
+  notes: Referenzspot — dient nur der Kalibrierung und steht nie im Ranking.
+  verified: true
+  reference_only: true
+  wind_factor: 1.0
+- id: fehmarn-gold
+  name: Fehmarn – Gold
+  country: DE
+  lat: 54.441846
+  lon: 11.050873
+  water_body: sea
+  shallow: inshore
+  seagrass: heavy
+  season:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  sectors:
+  - from: 180
+    to: 300
+    quality: ok
+    water: chop
+  notes: Referenzspot — wegen Seegras als schlecht bewertet. Bleibt als Negativbeispiel im Katalog,
+    aus dem Ranking genommen.
+  verified: true
+  disabled: true
+  region: Schleswig-Holstein
+  wind_factor: 1.0
+- id: fehmarn-suedstrand
+  name: Fehmarn – Burgtiefe / Südstrand
+  country: DE
+  lat: 54.4078
+  lon: 11.1977
+  water_body: sea
+  shallow: inshore
+  seagrass: some
+  season:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  sectors:
+  - from: 200
+    to: 300
+    quality: best
+    water: chop
+  - from: 120
+    to: 200
+    quality: good
+    water: wave
+  verified: true
+  popularity: '#69 Schleswig-Holstein · #157 Deutschland (Windfinder)'
+  source: https://de.windfinder.com/forecast/suedstrand_fehmarn
+  notes: ''
+  region: Schleswig-Holstein
+  wind_factor: 1.0
+- id: heiligenhafen-graswarder
+  name: Heiligenhafen – Graswarder
+  country: DE
+  lat: 54.38
+  lon: 10.93
+  water_body: sea
+  shallow: widespread
+  seagrass: some
+  season:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  sectors:
+  - from: 200
+    to: 320
+    quality: good
+    water: flat
+  notes: Sehr flach — steht im Katalog, damit der Filter ihn bewusst aussortiert.
+  verified: true
+  popularity: '#74 Schleswig-Holstein · #166 Deutschland (Windfinder)'
+  source: https://de.windfinder.com/forecast/heiligenhafen
+  region: Schleswig-Holstein
+  wind_factor: 1.0
+- id: sankt-peter-ording
+  shorebreak:
+    status: "possible"
+    note: "Nordseestrand mit starkem Tidenhub; bei auflandigem Wind Shorebreak möglich, je nach Wasserstand."
+    source: "Spotwissen — unbelegt, bitte prüfen"
+  name: St. Peter-Ording
+  country: DE
+  lat: 54.3303
+  lon: 8.5885
+  water_body: sea
+  shallow: widespread
+  seagrass: none
+  season:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  sectors:
+  - from: 180
+    to: 300
+    quality: good
+    water: chop
+  - from: 300
+    to: 20
+    quality: ok
+    water: wave
+  notes: Starker Tidenhub — der Wasserstand entscheidet alles. Ohne Tidenmodul mit Vorsicht.
+  verified: true
+  popularity: '#15 Schleswig-Holstein · #28 Deutschland · #118 weltweit (Windfinder)'
+  source: https://de.windfinder.com/forecast/st._peter-ording
+  tidal: true
+  region: Schleswig-Holstein
+  wind_factor: 1.0
+- id: bodensee-fussach
+  thermal:
+    name: "Seewind"
+    kind: "seewind"
+    months: [5, 6, 7, 8, 9]
+    from: 11
+    to: 19
+    reliability: 0.4
+    source: "esys.org, know-how.bodensee.com"
+    note: "Land-Seewind-Zirkulation ab etwa 3 Grad Unterschied Wasser zu Land; West-Thermik am Ostufer ab etwa 11 Uhr. Keine Quelle nennt Stärken"
+  name: Bodensee – Fußacher Bucht / Rohrspitz
+  country: AT
+  lat: 47.4985
+  lon: 9.6287
+  water_body: lake
+  shallow: inshore
+  seagrass: none
+  season:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  sectors:
+  - from: 220
+    to: 300
+    quality: best
+    water: flat
+  - from: 20
+    to: 90
+    quality: good
+    water: chop
+  notes: Windfinder führt hier Bodensee / Rohrspitz — Koordinate von der Windfinder-Spotseite Bodensee
+    / Rohrspitz.
+  verified: true
+  popularity: '#1 Vorarlberg · #11 Österreich (Windfinder)'
+  source: https://www.windfinder.com/forecast/bodensee_rohrspitz
+  wind_factor: 1.0
+- id: walchensee
+  name: Walchensee
+  country: DE
+  lat: 47.5884
+  lon: 11.3134
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  sectors:
+  - from: 150
+    to: 230
+    quality: best
+    water: chop
+  - from: 300
+    to: 20
+    quality: good
+    water: chop
+  notes: Alpensee, tief — kein Stehbereich. Thermik im Sommer, kaltes Wasser.
+  verified: true
+  popularity: '#40 Bayern (Windfinder)'
+  source: https://de.windfinder.com/forecast/walchensee
+  thermal:
+    name: "Thermikwind"
+    kind: "talwind"
+    months: [5, 6, 7, 8, 9]
+    from: 12
+    to: 19
+    dir: 190
+    typical_kn: 12
+    reliability: 0.45
+    suppressed_by: [180]
+    source: "walchensee.net"
+    note: "Braucht klare Nacht und sonnigen Morgen; Südströmung und Wolkenstau über den Alpen verhindern sie. Achtung: die Quelle beschreibt die Richtung als 'Richtung Nordost pfeifend', die Herkunftsrichtung ist damit nicht eindeutig belegt"
+  region: Bayern
+  wind_factor: 1.0
+- id: chiemsee-chieming
+  thermal:
+    name: "Mittagsthermik"
+    kind: "seewind"
+    months: [5, 6, 7, 8, 9]
+    from: 12
+    to: 19
+    reliability: 0.4
+    source: "chiemsee-segeln.de"
+    note: "Thermische Winde um die Mittagszeit, Morgenbrise gegen 9 bis 10 Uhr; eine Stunde vor Sonnenuntergang schläft der Wind ein. Keine Quelle nennt Stärken — es wird deshalb keine angenommen"
+  name: Chiemsee – Chieming / Feldwies
+  country: DE
+  lat: 47.8476
+  lon: 12.4748
+  water_body: lake
+  shallow: inshore
+  seagrass: some
+  season:
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  sectors:
+  - from: 240
+    to: 320
+    quality: best
+    water: flat
+  - from: 340
+    to: 40
+    quality: good
+    water: flat
+  notes: Windfinder führt Chiemsee / Feldwies — Koordinate von Windfinder (Chiemsee / Feldwies) — deckt
+    sich bis auf 500 m mit einem Pin aus Jens Dees Liste. Jens Dee hat hier ebenfalls einen Pin (528 m
+    entfernt).
+  verified: true
+  popularity: '#15 Bayern (Windfinder)'
+  source: https://www.windfinder.com/forecast/chiemsee_feldwies
+  region: Bayern
+  wind_factor: 1.0
+- id: neuchatel-yvonand
+  thermal:
+    name: "Joran statique"
+    kind: "talwind"
+    months: [5, 6, 7]
+    from: 17
+    to: 22
+    dir: 315
+    typical_kn: 12
+    reliability: 0.3
+    source: "de.wikipedia.org (Joran, mit Quellenangaben)"
+    note: "Katabatischer Fallwind vom Jura am frühen Abend, erst Böen aus wechselnder Richtung, dann 3 bis 6 Beaufort. Gilt als schwer vorhersehbar, es gibt keine Sturmwarnung dafür"
+  name: Neuenburgersee – Yvonand
+  country: CH
+  lat: 46.8003
+  lon: 6.7425
+  water_body: lake
+  shallow: inshore
+  seagrass: some
+  season:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  sectors:
+  - from: 200
+    to: 260
+    quality: best
+    water: chop
+  - from: 20
+    to: 80
+    quality: good
+    water: flat
+  notes: Bise aus Nordost, Joran aus Südwest.
+  verified: true
+  popularity: '#1 Waadt · #5 Schweiz (Windfinder)'
+  source: https://www.windfinder.com/forecast/neuenburgersee_yvonand
+  wind_factor: 1.0
+- id: lac-du-der
+  name: Lac du Der
+  country: FR
+  lat: 48.57
+  lon: 4.76
+  water_body: reservoir
+  shallow: inshore
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors:
+  - from: 200
+    to: 300
+    quality: best
+    water: flat
+  - from: 300
+    to: 20
+    quality: good
+    water: flat
+  notes: Nächster großer Flachwasser-Stausee Richtung Westen. Wasserstand saisonal stark schwankend.
+  verified: true
+  wind_factor: 1.0
+- id: fos-plage-napoleon
+  name: Fos-sur-Mer – Plage Napoléon
+  country: FR
+  lat: 43.4377
+  lon: 4.9446
+  water_body: sea
+  shallow: inshore
+  seagrass: some
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors:
+  - from: 290
+    to: 20
+    quality: best
+    water: chop
+  - from: 120
+    to: 180
+    quality: ok
+    water: wave
+  notes: Mistral, sideshore, weite Bucht.
+  verified: true
+  popularity: '#37 PACA · #208 Frankreich (Windfinder)'
+  source: https://www.windfinder.com/forecast/fos_sur_mer
+  wind_factor: 1.0
+- id: etang-de-leucate
+  thermal:
+    name: "Brise de mer"
+    kind: "seewind"
+    months: [6, 7, 8, 9]
+    from: 13
+    to: 19
+    dir: 120
+    typical_kn: 7
+    reliability: 0.45
+    source: "kitesurf66.fr, hisse-et-oh (Forum)"
+    note: "Schwache nachmittägliche Seebrise aus Ost bis Südost, 5 bis 10 kn. Die Tramontane am selben Spot ist Gradientwind, keine Thermik"
+  name: Étang de Leucate (Lagune)
+  country: FR
+  lat: 42.883512
+  lon: 3.020768
+  water_body: lagoon
+  shallow: widespread
+  seagrass: some
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors:
+  - from: 270
+    to: 350
+    quality: best
+    water: flat
+  notes: Sehr flach — im Katalog, damit der Filter ihn bewusst aussortiert.
+  verified: true
+  wind_factor: 1.0
+- id: gruissan-ayrolle
+  thermal:
+    name: "Brise de mer"
+    kind: "seewind"
+    months: [6, 7, 8, 9]
+    from: 13
+    to: 19
+    dir: 120
+    typical_kn: 7
+    reliability: 0.45
+    source: "kitesurf66.fr, hisse-et-oh (Forum)"
+    note: "Schwache nachmittägliche Seebrise aus Ost bis Südost, 5 bis 10 kn. Die Tramontane am selben Spot ist Gradientwind, keine Thermik"
+  name: Gruissan – Étang de l'Ayrolle
+  country: FR
+  lat: 43.101328
+  lon: 3.101878
+  water_body: lagoon
+  shallow: widespread
+  seagrass: some
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors:
+  - from: 280
+    to: 350
+    quality: best
+    water: flat
+  verified: true
+  wind_factor: 1.0
+- id: jd-fraenkisches-seenland-2
+  name: "Großer Brombachsee – Ramsberg"
+  lat: 49.12025
+  lon: 10.94172
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Liegt am Großen Brombachsee, gut 3 km vom Einstieg Enderndorf. Ost ist der Topwind, Nord ist
+    Flopwind. Starkwindtage insgesamt selten.
+  source: https://www.spotnetz.de/w/deutschland/bayern/brombachsee/
+  verified: true
+  sectors_unknown: true
+  country: DE
+  region: Bayern
+  wind_factor: 1.0
+- id: jd-fraenkisches-seenland-1
+  name: "Großer Brombachsee – Allmannsdorf"
+  lat: 49.13275
+  lon: 10.95753
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Liegt am Großen Brombachsee, gut 3 km vom Einstieg Enderndorf — welcher Startplatz genau gemeint
+    ist, bleibt offen. Ost ist der Topwind und läuft frei über den See, Nord ist Flopwind.
+  source: https://www.spotnetz.de/w/deutschland/bayern/brombachsee/
+  verified: true
+  sectors_unknown: true
+  country: DE
+  region: Bayern
+  wind_factor: 1.0
+- id: jd-allgaeu-forggensee-1
+  name: "Großer Alpsee – Bühl am Alpsee"
+  lat: 47.57294
+  lon: 10.19203
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 47°34'22.6"N 10°11'31.3"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+  country: DE
+  region: Bayern
+  wind_factor: 1.0
+- id: jd-achensee-1
+  thermal:
+    name: "Nordwind"
+    kind: "talwind"
+    months: [5, 6, 7, 8, 9]
+    from: 13
+    to: 19
+    dir: 0
+    typical_kn: 12
+    reliability: 0.45
+    source: "kiteclub-achensee.com"
+    note: "Thermisch unterstützt an sonnigen Tagen, weht aber auch vor Kaltfronten; die Quelle nennt die Prognose selbst schwierig"
+  name: "Achensee – Pertisau"
+  lat: 47.45439
+  lon: 11.71392
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 47°27'15.8"N 11°42'50.1"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+  country: AT
+  wind_factor: 1.0
+- id: jd-achensee-2
+  thermal:
+    name: "Nordwind"
+    kind: "talwind"
+    months: [5, 6, 7, 8, 9]
+    from: 13
+    to: 19
+    dir: 0
+    typical_kn: 12
+    reliability: 0.45
+    source: "kiteclub-achensee.com"
+    note: "Thermisch unterstützt an sonnigen Tagen, weht aber auch vor Kaltfronten; die Quelle nennt die Prognose selbst schwierig"
+  name: "Achensee – Buchau"
+  lat: 47.43319
+  lon: 11.73114
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 47°25'59.5"N 11°43'52.1"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+  country: AT
+  wind_factor: 1.0
+- id: jd-chiemsee-1
+  thermal:
+    name: "Mittagsthermik"
+    kind: "seewind"
+    months: [5, 6, 7, 8, 9]
+    from: 12
+    to: 19
+    reliability: 0.4
+    source: "chiemsee-segeln.de"
+    note: "Thermische Winde um die Mittagszeit, Morgenbrise gegen 9 bis 10 Uhr; eine Stunde vor Sonnenuntergang schläft der Wind ein. Keine Quelle nennt Stärken — es wird deshalb keine angenommen"
+  name: "Chiemsee – Seebruck"
+  lat: 47.93258
+  lon: 12.46231
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 47°55'57.3"N 12°27'44.3"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+  country: DE
+  region: Bayern
+  wind_factor: 1.0
+- id: jd-chiemsee-3
+  thermal:
+    name: "Mittagsthermik"
+    kind: "seewind"
+    months: [5, 6, 7, 8, 9]
+    from: 12
+    to: 19
+    reliability: 0.4
+    source: "chiemsee-segeln.de"
+    note: "Thermische Winde um die Mittagszeit, Morgenbrise gegen 9 bis 10 Uhr; eine Stunde vor Sonnenuntergang schläft der Wind ein. Keine Quelle nennt Stärken — es wird deshalb keine angenommen"
+  name: "Chiemsee – Pfaffing"
+  lat: 47.88569
+  lon: 12.53361
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 47°53'08.5"N 12°32'01.0"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+  country: DE
+  region: Bayern
+  wind_factor: 1.0
+- id: jd-zeeland-volkerak-1
+  thermal:
+    name: "Zeewind"
+    kind: "seewind"
+    months: [4, 5, 6, 7]
+    from: 13
+    to: 20
+    reliability: 0.4
+    source: "weeronline.nl, KNMI"
+    note: "Vor allem Frühjahr und Frühsommer, wenn das Wasser noch kalt und das Land schon warm ist; setzt erst im Lauf des Nachmittags ein. Ab Windstärke 2 ablandig hat sie keine Chance. Keine Quelle nennt Stärken"
+  name: Grevelingendam (Jens-Dee-Pin)
+  lat: 51.67833
+  lon: 4.13203
+  water_body: lagoon
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Liegt nach Lage am Grevelingendam, nicht am Volkerak — 700 m vom ausgewiesenen Einstieg Grevelingendam
+    Zuid. Gute Richtungen dort W, SW, S; Naturschutzgebiet mit strikter Zone.
+  source: https://kitesurfvereniging.nl/kitespot/grevelingendam-zuid/
+  verified: true
+  sectors_unknown: true
+  region: Zeeland
+  country: NL
+  wind_factor: 1.0
+- id: jd-zuid-holland-1
+  shorebreak:
+    status: "possible"
+    note: "Nordseestrand: bei auflandigem Wind und Swell Shorebreak möglich, je nach Tide."
+    source: "Spotwissen — unbelegt, bitte prüfen"
+  thermal:
+    name: "Zeewind"
+    kind: "seewind"
+    months: [4, 5, 6, 7]
+    from: 13
+    to: 20
+    reliability: 0.4
+    source: "weeronline.nl, KNMI"
+    note: "Vor allem Frühjahr und Frühsommer, wenn das Wasser noch kalt und das Land schon warm ist; setzt erst im Lauf des Nachmittags ein. Ab Windstärke 2 ablandig hat sie keine Chance. Keine Quelle nennt Stärken"
+  name: "Maasvlakte – Slufter"
+  lat: 51.92478
+  lon: 3.98378
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 51°55'29.2"N 3°59'01.6"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+  tidal: true
+  region: Zuid-Holland
+  country: NL
+  wind_factor: 1.0
+- id: jd-nordseekueste-dithmarschen-1
+  name: "Meldorfer Hafen (Dithmarschen)"
+  lat: 54.09581
+  lon: 8.94944
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 54°05'44.9"N 8°56'58.0"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+  tidal: true
+  country: DE
+  region: Schleswig-Holstein
+  wind_factor: 1.0
+- id: jd-fehmarn-west-3
+  name: "Fehmarn – Gold Südost"
+  lat: 54.42553
+  lon: 11.09772
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 54°25'31.9"N 11°05'51.8"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+  country: DE
+  region: Schleswig-Holstein
+  wind_factor: 1.0
+- id: jd-fehmarn-west-1
+  name: "Fehmarn – Flügge"
+  lat: 54.45225
+  lon: 11.00478
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 54°27'08.1"N 11°00'17.2"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+  country: DE
+  region: Schleswig-Holstein
+  wind_factor: 1.0
+- id: jd-fehmarn-ost-1
+  name: "Fehmarn – Presen"
+  lat: 54.47956
+  lon: 11.24736
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 54°28'46.4"N 11°14'50.5"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+  country: DE
+  region: Schleswig-Holstein
+  wind_factor: 1.0
+- id: jd-daenemark-4
+  name: "Hvidbjerg Strand – Øster Oksby"
+  lat: 55.53844
+  lon: 8.15233
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 55°32'18.4"N 8°09'08.4"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+  tidal: true
+  country: DK
+  wind_factor: 1.0
+- id: jd-daenemark-6
+  name: "Ringkøbing Fjord – Skaven Strand Südwest"
+  lat: 55.88869
+  lon: 8.35244
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 55°53'19.3"N 8°21'08.8"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+  tidal: true
+  country: DK
+  wind_factor: 1.0
+- id: jd-kroatien-2
+  thermal:
+    name: "Maestral"
+    kind: "seewind"
+    months: [5, 6, 7, 8, 9]
+    from: 11
+    to: 20
+    dir: 315
+    typical_kn: 18
+    reliability: 0.5
+    suppressed_by: [45, 135]
+    source: "Prtenjak & Grisogono 2007, adventuremo.de"
+    note: "Zadar gehört zu den Stationen mit der häufigsten und längsten Seebrise, im Mittel neun Stunden"
+  name: Nin – Plaža Ždrijac (Jens-Dee-Pin)
+  lat: 44.24753
+  lon: 15.18522
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: 'Zuordnung über die Lage, knapp 1 km vom recherchierten Einstieg. ACHTUNG Tiefe: die Lagune
+    ist stellenweise knietief und über mehrere hundert Meter stehtief — eher Lernrevier als Foilspot.
+    Maestral aus NW side-on, 12–22 kn.'
+  source: https://www.kiteloopers.com/en/spots/kite-spot-croatia-nin-plaza-zdrijac-lagoon
+  verified: true
+  sectors_unknown: true
+  country: HR
+  wind_factor: 1.0
+- id: jd-vendee-1
+  shorebreak:
+    status: "possible"
+    note: "Offener Atlantikstrand der Vendée; Shorebreak bei Swell möglich."
+    source: "Spotwissen — unbelegt, bitte prüfen"
+  name: "La Tranche-sur-Mer – La Terrière"
+  lat: 46.34289
+  lon: -1.43008
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 46°20'34.4"N 1°25'48.3"W. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+  tidal: true
+  country: FR
+  wind_factor: 1.0
+- id: jd-daenemark-1
+  name: "Vilsund Vest"
+  lat: 56.88511
+  lon: 8.62603
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 56°53'06.4"N 8°37'33.7"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+  country: DK
+  wind_factor: 1.0
+- id: jd-daenemark-2
+  name: "Østerild Fjord"
+  lat: 56.99533
+  lon: 8.86419
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 56°59'43.2"N 8°51'51.1"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+  country: DK
+  wind_factor: 1.0
+- id: jd-daenemark-5
+  name: "Amtoft"
+  lat: 57.005
+  lon: 8.93767
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 57°00'18.0"N 8°56'15.6"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+  country: DK
+  wind_factor: 1.0
+- id: jd-kroatien-4
+  thermal:
+    name: "Maestral"
+    kind: "seewind"
+    months: [5, 6, 7, 8, 9]
+    from: 11
+    to: 20
+    dir: 315
+    typical_kn: 18
+    reliability: 0.5
+    suppressed_by: [45, 135]
+    source: "kiteguide.com"
+    note: "Setzt am späten Vormittag ein, Maximum am Nachmittag; für Dalmatien nennt keine Quelle eine Häufigkeit"
+  name: "Bol – westlich Zlatni Rat (Brač)"
+  lat: 43.26281
+  lon: 16.60986
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 43°15'46.1"N 16°36'35.5"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+  country: HR
+  wind_factor: 1.0
+- id: jd-sardinien-nordost-1
+  name: "Porto Pollo (Porto Puddu), Palau"
+  lat: 41.19272
+  lon: 9.31997
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 41°11'33.8"N 9°19'11.9"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+  country: IT
+  wind_factor: 1.0
+- id: jd-sardinien-nordost-2
+  name: "Santa Teresa Gallura – La Sciumara"
+  lat: 41.19181
+  lon: 9.29619
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 41°11'30.5"N 9°17'46.3"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+  country: IT
+  wind_factor: 1.0
+- id: jd-kroatien-3
+  thermal:
+    name: "Maestral"
+    kind: "seewind"
+    months: [5, 6, 7, 8, 9]
+    from: 11
+    to: 20
+    dir: 315
+    typical_kn: 18
+    reliability: 0.5
+    suppressed_by: [45, 135]
+    source: "kiteguide.com"
+    note: "Setzt am späten Vormittag ein, Maximum am Nachmittag; für Dalmatien nennt keine Quelle eine Häufigkeit"
+  name: Bol – Zlatni Rat (Brač)
+  lat: 43.25658
+  lon: 16.63417
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: 'Zuordnung über die Lage: der Pin liegt unmittelbar am Zlatni Rat in Bol. Maestral aus Nordwest
+    am Sommernachmittag, Windwinkel teils side-off, Strömung und Welle möglich. Kite-, Wing- und E-Foil-Center
+    vor Ort.'
+  source: https://www.bolcroatia.com/sports-in-bol/wingfoiling-in-bol-2/
+  verified: true
+  sectors_unknown: true
+  country: HR
+  wind_factor: 1.0
+- id: jd-daenemark-3
+  name: "Hulsig – Lundholm"
+  lat: 57.64494
+  lon: 10.46889
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 57°38'41.8"N 10°28'08.0"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+  country: DK
+  wind_factor: 1.0
+- id: jd-kroatien-1
+  thermal:
+    name: "Maestral"
+    kind: "seewind"
+    months: [5, 6, 7, 8, 9]
+    from: 11
+    to: 20
+    dir: 300
+    typical_kn: 18
+    reliability: 0.5
+    suppressed_by: [45, 135]
+    source: "ventosurf.com, kiteguide.com, goxperience-sailing.com"
+    note: "Der Kanal zwischen Viganj und Korčula wirkt als Düse; Maximum gegen 14 Uhr, Ende bei Sonnenuntergang"
+  name: Viganj – Pelješac (Jens-Dee-Pin)
+  lat: 42.97892
+  lon: 17.10361
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Zuordnung über die Lage, gut 1 km vom recherchierten Einstieg. Maestral aus W/NW 15–20 kn,
+    verlässlich am frühen Nachmittag Mai bis September; Bora aus NO über 30 kn im Herbst und Winter.
+    Starker Fährverkehr in der Meerenge.
+  source: https://www.surfandclimb.de/slider/wing-foil-spot-guide-viganj-kroatien/
+  verified: true
+  sectors_unknown: true
+  country: HR
+  wind_factor: 1.0
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  Addendum 12 Sep 2026 · web research for community-documented spots
+#
+#  Sources per spot in `source`. `sectors` is deliberately left empty: the
+#  researched wind directions are in `notes` as text, and the reliable
+#  rating comes from the shoreline geometry. `verified: false` means that the
+#  coordinate is derived from a description of the location and can be one to two
+#  kilometres off — this applies to almost all French spots.
+#  `shallow` and `seagrass` are set to `none` where no source said anything;
+#  where a source mentions shallow water or seagrass, it is entered and the
+#  spot is caught by your filters. Important bans and hazards are in `notes`.
+# ─────────────────────────────────────────────────────────────────────────────
+- id: nl-huizen-zomerkade
+  name: Huizen – Zomerkade (Gooimeer)
+  country: NL
+  region: Noord-Holland
+  lat: 52.30577
+  lon: 5.25896
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: Sandstrand, kostenloses Parken, Toiletten über den örtlichen Surfclub. Windrichtungen und Tiefe
+    nicht belegt.
+  source: https://wingfoiltips.com/nl/spots/netherlands/north-holland/huizen/
+  verified: true
+  popularity: mittel
+  wind_factor: 1.0
+- id: nl-zeewolde-woldstrand
+  name: Zeewolde – Woldstrand / Tulpeneiland
+  country: NL
+  region: Flevoland
+  lat: 52.32524
+  lon: 5.54923
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: 'ACHTUNG Erlaubnis: Der Kitesurf-Verband listet Zeewolde bei fast gleicher Koordinate als ganzjährig
+    für Kiten gesperrt (Ökologiegutachten). Laut Quelle betrifft das Kiten, nicht Wingfoil — vor der
+    ersten Fahrt klären.'
+  source: https://kitesurfvereniging.nl/kitespot/zeewolde/
+  verified: true
+  popularity: mittel
+  wind_factor: 1.0
+  access: unklar
+- id: nl-grevelingendam-zuid
+  thermal:
+    name: "Zeewind"
+    kind: "seewind"
+    months: [4, 5, 6, 7]
+    from: 13
+    to: 20
+    reliability: 0.4
+    source: "weeronline.nl, KNMI"
+    note: "Vor allem Frühjahr und Frühsommer, wenn das Wasser noch kalt und das Land schon warm ist; setzt erst im Lauf des Nachmittags ein. Ab Windstärke 2 ablandig hat sie keine Chance. Keine Quelle nennt Stärken"
+  name: Grevelingendam Zuid (bei Bruinisse)
+  country: NL
+  region: Zeeland
+  lat: 51.67471
+  lon: 4.13996
+  water_body: lake
+  shallow: inshore
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: Belegt flaches Wasser mit Sandboden in der Start- und Landezone. Gute Richtungen laut Verband
+    W, SW, S. Liegt im Naturschutzgebiet, die ausgewiesene Zone ist strikt einzuhalten, Erweiterung
+    nach Westen ist Sperrgebiet. Zuid ganzjährig offen, Noord nur März bis November.
+  source: https://kitesurfvereniging.nl/kitespot/grevelingendam-zuid/
+  verified: true
+  popularity: hoch
+  wind_factor: 1.0
+  access: zone
+- id: nl-neeltje-jans
+  thermal:
+    name: "Zeewind"
+    kind: "seewind"
+    months: [4, 5, 6, 7]
+    from: 13
+    to: 20
+    reliability: 0.4
+    source: "weeronline.nl, KNMI"
+    note: "Vor allem Frühjahr und Frühsommer, wenn das Wasser noch kalt und das Land schon warm ist; setzt erst im Lauf des Nachmittags ein. Ab Windstärke 2 ablandig hat sie keine Chance. Keine Quelle nennt Stärken"
+  name: Neeltje Jans (Oosterschelde)
+  country: NL
+  region: Zeeland
+  lat: 51.62424
+  lon: 3.68056
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: 'Zugang über den Parkplatz Roompotsluis. Gute Richtungen N, NW, W, SW; bei S und SW verwirbeln
+    die Windräder der Sturmflutbarriere den Wind. Tidenbeeinflusst: flach bei Ebbe, kurze Welle bei
+    Flut. Naturpark Oosterschelde.'
+  source: https://kitesurfvereniging.nl/kitespot/neeltje-jans/
+  verified: true
+  popularity: hoch
+  wind_factor: 1.0
+  access: zone
+- id: nl-baarland
+  thermal:
+    name: "Zeewind"
+    kind: "seewind"
+    months: [4, 5, 6, 7]
+    from: 13
+    to: 20
+    reliability: 0.4
+    source: "weeronline.nl, KNMI"
+    note: "Vor allem Frühjahr und Frühsommer, wenn das Wasser noch kalt und das Land schon warm ist; setzt erst im Lauf des Nachmittags ein. Ab Windstärke 2 ablandig hat sie keine Chance. Keine Quelle nennt Stärken"
+  name: Baarland (Westerschelde)
+  country: NL
+  region: Zeeland
+  lat: 51.39414
+  lon: 3.89653
+  water_body: sea
+  shallow: inshore
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: 'Nur für Fortgeschrittene. Starke Strömung — laut Quelle kann man im Fahrwasser landen oder
+    nicht zurück an den Strand; innerhalb der gelben Bojen bleiben. Reiner Südwind-Spot: SW, S, SO,
+    O. Wenig Landefläche. Kostenlos am Deich parken.'
+  source: https://kitesurfvereniging.nl/kitespot/baarland/
+  verified: true
+  popularity: hoch
+  wind_factor: 1.0
+- id: nl-cadzand-west
+  shorebreak:
+    status: "possible"
+    note: "Nordseestrand: bei auflandigem Wind und Swell Shorebreak möglich, je nach Tide."
+    source: "Spotwissen — unbelegt, bitte prüfen"
+  thermal:
+    name: "Zeewind"
+    kind: "seewind"
+    months: [4, 5, 6, 7]
+    from: 13
+    to: 20
+    reliability: 0.4
+    source: "weeronline.nl, KNMI"
+    note: "Vor allem Frühjahr und Frühsommer, wenn das Wasser noch kalt und das Land schon warm ist; setzt erst im Lauf des Nachmittags ein. Ab Windstärke 2 ablandig hat sie keine Chance. Keine Quelle nennt Stärken"
+  name: Cadzand-Bad West / Het Zwin
+  country: NL
+  region: Zeeland
+  lat: 51.37317
+  lon: 3.36812
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: Tiefes Wasser laut Quelle, breiter Sandstrand, ganzjährig offen. Gute Richtungen N, NW, W,
+    SW. Einzelne Pfähle im Wasser als Hindernis. Grenzt an das Naturschutzgebiet Zwin, auf die Zonen
+    achten. Parken am Besucherzentrum 't Zwin.
+  source: https://kitesurfvereniging.nl/kitespot/cadzand-bad-west/
+  verified: true
+  popularity: hoch
+  wind_factor: 1.0
+- id: nl-ijmuiden-zone1
+  shorebreak:
+    status: "possible"
+    note: "Nordseestrand: bei auflandigem Wind und Swell Shorebreak möglich, je nach Tide."
+    source: "Spotwissen — unbelegt, bitte prüfen"
+  name: IJmuiden Zone 1
+  country: NL
+  region: Noord-Holland
+  lat: 52.456356
+  lon: 4.551214
+  water_body: sea
+  shallow: inshore
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: 'Flach bis etwa 100 m ab Wasserlinie. Besonderheit: Südwind ist hier fahrbar, obwohl er an
+    der Küste sonst ablandig wäre. Starke Strömung und Schiffsverkehr an der Hafeneinfahrt. Zone 2 südlich
+    davon ist 1.4.–1.10. für Kiten gesperrt, Zone 1 ganzjährig offen. Parken kostenpflichtig.'
+  source: https://kitesurfvereniging.nl/kitespot/ijmuiden/
+  verified: true
+  popularity: hoch
+  wind_factor: 1.0
+  access: zone
+- id: nl-callantsoog
+  shorebreak:
+    status: "possible"
+    note: "Nordseestrand: bei auflandigem Wind und Swell Shorebreak möglich, je nach Tide."
+    source: "Spotwissen — unbelegt, bitte prüfen"
+  name: Callantsoog
+  country: NL
+  region: Noord-Holland
+  lat: 52.840599
+  lon: 4.691325
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: Gute Richtungen N, NW, W, SW. Starke Strömung; bei Flut verschwinden die Buhnen unter Wasser
+    — Kollisionsgefahr. Südlich des Pavillons de Stern nur Oktober bis April frei, dazwischen nur bei
+    gehisster Flagge der Rettungsbrigade; nördlich davon ganzjährig.
+  source: https://kitesurfvereniging.nl/kitespot/callantsoog/
+  verified: true
+  popularity: mittel
+  wind_factor: 1.0
+  access: zone
+- id: nl-texel-paal9
+  shorebreak:
+    status: "possible"
+    note: "Nordseestrand: bei auflandigem Wind und Swell Shorebreak möglich, je nach Tide."
+    source: "Spotwissen — unbelegt, bitte prüfen"
+  name: Texel – Paal 9
+  country: NL
+  region: Noord-Holland
+  lat: 53.02117
+  lon: 4.71117
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: Fahrbar von NNW bis SSW. Nordseeströmung vorhanden. Kiten und Wingen nur in der ausgewiesenen
+    Zone links und rechts des Strandpavillons. Parken kostenpflichtig, Surfcenter vor Ort. Anfahrt nur
+    per Fähre.
+  source: https://35knots.com/kitespot-texel-paal-9/
+  verified: true
+  popularity: hoch
+  wind_factor: 1.0
+  access: zone
+- id: nl-lauwersmeer
+  name: Lauwersmeer – Hoek van de Bant
+  country: NL
+  region: Groningen
+  lat: 53.40751
+  lon: 6.16148
+  water_body: lake
+  shallow: widespread
+  seagrass: none
+  season:
+  - 6
+  - 7
+  - 8
+  - 9
+  sectors: []
+  sectors_unknown: true
+  notes: 'Tiefe schwankt laut Quelle zwischen 0,5 und über 2 m — für Foil heikel. Fahrbar aus N, SW,
+    S, SO, O und NO; Ostwind macht unangenehm kurzen Chop, West ist am schnellsten. Nationalpark: der
+    Zugang ist auf Juni bis September beschränkt. Kostenlos parken, Toiletten, keine Duschen.'
+  source: https://kitesurfvereniging.nl/kitespot/lauwersmeer/
+  verified: true
+  popularity: mittel
+  wind_factor: 1.0
+  access: zone
+- id: be-spuikom-oostende
+  tidal: false
+  name: Spuikom Oostende
+  country: BE
+  region: West-Vlaanderen
+  lat: 51.22699
+  lon: 2.952662
+  water_body: lagoon
+  shallow: widespread
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: 'ACHTUNG Tiefe: Das Becken ist beim Zielwasserstand im Mittel nur etwa 1,5 m tief — je nach
+    Mast und Pegel für Foil grenzwertig bis unmöglich. Geschützt, kein Tideneinfluss, eigener Wassersportclub,
+    Wingfoil-Unterricht in Oostende. Vor der Fahrt Pegel und Tiefe am Einstieg klären.'
+  source: https://www.vliz.be/spuikom/waterpeil-van-de-spuikom
+  verified: true
+  popularity: hoch
+  wind_factor: 1.0
+- id: be-knokke-appelzak
+  shorebreak:
+    status: "possible"
+    note: "Nordseestrand: bei auflandigem Wind und Swell Shorebreak möglich, je nach Tide."
+    source: "Spotwissen — unbelegt, bitte prüfen"
+  thermal:
+    name: "Zeewind"
+    kind: "seewind"
+    months: [4, 5, 6, 7]
+    from: 13
+    to: 20
+    reliability: 0.4
+    source: "weeronline.nl, KNMI"
+    note: "Vor allem Frühjahr und Frühsommer, wenn das Wasser noch kalt und das Land schon warm ist; setzt erst im Lauf des Nachmittags ein. Ab Windstärke 2 ablandig hat sie keine Chance. Keine Quelle nennt Stärken"
+  name: Knokke-Heist – Appelzakstraat
+  country: BE
+  region: West-Vlaanderen
+  lat: 51.3612
+  lon: 3.32738
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: 'Wassersportzentrum mit Wingfoil-Schule und Verleih vor Ort. Grenzt an das Naturschutzgebiet
+    Zwin, auf die Zonen achten. Hunde am angrenzenden Strand: an der Leine ganzjährig Richtung Cadzand
+    erlaubt, März bis Oktober tagsüber verboten.'
+  source: https://www.surfersparadise.be/en/watersportcenter/wingfoilcenter/
+  verified: true
+  popularity: mittel
+  wind_factor: 1.0
+  dogs: leash
+- id: de-hardtsee
+  name: Hardtsee – Ubstadt-Weiher
+  country: DE
+  region: Baden-Württemberg
+  lat: 49.17008
+  lon: 8.61477
+  water_body: lake
+  shallow: inshore
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: Feierabendspot. Windsurfen etabliert, eigener Surf-Club; Kiten laut
+    spotnetz nicht möglich, Wingfoilen nirgends ausdrücklich geregelt. Konstant aus W und NW, am Startbereich
+    in der Nordwestecke durch das Ufer gestört. Baggerbetrieb im See und Bootsliegeplätze als Hindernis.
+    Eintritt ins Freizeitzentrum kostenpflichtig. HUNDE im ganzen Gelände verboten.
+  source: https://www.spotnetz.de/Hardtsee
+  verified: true
+  popularity: mittel
+  wind_factor: 1.0
+  dogs: "no"
+- id: de-epplesee
+  name: Epplesee – Rheinstetten
+  country: DE
+  region: Baden-Württemberg
+  lat: 48.96632
+  lon: 8.32887
+  water_body: lake
+  shallow: inshore
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: Bekannter Karlsruher Hausspot. SW läuft frei über den See, W und
+    NW sind böig. Badesaison 15.4.–15.10. mit gelben Bojen, südlicher Seeteil ganzjährig Naturschutzgebiet
+    und gesperrt. Unklar, ob Nicht-Vereinsmitglieder ans Wasser dürfen — der Surfverein ist voll und
+    führt Warteliste. Baggerarbeiten mit Stahlseilen im See. Parken 4 € im Sommer, Übernachten verboten.
+  source: https://www.spotnetz.de/Epplesee
+  verified: true
+  popularity: hoch
+  wind_factor: 1.0
+  access: unklar
+- id: de-erlichsee
+  name: Erlichsee – Oberhausen-Rheinhausen
+  country: DE
+  region: Baden-Württemberg
+  lat: 49.26461
+  lon: 8.49718
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: Ganzjährig befahrbar. Am konstantesten aus N, W und NW; dicht bewachsene
+    Ufer sorgen sonst für Windschatten, nutzbare Strecke nur 400 bis 600 m. Eintritt ins Freizeitgebiet
+    kostenpflichtig, Badebereich mit Schwimmkette abgetrennt. Großer Parkplatz mit Wiese, Camping und
+    Surfschule vor Ort.
+  source: https://www.spotnetz.de/index.php/Erlichsee
+  verified: true
+  popularity: mittel
+  wind_factor: 1.0
+  access: gebuehr
+- id: de-nato-rampe-huegelsheim
+  name: NATO-Rampe – Rhein bei Hügelsheim
+  country: DE
+  region: Baden-Württemberg
+  lat: 48.797
+  lon: 8.08404
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: Öffentlicher Rheinzugang über eine alte Rampe, als Flachwasserrevier beschrieben — ob durchgehend
+    stehtief, ist nicht belegt und vor der ersten Fahrt zu prüfen. Beste Richtung NO. Ein Forenkommentar
+    nennt ein Kiteverbot wegen des nahen Baden-Airparks; das ist eine unbestätigte Nutzeraussage, keine
+    amtliche Quelle. Strömung des Rheins beachten.
+  source: https://surfspot.de/surfspots/europa/deutschland/rhein-bei-huegelsheim-nato-rampe/
+  verified: true
+  popularity: niedrig
+  wind_factor: 1.0
+  access: unklar
+- id: de-bostalsee
+  name: Bostalsee – Bucht Gonnesweiler
+  country: DE
+  region: Saarland
+  lat: 49.56831
+  lon: 7.07964
+  water_body: reservoir
+  shallow: inshore
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: 'Erlaubnis ausdrücklich belegt: Windsurfen UND Wingfoilen sind gestattet, Kiten und motorisierte
+    Boards verboten; ein Surfgrundschein ist erforderlich. Wassersportschule mit Wingfoil-Kursen vor
+    Ort. SSW ist der Topwind, südliche bis westliche Richtungen side-on bis side-off, Ost und Nord sind
+    Flopwinde und ablandig-böig. Steiniger Strand, Schuhe empfohlen.'
+  source: https://www.bostalsee.de/bostalsee/wasser/wassersport
+  verified: true
+  popularity: hoch
+  wind_factor: 1.0
+  access: schein
+- id: de-silbersee-bobenheim
+  name: Silbersee – Bobenheim-Roxheim
+  country: DE
+  region: Rheinland-Pfalz
+  lat: 49.57961
+  lon: 8.37677
+  water_body: lake
+  shallow: inshore
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  sectors_unknown: true
+  notes: Wassersportverbot vom 1.12. bis 15.3. aus Naturschutzgründen. Am
+    konstantesten aus NO; West ist ablandig und schwer zurückzukreuzen. Im Frühjahr ohne Laub deutlich
+    weniger Windabdeckung. Etwa 1 km Fußweg vom Hauptparkplatz, Material darf per Auto gebracht werden.
+  source: https://www.spotnetz.de/Silbersee
+  verified: true
+  popularity: mittel
+  wind_factor: 1.0
+- id: de-edersee-bringhausen
+  name: Edersee – Bringhäuser Bucht
+  country: DE
+  region: Hessen
+  lat: 51.17962
+  lon: 8.99742
+  water_body: reservoir
+  shallow: inshore
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: Thermisch unterstützter Wind aus N bis NW. Talsperre mit erheblichen Pegelschwankungen im Jahresverlauf
+    — der Einstieg kann sich dadurch verändern; vor der Fahrt Pegel prüfen. Zonen und Zeiten sind nicht
+    amtlich belegt, mehrere Anbieter vor Ort deuten auf grundsätzlich erlaubten Wassersport.
+  source: https://www.spotnetz.de/Edersee
+  verified: true
+  popularity: mittel
+  wind_factor: 1.0
+- id: de-bodensee-immenstaad
+  thermal:
+    name: "Seewind"
+    kind: "seewind"
+    months: [5, 6, 7, 8, 9]
+    from: 11
+    to: 19
+    reliability: 0.4
+    source: "esys.org, know-how.bodensee.com"
+    note: "Land-Seewind-Zirkulation ab etwa 3 Grad Unterschied Wasser zu Land; West-Thermik am Ostufer ab etwa 11 Uhr. Keine Quelle nennt Stärken"
+  name: Bodensee – Immenstaad
+  country: DE
+  region: Baden-Württemberg
+  lat: 47.66052
+  lon: 9.35471
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: Fahrbar aus O, SO, SW und W; West ist sideshore mit Wellenbildung, Ost läuft nach der bewachsenen
+    Landzunge gut. Föhntage bringen überraschend große Wellen. Kiten ist am Bodensee grundsätzlich verboten,
+    nur mit Sondergenehmigung; Wingfoilen wird dort nicht gesondert erwähnt — üblicherweise wie Windsurfen
+    behandelt, aber nicht bestätigt. Sturmwarnsystem mit Blinkleuchten.
+  source: https://spotnetz.de/Bodensee_-_Immenstaad
+  verified: true
+  popularity: mittel
+  wind_factor: 1.0
+  access: unklar
+- id: de-bodensee-klausenhorn
+  thermal:
+    name: "Seewind"
+    kind: "seewind"
+    months: [5, 6, 7, 8, 9]
+    from: 11
+    to: 19
+    reliability: 0.4
+    source: "esys.org, know-how.bodensee.com"
+    note: "Land-Seewind-Zirkulation ab etwa 3 Grad Unterschied Wasser zu Land; West-Thermik am Ostufer ab etwa 11 Uhr. Keine Quelle nennt Stärken"
+  name: Bodensee – Klausenhorn bei Wallhausen
+  country: DE
+  region: Baden-Württemberg
+  lat: 47.74888
+  lon: 9.14796
+  water_body: lake
+  shallow: inshore
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: Etwa 100 m breiter Flachwasserbereich mit Sandboden, dann abrupt tief. Fahrbar aus N, NO, O
+    und SO; NW kommt frei über den Überlinger See. Föhn bringt den stärksten, aber böigsten Wind. Großer
+    Parkplatz am Campingplatz. Kiten nur mit Sondergenehmigung in definierter Zone 1.3.–30.11.
+  source: https://www.spotnetz.de/w/deutschland/baden-wuerttemberg/bodensee/bodensee-klausenhorn/
+  verified: true
+  popularity: mittel
+  wind_factor: 1.0
+  access: unklar
+- id: de-bodensee-radolfzell
+  name: Bodensee – Radolfzell (Untersee)
+  country: DE
+  region: Baden-Württemberg
+  lat: 47.73641
+  lon: 8.95547
+  water_body: lake
+  shallow: inshore
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: Bis zu 200 m breiter Stehbereich am flach abfallenden Strand. SW läuft frei und konstant, W
+    ist voll sideshore, NW funktioniert wegen Windabdeckung kaum. Absolutes Kiteverbot im Radolfzeller
+    Teil des Untersees; Wingfoilen ist dort nicht gesondert geregelt. Testcenter und Surfschule vor
+    Ort.
+  source: https://www.spotnetz.de/w/deutschland/baden-wuerttemberg/bodensee/bodensee-radolfzell/
+  verified: true
+  popularity: mittel
+  wind_factor: 1.0
+  access: unklar
+- id: de-brombachsee-mitteldamm
+  name: Großer Brombachsee – Mitteldamm
+  country: DE
+  region: Bayern
+  lat: 49.13747
+  lon: 10.89683
+  water_body: reservoir
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: Ost ist der Topwind und läuft frei über Damm und See, Nord ist Flopwind. Starkwindtage insgesamt
+    selten. Viele Badegäste am Strand. Zahlreiche Parkplätze mit kurzen Wegen, derzeit keine Surfschule
+    direkt am Mitteldamm.
+  source: https://www.spotnetz.de/w/deutschland/bayern/brombachsee/
+  verified: true
+  popularity: mittel
+  wind_factor: 1.0
+  access: frei
+- id: de-brombachsee-enderndorf
+  name: Großer Brombachsee – Enderndorf
+  country: DE
+  region: Bayern
+  lat: 49.1478
+  lon: 10.9162
+  water_body: reservoir
+  shallow: inshore
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: Zweiter Einstieg am Brombachsee, einem großen Stausee im Fränkischen Seenland. West läuft
+    gut, bei Nordwest ist Ramsberg am Gegenufer die bessere Wahl, Ostwind im Sommer
+    thermisch leicht verstärkt. Der Kleine Brombachsee hat ein großes Stehrevier.
+  source: https://de.windfinder.com/report/brombachsee_enderndorf
+  verified: true
+  popularity: mittel
+  wind_factor: 1.0
+- id: de-altmuehlsee-schlungenhof
+  name: Altmühlsee – Schlungenhof
+  country: DE
+  region: Bayern
+  lat: 49.13006
+  lon: 10.73528
+  water_body: reservoir
+  shallow: inshore
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: 'Erlaubnis gut belegt: Der Zweckverband führt Wind-, Kite- und Wingsurfen ausdrücklich als
+    erlaubte Aktivitäten, VDWS-Surfcenter direkt am Spot. Sandiger flacher Einstieg mit Betonstufen.
+    NW am stabilsten, W und N ebenfalls zuverlässig; SW bis S im Windschatten, SO bis NO ablandig und
+    böig. Wohnmobilstellplatz 8 € pro Tag mit Sanitär und Strom.'
+  source: https://www.altmuehlsee.de/surfen-und-kiten.html
+  verified: true
+  popularity: hoch
+  wind_factor: 1.0
+- id: de-ruegen-rosengarten
+  name: Rügen – Rosengarten (Greifswalder Bodden)
+  country: DE
+  region: Mecklenburg-Vorpommern
+  lat: 54.29955
+  lon: 13.41654
+  water_body: lagoon
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: Abgelegener Boddenspot mit viel Platz. Ost ist am besten und läuft frei über den Greifswalder
+    Bodden, SO bis NO gut, West macht Windschatten aber glattes Wasser. Die Quelle beschreibt eine riesige
+    Flachwasserfläche — Tiefe vor Ort prüfen. Zufahrt über Feldweg.
+  source: https://www.spotnetz.de/Ruegen_-_Rosengarten
+  verified: true
+  popularity: niedrig
+  wind_factor: 1.0
+- id: de-usedom-ueckeritz
+  name: Usedom – Ückeritz (Achterwasser)
+  country: DE
+  region: Mecklenburg-Vorpommern
+  lat: 54.01293
+  lon: 14.03642
+  water_body: lagoon
+  shallow: inshore
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: Etablierter Flachwasserspot mit Surfschule und Infrastruktur. Stehbereich reicht etwa 200 m
+    hinaus — dahinter Tiefe vor Ort prüfen. Fahrbar von S bis NW, bei West auflandig im Stehbereich.
+    Das Achterwasser ist ein flaches Brackwasserhaff, Verkrautung dort verbreitet. Parkplatz an der
+    Surfschule kostenpflichtig.
+  source: https://www.spotnetz.de/Usedom_-_Ueckeritz
+  verified: true
+  popularity: hoch
+  wind_factor: 1.0
+- id: de-pelzerhaken
+  name: Pelzerhaken (Lübecker Bucht)
+  country: DE
+  region: Schleswig-Holstein
+  lat: 54.08692
+  lon: 10.87561
+  water_body: sea
+  shallow: inshore
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: 'Laut Quelle der meistfrequentierte Surfspot der Region. NO ist optimal mit freiem Sideshore
+    von links und Welle, O bis S gut, NW schwach weil Bäume blocken. Geteilte Zonen: Kiter links der
+    Steinmole, Windsurfer rechts. Bei Westwind fehlt das Wasser. Steiniger Uferstreifen. Parken 2,50
+    €/Tag, Wohnmobil 12 €/Nacht. HUNDE verboten.'
+  source: https://www.spotnetz.de/Pelzerhaken
+  verified: true
+  popularity: hoch
+  wind_factor: 1.0
+  dogs: "no"
+- id: de-eckwarderhoerne
+  name: Eckwarderhörne (Jadebusen)
+  country: DE
+  region: Niedersachsen
+  lat: 53.52
+  lon: 8.23082
+  water_body: sea
+  shallow: widespread
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: 'ACHTUNG Verbot: Seit 2007 gilt am gesamten Strandgelände ein absolutes Kite-, Surf- und Lenkdrachenverbot;
+    Windsurfer dürfen unter Auflagen zurück, Einstieg nur über den ehemaligen Fähranleger. Wattenmeer
+    mit Gezeiten, weitgehend trockenfallend, Strömung auf der Südseite. Nationalpark-Regeln zusätzlich
+    beachten. Für Wingfoil praktisch kein Spot — steht hier, damit er nicht nochmal recherchiert wird.'
+  source: https://www.spotnetz.de/Eckwarderhoerne
+  verified: true
+  popularity: niedrig
+  wind_factor: 1.0
+  access: verboten
+- id: de-steinhuder-meer-mardorf
+  name: Steinhuder Meer – Weiße Düne (Mardorf)
+  country: DE
+  region: Niedersachsen
+  lat: 52.49352
+  lon: 9.34188
+  water_body: lake
+  shallow: widespread
+  seagrass: some
+  season:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  sectors: []
+  sectors_unknown: true
+  notes: 'ACHTUNG Tiefe: Der ganze See ist maximal 3 m tief, ufernah Sandbänke — für Foil mit Aufsetzgefahr.
+    Im Sommer Algen und Kraut. Gesperrt vom 1.11. bis 31.3. aus Naturschutzgründen, zusätzlich Vogelschutz-Sperrzonen
+    im Herbst. Surfen nur in der Mardorfer Surfzone, außerhalb der Boje ist ein Surfschein Pflicht,
+    Nachtfahrverbot. Fahrbar SW bis NO. Parken 3 €/Tag.'
+  source: https://www.naturpark-steinhuder-meer.de/Lebensr%C3%A4ume/Schutzgebiete/Hinweise-zum-Wassersport-auf-dem-Steinhuder-Meer
+  verified: true
+  popularity: hoch
+  wind_factor: 1.0
+  access: schein
+- id: de-duemmer-huede
+  name: Dümmer See – Hüde
+  country: DE
+  region: Niedersachsen
+  lat: 52.50163
+  lon: 8.35162
+  water_body: lake
+  shallow: widespread
+  seagrass: none
+  season:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  sectors: []
+  sectors_unknown: true
+  notes: 'ACHTUNG Tiefe: laut Quelle selten tiefer als 1,5 m, sandig-schlammiger Grund — für Foil grenzwertig.
+    Offiziell ausgewiesene Surfeinsatzstelle mit drei Rampen und großer Wiese. Gesperrt 1.11. bis 31.3.
+    aus Naturschutzgründen. NW macht die größten Wellen, SW gibt frei einfallenden Wind auf flachem
+    Wasser. Parken kostenpflichtig.'
+  source: https://www.spotnetz.de/Duemmer_See_-_Huede
+  verified: true
+  popularity: mittel
+  wind_factor: 1.0
+  access: gebuehr
+- id: fr-port-la-nouvelle
+  thermal:
+    name: "Brise de mer"
+    kind: "seewind"
+    months: [6, 7, 8, 9]
+    from: 13
+    to: 19
+    dir: 120
+    typical_kn: 7
+    reliability: 0.45
+    source: "kitesurf66.fr, hisse-et-oh (Forum)"
+    note: "Schwache nachmittägliche Seebrise aus Ost bis Südost, 5 bis 10 kn. Die Tramontane am selben Spot ist Gradientwind, keine Thermik"
+  name: Port-la-Nouvelle – Plage de la Vieille Nouvelle
+  country: FR
+  region: Aude
+  lat: 43.0576
+  lon: 3.052998
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: Im selben Tramontane-Korridor wie Leucate und Gruissan, ab etwa 15 kn fahrbar. KOORDINATE GESCHÄTZT
+    (±1–2 km) — vor der Fahrt auf der Karte suchen. Seegras im Golfe du Lion verbreitet, für diesen
+    Sandabschnitt nicht belegt.
+  source: https://www.mortefonwatersports.com/en/wing-foil-leucate-port-la-nouvelle/
+  verified: true
+  popularity: hoch
+  wind_factor: 1.0
+- id: fr-canet-plage
+  thermal:
+    name: "Brise de mer"
+    kind: "seewind"
+    months: [6, 7, 8, 9]
+    from: 13
+    to: 19
+    dir: 120
+    typical_kn: 7
+    reliability: 0.45
+    source: "kitesurf66.fr, hisse-et-oh (Forum)"
+    note: "Schwache nachmittägliche Seebrise aus Ost bis Südost, 5 bis 10 kn. Die Tramontane am selben Spot ist Gradientwind, keine Thermik"
+  name: Canet-en-Roussillon – Canet-Plage
+  country: FR
+  region: Pyrénées-Orientales
+  lat: 42.699217
+  lon: 3.040466
+  water_body: sea
+  shallow: inshore
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: Tramontane, laut Schulen ganzjährig verlässlich. Uferbereich flach — die Schulen fahren für
+    tieferes Wasser mit dem Boot raus. KOORDINATE GESCHÄTZT (±1–2 km).
+  source: https://www.wingfoil66.com/
+  verified: true
+  popularity: hoch
+  wind_factor: 1.0
+- id: fr-carro
+  shorebreak:
+    status: "possible"
+    note: "Kurze, steile Welle über Felsboden (siehe Notiz) — kein Sandstrand-Shorebreak, aber beim Ein- und Ausstieg ähnlich ungemütlich."
+    source: "Spotwissen — unbelegt, bitte prüfen"
+  name: Carro (Côte Bleue)
+  country: FR
+  region: Bouches-du-Rhône
+  lat: 43.328924
+  lon: 5.048304
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: 'Nur für erfahrene Fahrer: abrasiver Felsboden mit Löchern, enger Ein- und Ausstieg, kurze
+    steile Welle, Strömung am Hafenmund. Mistral aus NW ist der Referenzwind (cross-offshore, sauberer
+    Chop); reiner Nordwind ablandig, W und SW ungünstig. Parken am Hafen. KOORDINATE GESCHÄTZT.'
+  source: https://lets-kite.com/en/spots/6949/carro
+  verified: true
+  popularity: hoch
+  wind_factor: 1.0
+- id: fr-beauduc
+  name: Beauduc (Camargue)
+  country: FR
+  region: Bouches-du-Rhône
+  lat: 43.380848
+  lon: 4.612541
+  water_body: sea
+  shallow: inshore
+  seagrass: none
+  season:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  sectors: []
+  sectors_unknown: true
+  notes: 'Kultspot mit Mistral aus N/NW und planem Wasser. Streng reguliert: Biotop-Schutzzone im Parc
+    Naturel Régional de Camargue, Fahrzeuge über 2,08 m Breite kommen nicht durch die Schranke, Strandbefahrung
+    verboten, CAMPING UND FEUER GANZJÄHRIG VERBOTEN. Anfahrt ab Salin-de-Giraud 30–40 min Piste, Parkplatz
+    200 m vom Strand. Abgelegen: schlechter Mobilfunk, lange Rettungswege, Stachelrochen im Flachwasser.
+    Hunderegeln nicht geklärt. KOORDINATE GESCHÄTZT.'
+  source: https://www.parc-camargue.fr/beauduc.html
+  verified: true
+  popularity: hoch
+  wind_factor: 1.0
+  access: zone
+- id: fr-quiberon-penthievre
+  shorebreak:
+    status: "possible"
+    note: "Nur auf der Ozeanseite der Landzunge im Westen: Shorebreak bei Swell möglich; die Buchtseite im Osten ist flach."
+    source: "Spotwissen — unbelegt, bitte prüfen"
+  name: Baie de Quiberon – Penthièvre
+  country: FR
+  region: Morbihan
+  lat: 47.539311
+  lon: -3.141618
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: 'Landzunge: je nach Windrichtung Ozeanseite im Westen oder Buchtseite im Osten — dadurch fast
+    jede Richtung fahrbar. Großer Sandstrand, einfacher Einstieg. Quiberon und Carnac gelten als eines
+    der bekanntesten Wingfoil-Reviere Frankreichs. KOORDINATE GESCHÄTZT.'
+  source: https://www.happykiteschool.com/conseils-pratiques-wing-foil/spots-de-glisse-quiberon/
+  verified: true
+  popularity: hoch
+  wind_factor: 1.0
+- id: fr-arcachon-cap-ferret
+  name: Bassin d'Arcachon – Cap Ferret
+  country: FR
+  region: Gironde
+  lat: 44.624014
+  lon: -1.242743
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: Gezeitenbucht mit ruhigem Wasser und regelmäßigem Wind. Starke Gezeitenströmung — Tidenkalender
+    vor der Session prüfen; bei Niedrigwasser fallen große Wattflächen trocken. Das Bassin ist für ausgedehnte
+    Seegraswiesen bekannt, für diesen Einstieg nicht belegt. KOORDINATE GESCHÄTZT.
+  source: https://foilxperience.fr/
+  verified: true
+  popularity: hoch
+  wind_factor: 1.0
+- id: fr-ile-de-re-rivedoux
+  name: Île de Ré – Rivedoux Nord
+  country: FR
+  region: Charente-Maritime
+  lat: 46.166249
+  lon: -1.267118
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: Laut Quelle der einzige ganzjährig freigegebene Spot der Insel — anderswo auf Ré gelten Einschränkungen.
+    Hauptsächlich NW-Winde, guter Downwinder. Anders als die Nachbarspots tidenunabhängig befahrbar.
+    Parkplatz direkt am Spot. KOORDINATE GESCHÄTZT.
+  source: https://srokacompany.com/en/blogs/news/the-best-foil-and-wingfoil-spots-on-ile-de-re
+  verified: true
+  popularity: hoch
+  wind_factor: 1.0
+- id: fr-serre-poncon-chanterenne
+  thermal:
+    name: "Brise thermique"
+    kind: "talwind"
+    months: [5, 6, 7, 8, 9]
+    from: 12
+    to: 19
+    dir: 250
+    typical_kn: 15
+    reliability: 0.7
+    source: "cna-embrun.com"
+    note: "Mai bis Juli 15 bis 25 kn, Ende Juli bis Anfang September nur 8 bis 12. Quasi täglich, sobald es schön ist; eine stabile Schichtung oder Inversion verhindert sie"
+  name: Lac de Serre-Ponçon – Plage de Chanterenne
+  country: FR
+  region: Hautes-Alpes
+  lat: 44.541303
+  lon: 6.461334
+  water_body: reservoir
+  shallow: none
+  seagrass: none
+  season:
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  sectors: []
+  sectors_unknown: true
+  notes: Thermischer Talwind, setzt laut Schule gegen 11 Uhr ein und hält den Tag über, teils Verstärkung
+    am Nachmittag. Flaches, planes Wasser. Viele
+    Campingplätze am See. KOORDINATE GESCHÄTZT — Jens Dee hatte am selben See einen echten Pin bei
+    44.5297, 6.4047 (4,7 km südwestlich); der Eintrag wurde am 16.09.2026 entfernt, die Koordinate
+    steht hier als Gegenprobe.
+  source: https://www.spot-wingfoil.com/wingfoil
+  verified: true
+  popularity: hoch
+  wind_factor: 1.0
+- id: fr-lac-orient-geraudot
+  name: Lac d'Orient – Plage de Géraudot
+  country: FR
+  region: Aube
+  lat: 48.255998
+  lon: 4.309044
+  water_body: reservoir
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 9
+  - 10
+  sectors: []
+  sectors_unknown: true
+  notes: Mit rund 450 km der nächstgelegene größere französische See. Ost bis Südwest funktionieren
+    am besten, der Wind gilt als unregelmäßig und braucht eine stabile Wetterlage. Saison 1.3.–21.10.,
+    dazwischen ist Kiten vom 15.6. bis 15.9. verboten (Badebetrieb) — ob das Wingfoilen gleich behandelt
+    wird, ist offen. Laut Quelle sind FFVL-Lizenz und Vereinsmitgliedschaft nötig. Bei Hochwasser nicht
+    befahrbar. KOORDINATE GESCHÄTZT.
+  source: https://lets-kite.com/fr/spots/12531/kitesurf/lac-d-orient-geraudot
+  verified: true
+  popularity: mittel
+  wind_factor: 1.0
+  access: verein
+- id: fr-leman-excenevex
+  geo_ok: true
+  name: Lac Léman – Excenevex
+  country: FR
+  region: Haute-Savoie
+  lat: 46.349327
+  lon: 6.379409
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: Einer der meistgenutzten Genfersee-Spots, Sandstrand mit langer Wassersporttradition, thermischer
+    Seewind. Für Mitte Juni bis August existiert eine Sonderregelung zur
+    Absicherung des Kitebetriebs, deren Inhalt ich nicht lesen konnte — vor der Anreise beim FFVL oder
+    dem örtlichen Verein nachfragen. KOORDINATE GESCHÄTZT.
+  source: https://afs-foiling.fr/les-meilleurs-spots-et-ecoles-de-wingfoil-au-lac-leman/
+  verified: true
+  popularity: hoch
+  wind_factor: 1.0
+- id: fr-lac-du-bourget
+  thermal:
+    name: "La Traverse"
+    kind: "talwind"
+    months: [4, 5, 6, 7, 8, 9]
+    from: 16
+    to: 23
+    typical_kn: 12
+    reliability: 0.25
+    source: "lac-du-bourget.com"
+    note: "Abendwind vom Massif du Chat, 8 bis 20 kn, Dauer 1 bis 4 Stunden. Die Quelle nennt das Auslösen selbst ein Rätsel — in manchen Jahren jeden Abend, in anderen ein bis zwei Mal die Woche"
+  name: Lac du Bourget – Grand Port, Aix-les-Bains
+  country: FR
+  region: Savoie
+  lat: 45.685077
+  lon: 5.883179
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  sectors: []
+  sectors_unknown: true
+  notes: 'Bis 145 m tief, kein Stehbereich. Thermischer Wind „La Traverse", der im Jahresverlauf dreht:
+    im Norden bei Aix aus Südwest, im Süden aus Nordwest. Verbindliche 200-m-Badezone mit gelben Bojen.
+    Kein Sicherheitsboot, Einstiegsbereich eng und technisch, im Sommer schwierig zu parken. KOORDINATE
+    GESCHÄTZT.'
+  source: https://lets-kite.com/en/spots/349/kitesurf/lake-bourget-aix-beach
+  verified: true
+  popularity: mittel
+  wind_factor: 1.0
+- id: it-malcesine
+  thermal:
+    name: "Ora"
+    kind: "talwind"
+    months: [4, 5, 6, 7, 8, 9, 10]
+    from: 13
+    to: 20
+    dir: 180
+    typical_kn: 10
+    reliability: 0.6
+    suppressed_by: [0]
+    source: "gardasee.de, 360gardalife.com, visitmalcesine.com"
+    note: "Ora erreicht Malcesine schwächer als Torbole; die Quellen nennen 4 bis 16 kn"
+  name: Malcesine (Gardasee)
+  country: IT
+  region: Venetien
+  lat: 45.7665
+  lon: 10.8078
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  sectors: []
+  sectors_unknown: true
+  notes: Der Vento aus Norden trifft hier früher und stärker ein als an anderen Gardaspots, laut Quelle
+    über 25 kn; die Ora aus Süden ist schwächer ausgeprägt als in Torbole oder Campione. Locals sind
+    ab 7 Uhr am Wasser. Großer Busparkplatz. Koordinate ist die Windfinder-Stationsposition am Ortsstrand.
+  source: https://www.windfinder.com/report/malcesine
+  verified: true
+  popularity: hoch
+  wind_factor: 1.0
+- id: it-campione-del-garda
+  thermal:
+    name: "Ora"
+    kind: "talwind"
+    months: [4, 5, 6, 7, 8, 9, 10]
+    from: 13
+    to: 20
+    dir: 180
+    typical_kn: 13
+    reliability: 0.65
+    suppressed_by: [0]
+    source: "gardasee.de"
+    note: "Ora, ufernah 3 bis 5 Beaufort"
+  name: Campione del Garda
+  country: IT
+  region: Trentino
+  lat: 45.7548
+  lon: 10.7514
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  sectors: []
+  sectors_unknown: true
+  notes: Ora und Peler sind die lokalen Winde; Knotenzahlen nennt keine der gefundenen Quellen. Eigene
+    Spot-Website mit Webcams, Schulen vor Ort, hier fand der WingFoil Racing World Cup statt. Koordinate
+    ist die Windfinder-Stationsposition.
+  source: https://www.wingfoilcampione.it/
+  verified: true
+  popularity: hoch
+  wind_factor: 1.0
+- id: it-colico
+  thermal:
+    name: "Breva"
+    kind: "talwind"
+    months: [3, 4, 5, 6, 7, 8, 9]
+    from: 12
+    to: 18
+    dir: 195
+    typical_kn: 16
+    peak_kn: 20
+    reliability: 0.7
+    suppressed_by: [0]
+    source: "unhooked.ch, faehrencomersee.com, northlakecomo.net"
+    note: "Breva aus Süd, dreht nachmittags westlicher; ab Mitte Juli schwächer und böiger"
+  name: Colico (Comer See)
+  country: IT
+  region: Lombardei
+  lat: 46.1324
+  lon: 9.3698
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  sectors: []
+  sectors_unknown: true
+  notes: Die Breva aus Süden weht laut Quelle bei stabiler, klarer Wetterlage fast täglich mit 15–25
+    kn. Grasfläche direkt am Strand, Parkplatz nah am Wasser, Toiletten, Dusche, Bar. Einsteigerbereich
+    rechts; erfahrene Fahrer queren mehrere Kilometer zum Gegenufer.
+  source: https://wingfoiltips.com/spots/italy/lombardia/lake-como/
+  verified: true
+  popularity: hoch
+  wind_factor: 1.0
+- id: it-dervio
+  thermal:
+    name: "Breva"
+    kind: "talwind"
+    months: [3, 4, 5, 6, 7, 8, 9]
+    from: 11
+    to: 18
+    dir: 180
+    typical_kn: 15
+    reliability: 0.7
+    suppressed_by: [0]
+    source: "faehrencomersee.com, northlakecomo.net"
+    note: "Breva, an der Landzunge durch die Seeverengung 3 bis 4 kn mehr"
+  name: Dervio (Comer See)
+  country: IT
+  region: Lombardei
+  lat: 46.077
+  lon: 9.3066
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  sectors: []
+  sectors_unknown: true
+  notes: Breva aus Süden am Nachmittag, gleichmäßig; Tivano aus Norden am Morgen, anspruchsvoller; Ricaduta
+    ist ein böiger Nordwind nach Gewittern. Einstieg nahe der Varrone-Mündung. Im Sommer ist ein Teil
+    als Fischereizone reserviert, die Zone verschiebt sich dann Richtung Porto Vecchio.
+  source: https://brevaguru.com/de/comolake_winds_forecasts/forecast/dervio
+  verified: true
+  popularity: mittel
+  wind_factor: 1.0
+- id: ch-fluelen-urnersee
+  thermal:
+    name: "Nordwestthermik"
+    kind: "talwind"
+    months: [4, 5, 6, 7, 8, 9, 10]
+    from: 12
+    to: 20
+    dir: 315
+    typical_kn: 12
+    reliability: 0.6
+    source: "unhooked.ch"
+    note: "Sehr konstant bei Hochdruck und trockener Luft; beginnt oberhalb Sisikon und wandert südwärts. Kiteverbot November und Dezember"
+  name: Flüelen (Urnersee)
+  country: CH
+  region: Uri
+  lat: 46.9158
+  lon: 8.622
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  sectors: []
+  sectors_unknown: true
+  notes: 'Zwei Winde: Föhn aus Süden mit 6–9 Bft (etwa 22–41 kn), oft böig; Thermik aus Norden mit 2–4
+    Bft an Sonnentagen, typischerweise 13 bis 18 Uhr. Kleine Startfläche,
+    im Sommer Schwimmer und Boote. Plötzliche Föhnwechsel — die grüne Linie auf dem Wasser ist das Warnzeichen.'
+  source: https://www.unplug-kitesurf.com/spots/urnersee-fluelen-switzerland
+  verified: true
+  popularity: hoch
+  wind_factor: 1.0
+- id: ch-walenstadt
+  name: Walenstadt (Walensee)
+  country: CH
+  region: St. Gallen
+  lat: 47.122
+  lon: 9.3016
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: 'Westwind ist meist konstant, der Ostföhn brutal böig und unfahrbar. Abendthermik an guten
+    Tagen ab etwa 17 Uhr. GEFAHR: die Strömung der Seez hat laut Quelle wiederholt Todesopfer gefordert.
+    Offizielle Startzone nördlich des Seez-Deltas hinter der großen Wasserleitung; gelegentlich Schießbetrieb
+    mit Warnschildern, saisonale Überflutung der Startzone. Parkplatz kostenpflichtig, 200 m zum Einstieg.'
+  source: https://www.unhooked.ch/2008/spotguide/walenstadt/
+  verified: true
+  popularity: mittel
+  wind_factor: 1.0
+  access: zone
+- id: at-podersdorf
+  name: Podersdorf (Neusiedler See)
+  country: AT
+  region: Burgenland
+  lat: 47.8481
+  lon: 16.8228
+  water_body: lake
+  shallow: widespread
+  seagrass: none
+  season:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  sectors: []
+  sectors_unknown: true
+  notes: 'ACHTUNG Tiefe: der See ist laut örtlicher Schule durchgehend unter zwei Metern — mit kurzem
+    Mast fahren dort viele, für das eigene Setup vor der Fahrt klären. Größter Surf-, Kite- und Wingspot Österreichs.
+    Hauptsächlich Nordwest, im Sommer auch Südost und Südwest; Böen können binnen Minuten auf 6–10 Bft
+    springen. Kiten und Wingen nur im ausgewiesenen Korridor mit gelben Bojen, sichtbares Zonen-Lycra
+    vorgeschrieben. Campingplatz direkt am Spot.'
+  source: https://www.wingsurfing.at/wie-und-wo-schulen-wir/spot-standort/
+  verified: true
+  popularity: hoch
+  wind_factor: 1.0
+  access: zone
+- id: de-ammersee-eching
+  name: Ammersee – Eching
+  country: DE
+  region: Bayern
+  lat: 48.07
+  lon: 11.1127
+  water_body: lake
+  shallow: inshore
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: 'Start am Ende der Halbinsel per Driftstart, kein Anfängerspot. Nordost bis Südost, laut Quelle
+    besonders im Frühjahr gut. Alternativen am selben See: Herrsching (Süd bis West) und Stegen (Süd
+    bis Südwest, West wird böig). Startbereich felsig mit Muscheln, Neoprenschuhe empfohlen.'
+  source: https://kitejunkie.com/pages/ammersee-kitesurfen
+  verified: true
+  popularity: mittel
+  wind_factor: 1.0
+- id: it-marina-julia
+  name: Marina Julia (Monfalcone)
+  country: IT
+  region: Friaul-Julisch Venetien
+  lat: 45.7774
+  lon: 13.5326
+  water_body: sea
+  shallow: inshore
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: Dedizierter Wingspot mit eigenem internationalem Festival. Thermische Brise 12–20 kn ganzjährig,
+    beste Foilbedingungen April bis Juni; Bora 20–25 kn, teils über 40 — beide side-on zum Ufer. Sandiger
+    Flachwasserbereich am Ufer, nach Osten schnell tiefer. Ausfahrkorridor kostenlos nutzbar, großer
+    Parkplatz direkt am Strand, Duschen, Rettungsschwimmer.
+  source: https://www.marinajuliawindspot.it/en/
+  verified: true
+  popularity: hoch
+  wind_factor: 1.0
+  access: frei
+- id: it-grado-pineta
+  name: Grado – Sandinsel
+  country: IT
+  region: Friaul-Julisch Venetien
+  lat: 45.67983
+  lon: 13.435979
+  water_body: lagoon
+  shallow: widespread
+  seagrass: heavy
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: 'ACHTUNG: laut detailliertem Fahrerbericht bei Ebbe stellenweise nur 20 cm Wasser, und bei
+    Flut treibt Seegras in großen Büscheln in den Kanal und macht das Foilen dort unmöglich. Quallen
+    von 30–35 cm im äußeren Bereich. Bei Bora westlich der Sandinsel ablandig. Steht hier als dokumentierter
+    Problemspot, nicht als Empfehlung.'
+  source: https://einfachkiten.de/kiteblog/reiseziele/hydrofoilen-in-grado/
+  verified: true
+  popularity: mittel
+  wind_factor: 1.0
+- id: hr-premantura-kamenjak
+  thermal:
+    name: "Maestral"
+    kind: "seewind"
+    months: [6, 7, 8, 9]
+    from: 11
+    to: 20
+    dir: 315
+    typical_kn: 16
+    reliability: 0.5
+    suppressed_by: [45, 135]
+    source: "Prtenjak & Grisogono 2007 (Theor. Appl. Climatol.), jadran.gfz.hr"
+    note: "Nordadria: die Land-Seewind-Zirkulation tritt an 40 bis 60 Prozent der Sommertage auf; am stärksten bei Pula. Bora und Jugo überprägen sie vollständig"
+  name: Premantura / Rt Kamenjak
+  country: HR
+  region: Istrien
+  lat: 44.7852
+  lon: 13.9173
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  sectors: []
+  sectors_unknown: true
+  notes: 'Laut Spotguide direkt tief, ideal zum Foilen; vorgelagerte Inseln schaffen geschütztes Wasser.
+    Ost ist die beste Richtung, Nord und Süd gehen, West ist ablandig. Naturpark Kamenjak: Donji Kamenjak
+    von Mai bis Oktober kostenpflichtig für Fahrzeuge, in der Nebensaison frei; CAMPING IM NATURPARK
+    VERBOTEN, alle Besucher müssen bis 22 Uhr raus. Campingplatz Arena Stupice direkt am Spot außerhalb
+    der Schutzzone, mit Wingschule.'
+  source: https://wingfoiltips.com/spots/croatia/istria-county/premantura-arena-stupice-campsite/
+  verified: true
+  popularity: hoch
+  wind_factor: 1.0
+  access: gebuehr
+- id: hr-viganj
+  thermal:
+    name: "Maestral"
+    kind: "seewind"
+    months: [5, 6, 7, 8, 9]
+    from: 11
+    to: 20
+    dir: 300
+    typical_kn: 18
+    reliability: 0.5
+    suppressed_by: [45, 135]
+    source: "ventosurf.com, kiteguide.com, goxperience-sailing.com"
+    note: "Der Kanal zwischen Viganj und Korčula wirkt als Düse; Maximum gegen 14 Uhr, Ende bei Sonnenuntergang"
+  name: Viganj (Pelješac)
+  country: HR
+  region: Dubrovnik-Neretva
+  lat: 42.9863
+  lon: 17.0952
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  sectors: []
+  sectors_unknown: true
+  notes: 'Referenzspot der kroatischen Adria: Maestral aus W/NW mit 15–20 kn, verlässlich am frühen
+    Nachmittag von Mai bis September — laut Quelle über 60 aufeinanderfolgende Tage mit mindestens 10
+    kn im Sommer. Bora aus NO über 30 kn durch doppelten Düseneffekt, eher Herbst und Winter. Starker
+    Fähr- und Schiffsverkehr. Zwei Campingplätze und drei Parkflächen vor Ort.'
+  source: https://www.surfandclimb.de/slider/wing-foil-spot-guide-viganj-kroatien/
+  verified: true
+  popularity: hoch
+  wind_factor: 1.0
+- id: hr-nin-zdrijac
+  thermal:
+    name: "Maestral"
+    kind: "seewind"
+    months: [5, 6, 7, 8, 9]
+    from: 11
+    to: 20
+    dir: 315
+    typical_kn: 18
+    reliability: 0.5
+    suppressed_by: [45, 135]
+    source: "Prtenjak & Grisogono 2007, adventuremo.de"
+    note: "Zadar gehört zu den Stationen mit der häufigsten und längsten Seebrise, im Mittel neun Stunden"
+  name: Nin – Plaža Ždrijac
+  country: HR
+  region: Zadar
+  lat: 44.246675
+  lon: 15.182848
+  water_body: lagoon
+  shallow: widespread
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: 'ACHTUNG Tiefe: zwei unabhängige Quellen beschreiben die Lagune als stellenweise knietief und
+    über mehrere hundert Meter stehtief — für freies Foilen kritisch, eher ein Lernrevier. Maestral
+    aus NW side-on mit 12–22 kn; Bura möglich, aber böig. Ausgewiesene Zone mit Rettungsboot. KOORDINATE
+    bezieht sich auf den Ort Nin, der Lagunenstrand liegt etwa 2 km entfernt.'
+  source: https://www.kiteloopers.com/en/spots/kite-spot-croatia-nin-plaza-zdrijac-lagoon
+  verified: true
+  popularity: hoch
+  wind_factor: 1.0
+- id: si-izola
+  name: Izola
+  country: SI
+  region: Istrien
+  lat: 45.5366
+  lon: 13.6601
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: 'Bora aus Nordost ist die bevorzugte Richtung, cross-shore von rechts und laut Quelle beständiger
+    als anderswo in der Region; Maestral aus Nordwest als Sommerthermik mit nur 12–15 kn. GEFAHR: ein
+    Riff in Luv hat laut Quelle schon mehrere Finnen gekostet. Bei Bora über 30 kn ist die Bucht Fiesa
+    die geschützte Alternative.'
+  source: https://web.kite-and-windsurfing-guide.com/de/surfspots/kitesurfen-windsurfen-sup/izola-slowenien.html
+  verified: true
+  popularity: mittel
+  wind_factor: 1.0
+- id: hu-fonyod-balaton
+  name: Fonyód (Balaton, Südufer)
+  country: HU
+  region: Somogy
+  lat: 46.795594
+  lon: 17.565079
+  water_body: lake
+  shallow: widespread
+  seagrass: none
+  season:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  sectors: []
+  sectors_unknown: true
+  notes: 'ACHTUNG Tiefe: das Südufer des Balaton ist ausgedehnt flach, die Quelle nennt den Spot ausdrücklich
+    flach. Vorherrschend Nordwest mit 16–22 kn zur Hauptsaison im April und Mai. Gegenüber dem Badacsony-Hügel.
+    Keine Angaben zu Parken oder Hunden gefunden. KOORDINATE nur ortsgenau.'
+  source: https://lets-kite.com/en/spots/15492/kitesurf/fonyod-lake-balaton
+  verified: true
+  popularity: mittel
+  wind_factor: 1.0
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  Addendum 13 Sep 2026 · my own Google Takeout list
+#
+#  `verified: true`  = the coordinate is the pin I placed myself.
+#  `verified: false` = the coordinate comes from the column added later,
+#                      rounded and in places assigned more than once.
+#  `water_body: unknown` = can't be derived from the name; once computed, the
+#                      shoreline geometry tells what kind of water the point is in.
+#  The notes are my own, imported unchanged.
+# ─────────────────────────────────────────────────────────────────────────────
+
+- id: pin-52-8923-5-4776
+  name: "Hemelum – Aldkarre"
+  country: NL
+  region: ''
+  lat: 52.892343
+  lon: 5.47764
+  water_body: "lake"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/search/52.8923428,5.4776398
+  verified: true
+  wind_factor: 1.0
+- id: pin-54-3538-11-0666
+  name: "Großenbrode – Lütjenbrode"
+  country: DE
+  region: ''
+  lat: 54.353759
+  lon: 11.066644
+  water_body: "sea"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "„Core“ test area - viele Winger und Kiter"
+  source: https://www.google.com/maps/search/54.3537593,11.0666439
+  verified: true
+  wind_factor: 1.0
+- id: pin-53-0719-5-3379
+  name: "IJsselmeer – Kornwerderzand"
+  country: NL
+  region: ''
+  lat: 53.071873
+  lon: 5.337892
+  water_body: "lake"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/search/53.0718726,5.3378923
+  verified: true
+  wind_factor: 1.0
+- id: pin-54-3709-11-0111
+  name: "Heiligenhafen – Ortmühle"
+  country: DE
+  region: ''
+  lat: 54.370908
+  lon: 11.011059
+  water_body: "sea"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "Irgendwo hier ist der Einstieg."
+  source: https://www.google.com/maps/search/54.3709078,11.0110588
+  verified: true
+  wind_factor: 1.0
+- id: kitespot-strukkamphuk
+  name: "Fehmarn – Strukkamphuk"
+  country: DE
+  region: ''
+  lat: 54.412937
+  lon: 11.09426
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "Viel Seegras. macht keinen spaß"
+  source: https://www.google.com/maps/place/Kitespot+Strukkamphuk/data=!4m2!3m1!1s0x47ad7d1a0b072923:0xc83693332c934d11
+  verified: true
+  wind_factor: 1.0
+- id: pin-52-5297-4-7347
+  name: "Uitgeestermeer – Uitgeest"
+  country: NL
+  region: ''
+  lat: 52.530243
+  lon: 4.733949
+  water_body: "lake"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/search/52.5296602,4.7347138
+  verified: true
+  wind_factor: 1.0
+- id: pin-56-6813-8-3551
+  name: "Nissum Bredning – Draget (bei Helligsø)"
+  country: DK
+  region: ''
+  lat: 56.681313
+  lon: 8.355116
+  water_body: unknown
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/search/56.681313,8.355116
+  verified: true
+  wind_factor: 1.0
+- id: pin-47-5313-6-8565
+  name: "Étang du Pâquis – Brognard"
+  country: "FR"
+  region: ''
+  lat: 47.531299
+  lon: 6.856461
+  water_body: unknown
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/search/47.5312994,6.8564612
+  verified: true
+  wind_factor: 1.0
+- id: beach-bum-bar-cafe
+  name: "Antigua – Freetown (Beach Bum Bar & Cafe)"
+  country: "AG"
+  region: ''
+  lat: 17.037624
+  lon: -61.68643
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Beach+Bum+Bar+%26+Cafe/data=!4m2!3m1!1s0x8c12bfc5b5f19d39:0x9877f67fecf30548
+  verified: true
+  wind_factor: 1.0
+- id: pin-48-0689-11-1831
+  name: "Wörthsee – Walchstadt"
+  country: "DE"
+  region: ''
+  lat: 48.068868
+  lon: 11.183114
+  water_body: "lake"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/search/48.0688678,11.1831144
+  verified: true
+  wind_factor: 1.0
+- id: pin-47-6576-11-3563
+  name: "Kochelsee – Kochel am See"
+  country: "DE"
+  region: ''
+  lat: 47.657638
+  lon: 11.356343
+  water_body: "lake"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/search/47.6576384,11.3563432
+  verified: true
+  wind_factor: 1.0
+- id: pin-47-6056-11-3351
+  thermal:
+    name: "Thermikwind"
+    kind: "talwind"
+    months: [5, 6, 7, 8, 9]
+    from: 12
+    to: 19
+    dir: 190
+    typical_kn: 12
+    reliability: 0.45
+    suppressed_by: [180]
+    source: "walchensee.net"
+    note: "Braucht klare Nacht und sonnigen Morgen; Südströmung und Wolkenstau über den Alpen verhindern sie. Achtung: die Quelle beschreibt die Richtung als 'Richtung Nordost pfeifend', die Herkunftsrichtung ist damit nicht eindeutig belegt"
+  name: "Walchensee – Kirchelwand (südlich Urfeld)"
+  country: "DE"
+  region: ''
+  lat: 47.605638
+  lon: 11.335052
+  water_body: "lake"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/search/47.6056382,11.3350522
+  verified: true
+  wind_factor: 1.0
+- id: pin-47-6143-11-3394
+  thermal:
+    name: "Thermikwind"
+    kind: "talwind"
+    months: [5, 6, 7, 8, 9]
+    from: 12
+    to: 19
+    dir: 190
+    typical_kn: 12
+    reliability: 0.45
+    suppressed_by: [180]
+    source: "walchensee.net"
+    note: "Braucht klare Nacht und sonnigen Morgen; Südströmung und Wolkenstau über den Alpen verhindern sie. Achtung: die Quelle beschreibt die Richtung als 'Richtung Nordost pfeifend', die Herkunftsrichtung ist damit nicht eindeutig belegt"
+  name: "Walchensee – Urfeld"
+  country: "DE"
+  region: ''
+  lat: 47.614324
+  lon: 11.339401
+  water_body: "lake"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/search/47.6143237,11.3394007
+  verified: true
+  wind_factor: 1.0
+- id: pin-54-3810-10-9799
+  name: "Heiligenhafen – Seebrücke"
+  country: DE
+  region: ''
+  lat: 54.381048
+  lon: 10.979917
+  water_body: unknown
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/search/54.3810477,10.979917
+  verified: true
+  wind_factor: 1.0
+- id: masurfspot
+  name: "Vissenakkerplas – Kessenich"
+  country: BE
+  region: ''
+  lat: 51.144194
+  lon: 5.828633
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "Dannys homespot. Dieselbe Näherungskoordinate tragen außerdem: Surfspot."
+  source: https://www.google.com/maps/place/Masurfspot/data=!4m2!3m1!1s0x47c0cbb2f71efe17:0xd32e06f280fc898c
+  verified: true
+  wind_factor: 1.0
+- id: strand-von-su-tiriarzu
+  name: Strand von Su Tiriarzu
+  country: IT
+  region: ''
+  lat: 40.630695
+  lon: 9.743671
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Strand+von+Su+Tiriarzu/data=!4m2!3m1!1s0x12dedb5f1f27c257:0x91b7e289cc8c5984
+  verified: true
+  wind_factor: 1.0
+- id: spiaggia-marina-maria
+  name: Spiaggia Marina Maria
+  country: IT
+  region: ''
+  lat: 40.901058
+  lon: 9.587073
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Spiaggia+Marina+Maria/data=!4m2!3m1!1s0x12d934dfc453e587:0x895ed53f81fa5d68
+  verified: true
+  wind_factor: 1.0
+- id: spiaggia-di-vignola
+  name: Spiaggia di Vignola
+  country: IT
+  region: ''
+  lat: 41.128472
+  lon: 9.065566
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Spiaggia+di+Vignola/data=!4m2!3m1!1s0x12dbe4576b8910dd:0x250aaa89cec03b79
+  verified: true
+  wind_factor: 1.0
+- id: pla-a-preluk
+  name: Plaža Preluk
+  country: HR
+  region: ''
+  lat: 45.354075
+  lon: 14.330592
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Pla%C5%BEa+Preluk/data=!4m2!3m1!1s0x4764a624dc47ed21:0xc911e7af2219a546
+  verified: true
+  wind_factor: 1.0
+- id: spot-de-kitesurf-de-la-nautique
+  thermal:
+    name: "Brise de mer"
+    kind: "seewind"
+    months: [6, 7, 8, 9]
+    from: 13
+    to: 19
+    dir: 120
+    typical_kn: 7
+    reliability: 0.45
+    source: "kitesurf66.fr, hisse-et-oh (Forum)"
+    note: "Schwache nachmittägliche Seebrise aus Ost bis Südost, 5 bis 10 kn. Die Tramontane am selben Spot ist Gradientwind, keine Thermik"
+  name: Spot De Kitesurf De La Nautique
+  country: "FR"
+  region: ''
+  lat: 43.140013
+  lon: 3.000684
+  water_body: "lagoon"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Spot+De+Kitesurf+De+La+Nautique/data=!4m2!3m1!1s0x12b1ad18fd3de2c1:0x8b139cb28b83ce41
+  verified: true
+  wind_factor: 1.0
+- id: steinhuder-meer
+  name: Steinhuder Meer
+  country: DE
+  region: ''
+  lat: 52.4667
+  lon: 9.3333
+  water_body: unknown
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Steinhuder+Meer/data=!4m2!3m1!1s0x47b07d7b3074f239:0x85bcdb48f83e4a3c
+  verified: true
+  wind_factor: 1.0
+- id: fly-a-kite-spot-wiek
+  name: "Rügen – Wiek (Fly-A-Kite)"
+  country: DE
+  region: ''
+  lat: 54.620369
+  lon: 13.280239
+  water_body: "sea"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Fly-A-Kite+-+Spot+Wiek/data=!4m2!3m1!1s0x47ab576e68a128d1:0xaaf57f4e7c57edf0
+  verified: true
+  wind_factor: 1.0
+- id: love-yoga-surf
+  name: "Saint-Hernot (Love Yoga Surf)"
+  country: FR
+  region: ''
+  lat: 48.195845
+  lon: -4.512463
+  water_body: "sea"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Love+Yoga+Surf/data=!4m2!3m1!1s0x4816c3d4a52fbe61:0x9cd6fcb9e9b3898
+  verified: true
+  wind_factor: 1.0
+- id: parking-de-la-salette
+  name: "Lac de Monteynard – Treffort (Parking de la Salette)"
+  country: FR
+  region: ''
+  lat: 44.906955
+  lon: 5.673451
+  water_body: "reservoir"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Parking+de+la+Salette/data=!4m2!3m1!1s0x478a81001b3f81bd:0xcfbb03407b3640f6
+  verified: true
+  wind_factor: 1.0
+- id: etang-du-rosel
+  name: Etang Du Rosel
+  country: CH
+  region: ''
+  lat: 46.1274
+  lon: 7.0586
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Etang+Du+Rosel/data=!4m2!3m1!1s0x478ec84634b79605:0x75ce5e05a77d7465
+  verified: true
+  wind_factor: 1.0
+- id: pin-47-6498-3-2050
+  name: "Ria d'Étel – Étel"
+  country: FR
+  region: ''
+  lat: 47.649793
+  lon: -3.205001
+  water_body: "sea"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "https://www.instagram.com/stories/stevenakkersdijk/3630863653588807560?utm_source=ig_story_item_share&igsh=MWoxbGF1bWhuZnB5dg==. Dieselbe Näherungskoordinate tragen außerdem: Barre d’Étel."
+  source: https://www.google.com/maps/search/47.6497932,-3.2050014
+  verified: true
+  wind_factor: 1.0
+- id: vignola-mare
+  name: Vignola Mare
+  country: IT
+  region: ''
+  lat: 41.127867
+  lon: 9.068276
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "Vignola Mare"
+  source: https://www.google.com/maps/search/41.1278672,9.0682761
+  verified: true
+  wind_factor: 1.0
+- id: pin-43-7344-6-1740
+  thermal:
+    name: "Thermik"
+    kind: "talwind"
+    months: [5, 6, 7, 8, 9]
+    from: 13
+    to: 19
+    typical_kn: 18
+    reliability: 0.4
+    source: "kite-and-windsurfing-guide.com"
+    note: "Nachmittags etwa 5 Beaufort im Dreieck Sainte-Croix, Bauduen, Staumauer; Richtung von der Quelle nicht genannt"
+  name: "Lac de Sainte-Croix – Bauduen"
+  country: FR
+  region: ''
+  lat: 43.734379
+  lon: 6.173979
+  water_body: "reservoir"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "can be crowdy as Verdon canyon is arround the corner"
+  source: https://www.google.com/maps/search/43.7343793,6.1739791
+  verified: true
+  wind_factor: 1.0
+- id: pin-43-7745-6-2051
+  thermal:
+    name: "Thermik"
+    kind: "talwind"
+    months: [5, 6, 7, 8, 9]
+    from: 13
+    to: 19
+    typical_kn: 18
+    reliability: 0.4
+    source: "kite-and-windsurfing-guide.com"
+    note: "Nachmittags etwa 5 Beaufort im Dreieck Sainte-Croix, Bauduen, Staumauer; Richtung von der Quelle nicht genannt"
+  name: "Lac de Sainte-Croix – Les Salles-sur-Verdon"
+  country: FR
+  region: ''
+  lat: 43.774482
+  lon: 6.205074
+  water_body: "reservoir"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "can be crowdy as Verdon canyon is arround the corner"
+  source: https://www.google.com/maps/search/43.7744822,6.2050743
+  verified: true
+  wind_factor: 1.0
+- id: lac-de-vouglans
+  name: Lac de Vouglans
+  country: FR
+  region: ''
+  lat: 46.485
+  lon: 5.6808
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Lac+de+Vouglans/data=!4m2!3m1!1s0x478cc25c401a067f:0x8aeafdcf95566e91
+  verified: true
+  wind_factor: 1.0
+- id: von-jens
+  name: "Lac du Sautet – Corps"
+  country: FR
+  region: ''
+  lat: 44.81617
+  lon: 5.9308
+  water_body: "reservoir"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "von Jens"
+  source: https://www.google.com/maps/search/44.8161701,5.9308
+  verified: true
+  wind_factor: 1.0
+- id: pin-37-0192-25-3746
+  name: "Naxos – Mikri Vigla Süd"
+  country: GR
+  region: ''
+  lat: 37.019155
+  lon: 25.374593
+  water_body: "sea"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/search/37.0191551,25.3745928
+  verified: true
+  wind_factor: 1.0
+- id: pin-37-0219-25-3732
+  name: "Naxos – Mikri Vigla Mitte"
+  country: GR
+  region: ''
+  lat: 37.021852
+  lon: 25.373197
+  water_body: "sea"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/search/37.0218518,25.3731974
+  verified: true
+  wind_factor: 1.0
+- id: ancona
+  name: Ancona
+  country: "IT"
+  region: ''
+  lat: 43.622656
+  lon: 13.524857
+  water_body: unknown
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Ancona/data=!4m2!3m1!1s0x132d7f7d32f6d965:0x70f78e8c3448ddd1
+  verified: true
+  wind_factor: 1.0
+- id: pin-46-9189-8-5971
+  thermal:
+    name: "Nordwestthermik"
+    kind: "talwind"
+    months: [4, 5, 6, 7, 8, 9, 10]
+    from: 12
+    to: 20
+    dir: 315
+    typical_kn: 12
+    reliability: 0.6
+    source: "unhooked.ch"
+    note: "Sehr konstant bei Hochdruck und trockener Luft; beginnt oberhalb Sisikon und wandert südwärts. Kiteverbot November und Dezember"
+  name: "Urnersee – Isleten"
+  country: CH
+  region: ''
+  lat: 46.918903
+  lon: 8.597066
+  water_body: "lake"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "Hier ins Wasser"
+  source: https://www.google.com/maps/search/46.9189033,8.5970663
+  verified: true
+  wind_factor: 1.0
+- id: pin-47-6980-9-0442
+  thermal:
+    name: "Seewind"
+    kind: "seewind"
+    months: [5, 6, 7, 8, 9]
+    from: 11
+    to: 19
+    reliability: 0.4
+    source: "esys.org, know-how.bodensee.com"
+    note: "Land-Seewind-Zirkulation ab etwa 3 Grad Unterschied Wasser zu Land; West-Thermik am Ostufer ab etwa 11 Uhr. Keine Quelle nennt Stärken"
+  name: "Bodensee – Reichenau (Sandseele)"
+  country: "DE"
+  region: ''
+  lat: 47.698048
+  lon: 9.044247
+  water_body: "lake"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/search/47.6980478,9.0442469
+  verified: true
+  wind_factor: 1.0
+- id: plage-de-saint-colomban
+  name: Plage de Saint-Colomban
+  country: FR
+  region: ''
+  lat: 47.568071
+  lon: -3.100419
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Plage+de+Saint-Colomban/data=!4m2!3m1!1s0x48106d8f4d6e25b9:0x8c0fa67ab322a119
+  verified: true
+  wind_factor: 1.0
+- id: sk-dshoved-strand
+  name: Skødshoved Strand
+  country: DK
+  region: ''
+  lat: 56.185741
+  lon: 10.367446
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Sk%C3%B8dshoved+Strand/data=!4m2!3m1!1s0x464c390e61a52bf1:0xc5cdfac2cf33d437
+  verified: true
+  wind_factor: 1.0
+- id: playa-del-medano
+  shorebreak:
+    status: "possible"
+    note: "Bucht von El Médano; bei Südswell Shorebreak möglich, sonst eher Kabbelwasser."
+    source: "Spotwissen — unbelegt, bitte prüfen"
+  name: Playa del Médano
+  country: "ES"
+  region: ''
+  lat: 28.040016
+  lon: -16.53923
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Playa+del+M%C3%A9dano/data=!4m2!3m1!1s0xc6a9ffb4cb55d2f:0x808768e46ecf44e6
+  verified: true
+  wind_factor: 1.0
+- id: orikum-kaltersia-beach
+  name: Orikum, Kaltersia beach
+  country: "AL"
+  region: ''
+  lat: 40.328095
+  lon: 19.451809
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "https://albanianwatersports.com/locations/"
+  source: https://www.google.com/maps/place/Orikum,+Kaltersia+beach/data=!4m2!3m1!1s0x13452fcd3ab5f0b3:0x10d5941f5773cc1f
+  verified: true
+  wind_factor: 1.0
+- id: narta-beach
+  name: Narta Beach
+  country: "AL"
+  region: ''
+  lat: 40.509623
+  lon: 19.442368
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "https://albanianwatersports.com/locations/"
+  source: https://www.google.com/maps/place/Narta+Beach/data=!4m2!3m1!1s0x134536d4d01e6edd:0x605923297cef46d1
+  verified: true
+  wind_factor: 1.0
+- id: radhim-beach
+  name: Radhimë Beach
+  country: "AL"
+  region: ''
+  lat: 40.380192
+  lon: 19.478459
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "https://albanianwatersports.com/locations/"
+  source: https://www.google.com/maps/place/Radhim%C3%AB+Beach/data=!4m2!3m1!1s0x13452c2cb46097d9:0xb46d7d6b6302bd03
+  verified: true
+  wind_factor: 1.0
+- id: saranda-beach
+  name: Saranda Beach
+  country: "AL"
+  region: ''
+  lat: 39.871902
+  lon: 20.007048
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "https://albanianwatersports.com/locations/"
+  source: https://www.google.com/maps/place/Saranda+Beach/data=!4m2!3m1!1s0x135b15b3f10e0755:0x2a2d150a9416f53b
+  verified: true
+  wind_factor: 1.0
+- id: kitesurf-albania-spot
+  name: "Velipojë"
+  country: "AL"
+  region: ''
+  lat: 41.85879
+  lon: 19.42872
+  water_body: "sea"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "https://albanianwatersports.com/locations/. Dieselbe Näherungskoordinate tragen außerdem: Velipojë Beach, Kitesurf Albania."
+  source: https://www.google.com/maps/place/Kitesurf+Albania+spot/data=!4m2!3m1!1s0x134fd13d418d34ed:0xa3c80799a27d135
+  verified: true
+  wind_factor: 1.0
+- id: paralia-azala
+  name: Paralia Azala
+  country: GR
+  region: ''
+  lat: 37.088357
+  lon: 25.593467
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Paralia+Azala/data=!4m2!3m1!1s0x14980097d7225c85:0x7bb992d34ff785fa
+  verified: true
+  wind_factor: 1.0
+- id: pin-36-9908-25-3919
+  name: "Naxos – Kastraki"
+  country: GR
+  region: ''
+  lat: 36.99079
+  lon: 25.391873
+  water_body: "sea"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "https://youtu.be/S30N5o2yz1Y?si=zt9QAg_R3KGq4HHC"
+  source: https://www.google.com/maps/search/36.99079,25.391873
+  verified: true
+  wind_factor: 1.0
+- id: pin-36-0668-5-6855
+  name: "Bolonia (Tarifa)"
+  country: ES
+  region: ''
+  lat: 36.077962
+  lon: -5.777092
+  water_body: "sea"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "https://youtu.be/yP8JAlLLVLM?si=xq1txrEX3iRloNZE"
+  source: https://www.google.com/maps/search/36.066822,-5.685542
+  verified: true
+  wind_factor: 1.0
+- id: pin-43-3918-4-3812
+  name: "San Vicente de la Barquera – Ría"
+  country: ES
+  region: ''
+  lat: 43.391806
+  lon: -4.381155
+  water_body: "sea"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/search/43.3918063,-4.3811554
+  verified: true
+  wind_factor: 1.0
+- id: pin-46-9509-8-6193
+  thermal:
+    name: "Nordwestthermik"
+    kind: "talwind"
+    months: [4, 5, 6, 7, 8, 9, 10]
+    from: 12
+    to: 20
+    dir: 315
+    typical_kn: 12
+    reliability: 0.6
+    source: "unhooked.ch"
+    note: "Sehr konstant bei Hochdruck und trockener Luft; beginnt oberhalb Sisikon und wandert südwärts. Kiteverbot November und Dezember"
+  name: "Urnersee – Sisikon"
+  country: CH
+  region: ''
+  lat: 46.950915
+  lon: 8.619294
+  water_body: "lake"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/search/46.9509154,8.6192938
+  verified: true
+  wind_factor: 1.0
+- id: bomboklat-surf-school
+  thermal:
+    name: "Breva"
+    kind: "talwind"
+    months: [3, 4, 5, 6, 7, 8, 9]
+    from: 12
+    to: 18
+    dir: 195
+    typical_kn: 16
+    peak_kn: 20
+    reliability: 0.7
+    suppressed_by: [0]
+    source: "unhooked.ch, faehrencomersee.com, northlakecomo.net"
+    note: "Breva aus Süd, dreht nachmittags westlicher; ab Mitte Juli schwächer und böiger"
+  name: "Comer See – Sorico (Bomboklat Surf School)"
+  country: "IT"
+  region: ''
+  lat: 46.17
+  lon: 9.383
+  water_body: unknown
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Bomboklat+Surf+School/data=!4m2!3m1!1s0x47846b0f24c26527:0xd76833c0fa4c282d
+  verified: true
+  wind_factor: 1.0
+- id: wingfoil-surfschule-fehmarn
+  name: "Fehmarn – Burg, Hafen (Wingfoil Surfschule)"
+  country: DE
+  region: ''
+  lat: 54.416133
+  lon: 11.187515
+  water_body: "sea"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "Dieselbe Näherungskoordinate tragen außerdem: Fehmarn."
+  source: https://www.google.com/maps/place/Wingfoil+Surfschule+Fehmarn/data=!4m2!3m1!1s0x47ad7b40a8374ce9:0xea719ddb4be3e6d3
+  verified: true
+  wind_factor: 1.0
+- id: strand-hejsager
+  name: Strand Hejsager
+  country: DK
+  region: ''
+  lat: 55.192588
+  lon: 9.59394
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Strand+Hejsager/data=!4m2!3m1!1s0x464cb35c12dc2a7d:0x58d1d2699a0e29b8
+  verified: true
+  wind_factor: 1.0
+- id: pin-43-4396-16-6798
+  thermal:
+    name: "Maestral"
+    kind: "seewind"
+    months: [5, 6, 7, 8, 9]
+    from: 11
+    to: 20
+    dir: 315
+    typical_kn: 18
+    reliability: 0.5
+    suppressed_by: [45, 135]
+    source: "kiteguide.com"
+    note: "Setzt am späten Vormittag ein, Maximum am Nachmittag; für Dalmatien nennt keine Quelle eine Häufigkeit"
+  name: "Omiš – Duće"
+  country: HR
+  region: ''
+  lat: 43.439558
+  lon: 16.679817
+  water_body: unknown
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/search/43.4395582,16.6798167
+  verified: true
+  wind_factor: 1.0
+- id: pin-43-0131-17-4687
+  thermal:
+    name: "Maestral"
+    kind: "seewind"
+    months: [5, 6, 7, 8, 9]
+    from: 14
+    to: 20
+    dir: 315
+    typical_kn: 20
+    reliability: 0.5
+    suppressed_by: [45, 135]
+    source: "globalkitespots.com"
+    note: "Neretva-Delta: setzt später ein als weiter nördlich, dafür kräftig"
+  name: "Neretva-Delta – Komin Ost"
+  country: HR
+  region: ''
+  lat: 43.012587
+  lon: 17.466803
+  water_body: "sea"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/search/43.0130565,17.4686815
+  verified: true
+  wind_factor: 1.0
+- id: pin-43-0194-17-4466
+  thermal:
+    name: "Maestral"
+    kind: "seewind"
+    months: [5, 6, 7, 8, 9]
+    from: 14
+    to: 20
+    dir: 315
+    typical_kn: 20
+    reliability: 0.5
+    suppressed_by: [45, 135]
+    source: "globalkitespots.com"
+    note: "Neretva-Delta: setzt später ein als weiter nördlich, dafür kräftig"
+  name: "Neretva-Delta – Komin West"
+  country: HR
+  region: ''
+  lat: 43.019396
+  lon: 17.446611
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "Parken am Spot wohl moeglich. Beach Gebuehr. W-S https://youtu.be/y4GH5x2s2Tc?si=zqi892hah8LtEPU7"
+  source: https://www.google.com/maps/search/43.0193965,17.4466106
+  verified: true
+  wind_factor: 1.0
+- id: kite-spot
+  thermal:
+    name: "Maestral"
+    kind: "seewind"
+    months: [6, 7, 8, 9]
+    from: 11
+    to: 20
+    dir: 315
+    typical_kn: 16
+    reliability: 0.5
+    suppressed_by: [45, 135]
+    source: "Prtenjak & Grisogono 2007 (Theor. Appl. Climatol.), jadran.gfz.hr"
+    note: "Nordadria: die Land-Seewind-Zirkulation tritt an 40 bis 60 Prozent der Sommertage auf; am stärksten bei Pula. Bora und Jugo überprägen sie vollständig"
+  name: "Premantura – Munte"
+  country: HR
+  region: ''
+  lat: 44.800017
+  lon: 13.922124
+  water_body: "sea"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "https://youtu.be/y4GH5x2s2Tc?si=zqi892hah8LtEPU7 Ostwind,Steiniger Einsteig"
+  source: https://www.google.com/maps/place/Kite+spot/data=!4m2!3m1!1s0x47632fcc2ac90685:0x1c701135471ea92d
+  verified: true
+  wind_factor: 1.0
+- id: pin-45-4676-13-5074
+  name: "Katoro (Umag)"
+  country: "HR"
+  region: ''
+  lat: 45.467117
+  lon: 13.507411
+  water_body: "sea"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "https://youtu.be/y4GH5x2s2Tc?si=zqi892hah8LtEPU7 South, parking möglich 20€"
+  source: https://www.google.com/maps/search/45.4676432,13.5073666
+  verified: true
+  wind_factor: 1.0
+- id: pin-41-7685-19-5926
+  name: "Shëngjin Süd – Curaj"
+  country: "AL"
+  region: ''
+  lat: 41.770223
+  lon: 19.594803
+  water_body: "sea"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/search/41.768549,19.592636
+  verified: true
+  wind_factor: 1.0
+- id: jaz-beach
+  name: Jaz Beach
+  country: "ME"
+  region: ''
+  lat: 42.281405
+  lon: 18.809581
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Jaz+Beach/data=!4m2!3m1!1s0x134c2b4adca3fad5:0xab9a1146cff6e99b
+  verified: true
+  wind_factor: 1.0
+- id: pin-42-1924-18-9667
+  name: "Buljarica"
+  country: "ME"
+  region: ''
+  lat: 42.192362
+  lon: 18.966744
+  water_body: "sea"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/search/42.192362,18.966744
+  verified: true
+  wind_factor: 1.0
+- id: pin-40-9576-19-4660
+  name: "Divjakë – Strand"
+  country: "AL"
+  region: ''
+  lat: 40.963567
+  lon: 19.463696
+  water_body: "sea"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "Erkunden!?"
+  source: https://www.google.com/maps/search/40.957578,19.466015
+  verified: true
+  wind_factor: 1.0
+- id: pin-41-0700-19-4566
+  name: "Spille"
+  country: "AL"
+  region: ''
+  lat: 41.070293
+  lon: 19.453912
+  water_body: "sea"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/search/41.069985,19.456604
+  verified: true
+  wind_factor: 1.0
+- id: sh-ngjin-beach
+  name: Shëngjin Beach
+  country: "AL"
+  region: ''
+  lat: 41.80926
+  lon: 19.591112
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "Nicht bei den ganzen Sonnenschirmen. Nochmal genau suchen wo es ruhig ist. Off Season ist hier wohl ruhiger"
+  source: https://www.google.com/maps/place/Sh%C3%ABngjin+Beach/data=!4m2!3m1!1s0x1351e047d5dc3647:0xd6e0d5eaa899f121
+  verified: true
+  wind_factor: 1.0
+- id: pin-41-8776-19-3242
+  name: "Bojana-Mündung (bei Ada Bojana)"
+  country: "ME"
+  region: ''
+  lat: 41.87608
+  lon: 19.321775
+  water_body: "sea"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "https://youtu.be/f-pliQ--g3Q?si=lwVQXxfYmVo8-N6x https://youtu.be/B3Kh_MNV90M?si=h29t7vB9Yy6-9TqD"
+  source: https://www.google.com/maps/search/41.877561,19.324176
+  verified: true
+  wind_factor: 1.0
+- id: pin-28-7391-13-9375
+  name: "Fuerteventura – Majanicho"
+  country: "ES"
+  region: ''
+  lat: 28.73906
+  lon: -13.937513
+  water_body: "sea"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/search/28.7390597,-13.9375127
+  verified: true
+  wind_factor: 1.0
+- id: pin-28-1606-14-2245
+  name: "Fuerteventura – Cañada del Río (Costa Calma)"
+  country: "ES"
+  region: ''
+  lat: 28.163162
+  lon: -14.217253
+  water_body: "sea"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/search/28.1606197,-14.2245487
+  verified: true
+  wind_factor: 1.0
+- id: pin-51-7805-3-8753
+  thermal:
+    name: "Zeewind"
+    kind: "seewind"
+    months: [4, 5, 6, 7]
+    from: 13
+    to: 20
+    reliability: 0.4
+    source: "weeronline.nl, KNMI"
+    note: "Vor allem Frühjahr und Frühsommer, wenn das Wasser noch kalt und das Land schon warm ist; setzt erst im Lauf des Nachmittags ein. Ab Windstärke 2 ablandig hat sie keine Chance. Keine Quelle nennt Stärken"
+  name: "Grevelingenmeer – Ouddorp"
+  country: NL
+  region: ''
+  lat: 51.780501
+  lon: 3.875311
+  water_body: "lake"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/search/51.7805009,3.8753109
+  verified: true
+  wind_factor: 1.0
+- id: surf-attitude-ecole-de-surf
+  name: "Penhors (Surf-Attitude)"
+  country: FR
+  region: ''
+  lat: 47.928996
+  lon: -4.409981
+  water_body: "sea"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Surf-Attitude+%C3%89cole+De+Surf/data=!4m2!3m1!1s0x48173b3c68e61567:0xd6fe205f957dfe2f
+  verified: true
+  wind_factor: 1.0
+- id: pin-37-0274-25-3709
+  name: "Naxos – Mikri Vigla Nord"
+  country: GR
+  region: ''
+  lat: 37.027445
+  lon: 25.370926
+  water_body: "sea"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/search/37.027445,25.370926
+  verified: true
+  wind_factor: 1.0
+- id: pin-37-0960-25-3750
+  name: "Naxos-Stadt – Agios Georgios (zweiter Pin)"
+  country: GR
+  region: ''
+  lat: 37.098181
+  lon: 25.374341
+  water_body: "sea"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "Welle, klein? https://youtu.be/Bz208FADe0g?si=v10hc1_KjxkCahxL"
+  source: https://www.google.com/maps/search/37.096046,25.374973
+  verified: true
+  wind_factor: 1.0
+- id: putzu-idu
+  thermal:
+    name: "Brezza di mare"
+    kind: "seewind"
+    months: [4, 5, 6, 7, 8, 9]
+    from: 12
+    to: 19
+    reliability: 0.4
+    source: "centrometeoligure.it, alturavela.it"
+    note: "Italienische Seebrise allgemein: 6 bis 12 kn, bei schwachem Gegenwind 10 bis 20. Für diesen Spot nennt keine Quelle eigene Zahlen — es wird deshalb keine angenommen"
+  name: Putzu Idu
+  country: IT
+  region: ''
+  lat: 40.029126
+  lon: 8.404369
+  water_body: unknown
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Putzu+Idu/data=!4m2!3m1!1s0x12dd0b68524efdff:0x2f01033e4958ded
+  verified: true
+  wind_factor: 1.0
+- id: pin-59-0305-11-0065
+  name: "Hvaler – Skjærhalden"
+  country: 'NO'
+  region: ''
+  lat: 59.029724
+  lon: 11.007614
+  water_body: "sea"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/search/59.0304702,11.0064883
+  verified: true
+  wind_factor: 1.0
+- id: wingfoil-center-tarifa
+  shorebreak:
+    status: "possible"
+    note: "Los Lances: bei Poniente (Westwind) Welle und Shorebreak möglich, bei Levante eher flach."
+    source: "Spotwissen — unbelegt, bitte prüfen"
+  name: Wingfoil Center Tarifa
+  country: ES
+  region: ''
+  lat: 36.033345
+  lon: -5.633969
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Wingfoil+Center+Tarifa/data=!4m2!3m1!1s0xd0c8dc533adbdc9:0x715bcdb0dc4994a9
+  verified: true
+  wind_factor: 1.0
+- id: rea-recreativa-da-lagoa-de-traba
+  name: Área recreativa da lagoa de Traba
+  country: ES
+  region: ''
+  lat: 43.193757
+  lon: -9.055138
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "https://www.dailydose.de/travel-windsurfen-in-galizien-nordportugal-20210504.htm"
+  source: https://www.google.com/maps/place/%C3%81rea+recreativa+da+lagoa+de+Traba/data=!4m2!3m1!1s0xd2eb73285d7e735:0x2712c444106f7337
+  verified: true
+  wind_factor: 1.0
+- id: pin-42-5779-9-0583
+  name: "Ribeira – A Pedra do Pino"
+  country: ES
+  region: ''
+  lat: 42.577879
+  lon: -9.058261
+  water_body: "sea"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "https://www.dailydose.de/travel-windsurfen-in-galizien-nordportugal-20210504.htm"
+  source: https://www.google.com/maps/search/42.577879,-9.058261
+  verified: true
+  wind_factor: 1.0
+- id: pin-41-8536-8-8668
+  name: "Moledo"
+  country: PT
+  region: ''
+  lat: 41.853581
+  lon: -8.866773
+  water_body: unknown
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "https://www.youtube.com/watch?v=lV6LnyFkrr4"
+  source: https://www.google.com/maps/search/41.853581,-8.866773
+  verified: true
+  wind_factor: 1.0
+- id: schokkerstrand
+  name: Schokkerstrand
+  country: NL
+  region: ''
+  lat: 52.6094
+  lon: 5.7444
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Schokkerstrand/data=!4m2!3m1!1s0x47c8814d12f7d29b:0xf892e7e7c955e53f
+  verified: true
+  wind_factor: 1.0
+- id: synopal-havn
+  name: "Thisted – Synopal Havn"
+  country: DK
+  region: ''
+  lat: 56.949679
+  lon: 8.720956
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Synopal+Havn/data=!4m2!3m1!1s0x464999573268b69f:0x6f6e372331006c6f
+  verified: true
+  wind_factor: 1.0
+- id: 7-bft-kitehouse
+  name: "Rhodos – Theologos (7 Bft Kitehouse)"
+  country: GR
+  region: ''
+  lat: 36.388055
+  lon: 28.027754
+  water_body: "sea"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/7+Bft+Kitehouse/data=!4m2!3m1!1s0x144d7026f019d4d1:0x8ccca663edec1916
+  verified: true
+  wind_factor: 1.0
+- id: hardtsee
+  name: Hardtsee
+  country: DE
+  region: ''
+  lat: 49.16978
+  lon: 8.609977
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Hardtsee/data=!4m2!3m1!1s0x4797a30ab4780cc1:0xcc9f4985e608256e
+  verified: true
+  wind_factor: 1.0
+- id: brombachsee
+  name: Brombachsee
+  country: DE
+  region: ''
+  lat: 49.1308
+  lon: 10.9352
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Brombachsee/data=!4m2!3m1!1s0x479f3655bb9b456d:0xd51d53a22f31a3e7
+  verified: true
+  wind_factor: 1.0
+- id: parkplatz
+  thermal:
+    name: "Nordwind"
+    kind: "talwind"
+    months: [5, 6, 7, 8, 9]
+    from: 13
+    to: 19
+    dir: 0
+    typical_kn: 12
+    reliability: 0.45
+    source: "kiteclub-achensee.com"
+    note: "Thermisch unterstützt an sonnigen Tagen, weht aber auch vor Kaltfronten; die Quelle nennt die Prognose selbst schwierig"
+  name: "Achensee – Pertisau, Parkplatz"
+  country: AT
+  region: ''
+  lat: 47.450728
+  lon: 11.711082
+  water_body: "lake"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "Dieselbe Näherungskoordinate tragen außerdem: Parkplatz Achensee, Achensee."
+  source: https://www.google.com/maps/place/Parkplatz/data=!4m2!3m1!1s0x47790b07fc7033bd:0xd4cf494ba77e1bb7
+  verified: true
+  wind_factor: 1.0
+- id: pin-43-5395-5-0317
+  name: "Étang de Berre – Saint-Chamas"
+  country: FR
+  region: ''
+  lat: 43.539538
+  lon: 5.031744
+  water_body: unknown
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/search/43.539538,5.0317436
+  verified: true
+  wind_factor: 1.0
+- id: praia-do-cabedelo
+  shorebreak:
+    status: "yes"
+    note: "Offener Atlantikstrand bei Viana do Castelo; Shorebreak bei Swell."
+    source: "Spotwissen — unbelegt, bitte prüfen"
+  name: Praia do Cabedelo
+  country: PT
+  region: ''
+  lat: 41.675765
+  lon: -8.834424
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "aus dem Internet"
+  source: https://www.google.com/maps/place/Praia+do+Cabedelo/data=!4m2!3m1!1s0xd25b61f629aeba5:0xf86f953ddde3b2f8
+  verified: true
+  wind_factor: 1.0
+- id: parking-baronnets
+  name: "Le Grau-du-Roi – L'Oyat-Plage (Parking des Baronnets)"
+  country: FR
+  region: ''
+  lat: 43.478429
+  lon: 4.143863
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "Stehen am Strand möglich! 15€! Bar am Strand,bei west etwas wellig aber machbar."
+  source: https://www.google.com/maps/place/Parking+Baronnets/data=!4m2!3m1!1s0x12b69403d2001e79:0x6194014ad697a5a1
+  verified: true
+  wind_factor: 1.0
+- id: pin-43-1156-6-2027
+  thermal:
+    name: "Brise thermique"
+    kind: "seewind"
+    months: [6, 7, 8, 9]
+    from: 11
+    to: 18
+    dir: 300
+    typical_kn: 12
+    reliability: 0.5
+    suppressed_by: [90]
+    source: "varactu.fr, apprendrelekitesurf.fr"
+    note: "Ab 10 bis 11 Uhr mit 5 bis 6 kn, Maximum 14 bis 15 Uhr, Ende 17 bis 18 Uhr; an Kaps durch Düseneffekt 20 bis 25. Mistral und Levant sind Gradientwinde, keine Thermik"
+  name: "Hyères – Les Salins"
+  country: FR
+  region: ''
+  lat: 43.115587
+  lon: 6.202653
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "Super Sot, gleich tief + Bar am Strand … Parkplatz Hoehenbeschraenkt. Kurz vorher geht parken am Hafen!"
+  source: https://www.google.com/maps/search/43.115587,6.2026526
+  verified: true
+  wind_factor: 1.0
+- id: plage-de-pansard
+  thermal:
+    name: "Brise thermique"
+    kind: "seewind"
+    months: [6, 7, 8, 9]
+    from: 11
+    to: 18
+    dir: 300
+    typical_kn: 12
+    reliability: 0.5
+    suppressed_by: [90]
+    source: "varactu.fr, apprendrelekitesurf.fr"
+    note: "Ab 10 bis 11 Uhr mit 5 bis 6 kn, Maximum 14 bis 15 Uhr, Ende 17 bis 18 Uhr; an Kaps durch Düseneffekt 20 bis 25. Mistral und Levant sind Gradientwinde, keine Thermik"
+  name: Plage de Pansard
+  country: FR
+  region: ''
+  lat: 43.111542
+  lon: 6.236801
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "Nah am Strand wirds stellenweisse flach unbedingt genau schauen auch noch kurz hinter den gelben Bojen kanns sehr flach sei"
+  source: https://www.google.com/maps/place/Plage+de+Pansard/data=!4m2!3m1!1s0x12c9258799647ec3:0xe451ba1c983430ef
+  verified: true
+  wind_factor: 1.0
+- id: pin-45-2012-1-1206
+  name: "Lac de Hourtin – Piqueyrot"
+  country: FR
+  region: ''
+  lat: 45.201212
+  lon: -1.12056
+  water_body: "lake"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "Parken am Spot, raus zwischen den gelben Bojen. Böig aber gut !"
+  source: https://www.google.com/maps/search/45.2012121,-1.1205599
+  verified: true
+  wind_factor: 1.0
+- id: plage-valentin
+  shorebreak:
+    status: "possible"
+    note: "Kleine Bucht an der Côte Sauvage von Batz-sur-Mer; bei Westswell Shorebreak möglich."
+    source: "Spotwissen — unbelegt, bitte prüfen"
+  name: plage Valentin
+  country: FR
+  region: ''
+  lat: 47.278181
+  lon: -2.497888
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "Von Münis"
+  source: https://www.google.com/maps/place/plage+Valentin/data=!4m2!3m1!1s0x48055009ebbd097f:0x644b32c10155a0d6
+  verified: true
+  wind_factor: 1.0
+- id: pin-55-8684-8-3259
+  name: "Ringkøbing Fjord – Hemmet Havn"
+  country: DK
+  region: ''
+  lat: 55.868436
+  lon: 8.325864
+  water_body: unknown
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/search/55.8684358,8.3258644
+  verified: true
+  wind_factor: 1.0
+- id: pin-55-1880-9-9846
+  name: "Brunshuse"
+  country: DK
+  region: ''
+  lat: 55.188008
+  lon: 9.984609
+  water_body: "sea"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "Spot-x , keine Ahnung ob tief genug"
+  source: https://www.google.com/maps/search/55.1880079,9.9846086
+  verified: true
+  wind_factor: 1.0
+- id: kystvejens-n-rk-b
+  name: Kystvejens Nærkøb
+  country: DK
+  region: ''
+  lat: 55.031367
+  lon: 9.424381
+  water_body: unknown
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "Potentieller spot!"
+  source: https://www.google.com/maps/place/Kystvejens+N%C3%A6rk%C3%B8b/data=!4m2!3m1!1s0x47b325af1b75fc83:0x92c5765c6ff54d40
+  verified: true
+  wind_factor: 1.0
+- id: foz-do-mi-or
+  name: Foz do Miñor
+  country: "ES"
+  region: ''
+  lat: 42.117898
+  lon: -8.826485
+  water_body: "sea"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "https://mainpeak-wing.com/location/ https://www.wingsurf.world/reise/topspot-moledo-neue-wingsurfschule-im-norden-portugals/"
+  source: https://www.google.com/maps/place/Foz+do+Mi%C3%B1or/data=!4m2!3m1!1s0xd25c1fe2c320013:0x992ca0fc82efaf5f
+  verified: true
+  wind_factor: 1.0
+- id: pin-43-0686-6-1303
+  thermal:
+    name: "Brise thermique"
+    kind: "seewind"
+    months: [6, 7, 8, 9]
+    from: 11
+    to: 18
+    dir: 300
+    typical_kn: 12
+    reliability: 0.5
+    suppressed_by: [90]
+    source: "varactu.fr, apprendrelekitesurf.fr"
+    note: "Ab 10 bis 11 Uhr mit 5 bis 6 kn, Maximum 14 bis 15 Uhr, Ende 17 bis 18 Uhr; an Kaps durch Düseneffekt 20 bis 25. Mistral und Levant sind Gradientwinde, keine Thermik"
+  name: "Giens – Route du Sel (Étang des Pesquiers)"
+  country: FR
+  region: ''
+  lat: 43.068611
+  lon: 6.130278
+  water_body: "lagoon"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/search/43.0686108,6.1302779
+  verified: true
+  wind_factor: 1.0
+- id: sola-strand
+  shorebreak:
+    status: "yes"
+    note: "Offener Nordseestrand bei Stavanger, Surf- und Windsurfstrand; Shorebreak bei Swell."
+    source: "Spotwissen — unbelegt, bitte prüfen"
+  name: Sola Strand
+  country: 'NO'
+  region: ''
+  lat: 58.876552
+  lon: 5.582128
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Sola+Strand/data=!4m2!3m1!1s0x463a4971503fda25:0x46f7fa22a1e239bb
+  verified: true
+  wind_factor: 1.0
+- id: ion-club-golf-de-roses
+  name: ION CLUB Golf de Roses
+  country: ES
+  region: ''
+  lat: 42.149962
+  lon: 3.117778
+  water_body: unknown
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/ION+CLUB+Golf+de+Roses/data=!4m2!3m1!1s0x12ba5f738a681db5:0xcc7525c3483b63a5
+  verified: true
+  wind_factor: 1.0
+- id: big-blue-sport-windsurfing-center
+  name: "Kos – Psalidi (Big Blue)"
+  country: GR
+  region: ''
+  lat: 36.883843
+  lon: 27.34746
+  water_body: "sea"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Big+Blue+Sport+Windsurfing+center/data=!4m2!3m1!1s0x134a841a81129709:0xe3b8989123c653f7
+  verified: true
+  wind_factor: 1.0
+- id: plage-de-frejus
+  name: Plage de Fréjus
+  country: "FR"
+  region: ''
+  lat: 43.420043
+  lon: 6.760883
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "https://youtu.be/Ko7jkpyufzQ"
+  source: https://www.google.com/maps/place/Plage+de+Fr%C3%A9jus/data=!4m2!3m1!1s0x12cebd9f1fe37283:0xe03a4ffd763cec
+  verified: true
+  wind_factor: 1.0
+- id: playa-de-poniente
+  shorebreak:
+    status: "possible"
+    note: "Stadtstrand von Gijón, durch Molen teils geschützt; bei Nordwestswell Shorebreak möglich."
+    source: "Spotwissen — unbelegt, bitte prüfen"
+  name: Playa de Poniente
+  country: ES
+  region: ''
+  lat: 43.544224
+  lon: -5.672765
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "http://asturwaterman.blogspot.com/2021/06/sesiones-wingfoil-poniente-24-5.html"
+  source: https://www.google.com/maps/place/Playa+de+Poniente/data=!4m2!3m1!1s0xd367d94ab0dd579:0x9d8f97066248f25c
+  verified: true
+  wind_factor: 1.0
+- id: plage-des-trois-moutons
+  shorebreak:
+    status: "yes"
+    note: "Offene Westküste des Léon; Shorebreak bei Swell."
+    source: "Spotwissen — unbelegt, bitte prüfen"
+  name: Plage des Trois Moutons
+  country: FR
+  region: ''
+  lat: 48.573228
+  lon: -4.661765
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Plage+des+Trois+Moutons/data=!4m2!3m1!1s0x48169f1099c5d5fb:0xa2551894b0b1f904
+  verified: true
+  wind_factor: 1.0
+- id: li-ares-beach
+  name: Liñares Beach
+  country: ES
+  region: ''
+  lat: 42.799116
+  lon: -9.019904
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "https://www.wingdaily.de/story-wingfoilen-in-galicien-20220627.htm"
+  source: https://www.google.com/maps/place/Li%C3%B1ares+Beach/data=!4m2!3m1!1s0xd2f2872cddac6c3:0x9213d30d31a759e
+  verified: true
+  wind_factor: 1.0
+- id: camping-a-vouga
+  name: "Muros – A Vouga (Camping)"
+  country: ES
+  region: ''
+  lat: 42.758798
+  lon: -9.062905
+  water_body: "sea"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "https://www.wingdaily.de/story-wingfoilen-in-galicien-20220627.htm"
+  source: https://www.google.com/maps/place/Camping+A+Vouga/data=!4m2!3m1!1s0xd2edf414e1ca3a1:0x1939a0bc256ebc72
+  verified: true
+  wind_factor: 1.0
+- id: praia-de-carnota
+  shorebreak:
+    status: "yes"
+    note: "Langer, offener Atlantikstrand in Galicien; Welle, Shorebreak und Strömung sind hier die Regel."
+    source: "Spotwissen — unbelegt, bitte prüfen"
+  name: Praia de Carnota
+  country: ES
+  region: ''
+  lat: 42.82383
+  lon: -9.108567
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Praia+de+Carnota/data=!4m2!3m1!1s0xd2ed5ef9708c90f:0xbedaa0e625119e
+  verified: true
+  wind_factor: 1.0
+- id: praia-de-area-maior
+  shorebreak:
+    status: "yes"
+    note: "Offener Atlantikstrand bei Louro; kräftige Welle, Shorebreak und Strömung."
+    source: "Spotwissen — unbelegt, bitte prüfen"
+  name: Praia de Area Maior
+  country: ES
+  region: ''
+  lat: 42.750164
+  lon: -9.098997
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "https://www.wingdaily.de/story-wingfoilen-in-galicien-20220627.htm"
+  source: https://www.google.com/maps/place/Praia+de+Area+Maior/data=!4m2!3m1!1s0xd2f295f5ffa7cc5:0x5b0a929eb025dde3
+  verified: true
+  wind_factor: 1.0
+- id: praia-de-san-francisco
+  name: Praia de San Francisco
+  country: ES
+  region: ''
+  lat: 42.756876
+  lon: -9.071188
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "https://www.wingdaily.de/story-wingfoilen-in-galicien-20220627.htm"
+  source: https://www.google.com/maps/place/Praia+de+San+Francisco/data=!4m2!3m1!1s0xd2f2915e20232e5:0x4cb108b084576a1f
+  verified: true
+  wind_factor: 1.0
+- id: praia-de-estorde
+  name: Praia de Estorde
+  country: ES
+  region: ''
+  lat: 42.940999
+  lon: -9.220104
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "https://www.wingdaily.de/story-wingfoilen-in-galicien-20220627.htm"
+  source: https://www.google.com/maps/place/Praia+de+Estorde/data=!4m2!3m1!1s0xd292d6d9536df65:0xa697769a46e2706b
+  verified: true
+  wind_factor: 1.0
+- id: pin-44-8841-5-6849
+  name: "Lac de Monteynard – Savel"
+  country: FR
+  region: ''
+  lat: 44.884064
+  lon: 5.684897
+  water_body: "reservoir"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "https://www.wingdaily.de/videos/wingfoiling-monteynard-video-20220609.htm"
+  source: https://www.google.com/maps/search/44.884064,5.6848967
+  verified: true
+  wind_factor: 1.0
+- id: plage-de-savel
+  name: Plage de Savel
+  country: FR
+  region: ''
+  lat: 44.877616
+  lon: 5.68933
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "https://www.wingdaily.de/videos/wingfoiling-monteynard-video-20220609.htm"
+  source: https://www.google.com/maps/place/Plage+de+Savel/data=!4m2!3m1!1s0x478a81b541027b65:0x97243324fd70cfda
+  verified: true
+  wind_factor: 1.0
+- id: escuela-navarra-de-vela-nafarroako-bela-
+  name: "Embalse de Alloz – Lerate (Escuela Navarra de Vela)"
+  country: ES
+  region: ''
+  lat: 42.723277
+  lon: -1.943679
+  water_body: "reservoir"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "https://www.wingdaily.de/videos/wingfoilen-in-navarra-video-20220613.htm"
+  source: https://www.google.com/maps/place/Escuela+Navarra+de+Vela+%2F+Nafarroako+bela+eskola/data=!4m2!3m1!1s0xd5064faa731f129:0x8a34f9e3ac3ccae3
+  verified: true
+  wind_factor: 1.0
+- id: beacharea
+  name: "Roses – Mas Mates"
+  country: ES
+  region: ''
+  lat: 42.261621
+  lon: 3.171487
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "https://www.youtube.com/watch?v=5swDNokMbcU&t=327s"
+  source: https://www.google.com/maps/place/beacharea/data=!4m2!3m1!1s0x12ba5fcf481521ff:0xc6d83de419cd4bc1
+  verified: true
+  wind_factor: 1.0
+- id: engholmstranda
+  name: Engholmstranda
+  country: 'NO'
+  region: ''
+  lat: 59.314426
+  lon: 10.679955
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "https://www.youtube.com/watch?v=R3fT2EEpzBo"
+  source: https://www.google.com/maps/place/Engholmstranda/data=!4m2!3m1!1s0x4646add441b75d1b:0x29fb53037c447987
+  verified: true
+  wind_factor: 1.0
+- id: orrestranda
+  shorebreak:
+    status: "yes"
+    note: "Offener Nordseestrand der Jæren-Küste, Surfstrand; Shorebreak bei Swell."
+    source: "Spotwissen — unbelegt, bitte prüfen"
+  name: Orrestranda
+  country: 'NO'
+  region: ''
+  lat: 58.725272
+  lon: 5.51239
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Orrestranda/data=!4m2!3m1!1s0x463a4420cac637e9:0x8a6ab2438e88a71a
+  verified: true
+  wind_factor: 1.0
+- id: brusand-strand
+  shorebreak:
+    status: "yes"
+    note: "Offener Nordseestrand der Jæren-Küste, Surfstrand; Shorebreak bei Swell."
+    source: "Spotwissen — unbelegt, bitte prüfen"
+  name: Brusand Strand
+  country: 'NO'
+  region: ''
+  lat: 58.53404
+  lon: 5.738125
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Brusand+Strand/data=!4m2!3m1!1s0x463a16c7c6b6f909:0xa2b47bbd81fce61e
+  verified: true
+  wind_factor: 1.0
+- id: havik-strand
+  shorebreak:
+    status: "possible"
+    note: "Jæren-Küste, offen zur Nordsee; Shorebreak bei Swell möglich."
+    source: "Spotwissen — unbelegt, bitte prüfen"
+  name: Havik Strand
+  country: 'NO'
+  region: ''
+  lat: 58.584698
+  lon: 5.635858
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Havik+Strand/data=!4m2!3m1!1s0x46376562f1c90717:0x9269fda3854e88ac
+  verified: true
+  wind_factor: 1.0
+- id: stellplatz-womo
+  name: "Klepp – Stellplatz Kringlemyr"
+  country: 'NO'
+  region: ''
+  lat: 58.750572
+  lon: 5.55243
+  water_body: unknown
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Stellplatz+Womo/data=!4m2!3m1!1s0x463767dbdec582c3:0xdc185475426842ae
+  verified: true
+  wind_factor: 1.0
+- id: parkering-selestranden
+  shorebreak:
+    status: "yes"
+    note: "Selestranden an der Jæren-Küste, Surfstrand; Shorebreak bei Swell."
+    source: "Spotwissen — unbelegt, bitte prüfen"
+  name: "Sola – Selestranden (Parkering)"
+  country: 'NO'
+  region: ''
+  lat: 58.861287
+  lon: 5.55788
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "https://www.youtube.com/watch?v=s62R8iCauq4&t=13s"
+  source: https://www.google.com/maps/place/Parkering+Selestranden/data=!4m2!3m1!1s0x463a4974b8d9b85b:0x8277611c9f382216
+  verified: true
+  wind_factor: 1.0
+- id: drejby-strand-camping
+  name: "Sønderborg – Drejby Strand (Camping)"
+  country: DK
+  region: ''
+  lat: 54.86258
+  lon: 9.988976
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Drejby+Strand+Camping/data=!4m2!3m1!1s0x47b325078af7c4a1:0x130443594d4005
+  verified: true
+  wind_factor: 1.0
+- id: pin-51-5165-3-7067
+  thermal:
+    name: "Zeewind"
+    kind: "seewind"
+    months: [4, 5, 6, 7]
+    from: 13
+    to: 20
+    reliability: 0.4
+    source: "weeronline.nl, KNMI"
+    note: "Vor allem Frühjahr und Frühsommer, wenn das Wasser noch kalt und das Land schon warm ist; setzt erst im Lauf des Nachmittags ein. Ab Windstärke 2 ablandig hat sie keine Chance. Keine Quelle nennt Stärken"
+  name: "Veerse Meer – Oranjeplaat"
+  country: NL
+  region: ''
+  lat: 51.516537
+  lon: 3.706715
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "https://www.vertigo-sports.com/nl/wingsurf/wingsurfspots-zeeland/veerse-meer/"
+  source: https://www.google.com/maps/search/51.5165368,3.7067153
+  verified: true
+  wind_factor: 1.0
+- id: parkplatz-strand
+  thermal:
+    name: "Zeewind"
+    kind: "seewind"
+    months: [4, 5, 6, 7]
+    from: 13
+    to: 20
+    reliability: 0.4
+    source: "weeronline.nl, KNMI"
+    note: "Vor allem Frühjahr und Frühsommer, wenn das Wasser noch kalt und das Land schon warm ist; setzt erst im Lauf des Nachmittags ein. Ab Windstärke 2 ablandig hat sie keine Chance. Keine Quelle nennt Stärken"
+  name: "Grevelingenmeer – Scharendijke, Parkplatz"
+  country: NL
+  region: ''
+  lat: 51.745
+  lon: 3.86
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "https://www.vertigo-sports.com/nl/wingsurf/wingsurfspots-zeeland/veerse-meer/"
+  source: https://www.google.com/maps/place/Parkplatz+Strand/data=!4m2!3m1!1s0x47c493a3ddbb93e3:0x4104b003c454730e
+  verified: true
+  wind_factor: 1.0
+- id: veerseer-meer
+  thermal:
+    name: "Zeewind"
+    kind: "seewind"
+    months: [4, 5, 6, 7]
+    from: 13
+    to: 20
+    reliability: 0.4
+    source: "weeronline.nl, KNMI"
+    note: "Vor allem Frühjahr und Frühsommer, wenn das Wasser noch kalt und das Land schon warm ist; setzt erst im Lauf des Nachmittags ein. Ab Windstärke 2 ablandig hat sie keine Chance. Keine Quelle nennt Stärken"
+  name: Veerseer Meer
+  country: NL
+  region: ''
+  lat: 51.569541
+  lon: 3.654701
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "Veerseer Meer https://www.vertigo-sports.com/nl/wingsurf/wingsurfspots-zeeland/veerse-meer/"
+  source: https://www.google.com/maps/search/51.569541,3.6547012
+  verified: true
+  wind_factor: 1.0
+- id: pin-47-9157-4-3815
+  name: "Plovan (Baie d'Audierne)"
+  country: FR
+  region: ''
+  lat: 47.915715
+  lon: -4.381509
+  water_body: "sea"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "Wellen können je nach Swell gross werden."
+  source: https://www.google.com/maps/search/47.9157151,-4.3815088
+  verified: true
+  wind_factor: 1.0
+- id: pin-48-1107-4-2825
+  name: "Kerlaz – Tréfeuntec"
+  country: FR
+  region: ''
+  lat: 48.111271
+  lon: -4.288573
+  water_body: "sea"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "Geschützter Spot. Übernachten am Spot möglich"
+  source: https://www.google.com/maps/search/48.1106701,-4.2825272
+  verified: true
+  wind_factor: 1.0
+- id: plage-nord
+  thermal:
+    name: "Brise thermique"
+    kind: "seewind"
+    months: [6, 7, 8, 9]
+    from: 11
+    to: 18
+    dir: 300
+    typical_kn: 12
+    reliability: 0.5
+    suppressed_by: [90]
+    source: "varactu.fr, apprendrelekitesurf.fr"
+    note: "Ab 10 bis 11 Uhr mit 5 bis 6 kn, Maximum 14 bis 15 Uhr, Ende 17 bis 18 Uhr; an Kaps durch Düseneffekt 20 bis 25. Mistral und Levant sind Gradientwinde, keine Thermik"
+  name: "Hyères – L'Almanarre, Plage Nord"
+  country: FR
+  region: ''
+  lat: 43.070205
+  lon: 6.125307
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "https://youtu.be/pGyNc2SWlz4"
+  source: https://www.google.com/maps/place/Plage+Nord/data=!4m2!3m1!1s0x12b696df38ea4529:0x554e68c9d5c55973
+  verified: true
+  wind_factor: 1.0
+- id: beach-seulieres
+  shorebreak:
+    status: "possible"
+    note: "Atlantikseite der Île d'Oléron; Shorebreak bei Swell möglich."
+    source: "Spotwissen — unbelegt, bitte prüfen"
+  name: Beach Seulières
+  country: FR
+  region: ''
+  lat: 46.002745
+  lon: -1.392989
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "https://www.guide-charente-maritime.com/en/do-it-your-way/sport/article-the-best-kitesurf-spots-in-charente-maritime-106.html"
+  source: https://www.google.com/maps/place/Beach+Seuli%C3%A8res/data=!4m2!3m1!1s0x4803e5a4c552ce2b:0x5b1400575dceb066
+  verified: true
+  wind_factor: 1.0
+- id: plage-du-vougo
+  shorebreak:
+    status: "yes"
+    note: "Offener Strand der Nordküste des Léon, Surfstrand; Shorebreak bei Swell."
+    source: "Spotwissen — unbelegt, bitte prüfen"
+  name: Plage du Vougo
+  country: FR
+  region: ''
+  lat: 48.631661
+  lon: -4.459119
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Plage+du+Vougo/data=!4m2!3m1!1s0x4816a7f78737e31f:0x4b4aa87ce0ac3efd
+  verified: true
+  wind_factor: 1.0
+- id: bade-und-surferwiese-walchensee
+  thermal:
+    name: "Thermikwind"
+    kind: "talwind"
+    months: [5, 6, 7, 8, 9]
+    from: 12
+    to: 19
+    dir: 190
+    typical_kn: 12
+    reliability: 0.45
+    suppressed_by: [180]
+    source: "walchensee.net"
+    note: "Braucht klare Nacht und sonnigen Morgen; Südströmung und Wolkenstau über den Alpen verhindern sie. Achtung: die Quelle beschreibt die Richtung als 'Richtung Nordost pfeifend', die Herkunftsrichtung ist damit nicht eindeutig belegt"
+  name: Bade- und Surferwiese Walchensee
+  country: "DE"
+  region: ''
+  lat: 47.592
+  lon: 11.345
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "Dieselbe Näherungskoordinate tragen außerdem: Walchensee."
+  source: https://www.google.com/maps/place/Bade-+und+Surferwiese+Walchensee/data=!4m2!3m1!1s0x479da70263b79e77:0xbe1b7f3162d6d101
+  verified: true
+  wind_factor: 1.0
+- id: beach-magou-ro
+  shorebreak:
+    status: "yes"
+    note: "Offener Atlantikstrand bei Plouhinec; Shorebreak bei Swell, Ein- und Ausstieg zwischen den Sets."
+    source: "Spotwissen — unbelegt, bitte prüfen"
+  name: Beach Magouëro
+  country: FR
+  region: ''
+  lat: 47.66478
+  lon: -3.254185
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "https://www.upandkite.com/spot-kitesurf-plouhinec-quiberon"
+  source: https://www.google.com/maps/place/Beach+Magou%C3%ABro/data=!4m2!3m1!1s0x481066477df7503d:0xf2e6a58aefbd555f
+  verified: true
+  wind_factor: 1.0
+- id: plage-de-kerhillio
+  shorebreak:
+    status: "yes"
+    note: "Offener Atlantikstrand der Côte Sauvage; bei Swell bricht die Welle direkt am Ufer."
+    source: "Spotwissen — unbelegt, bitte prüfen"
+  name: Plage de Kerhillio
+  country: FR
+  region: ''
+  lat: 47.608738
+  lon: -3.170714
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "https://www.youtube.com/watch?v=8aQkU9CIEls"
+  source: https://www.google.com/maps/place/Plage+de+Kerhillio/data=!4m2!3m1!1s0x48106ee53f49fccb:0x3ead78adefa7aed0
+  verified: true
+  wind_factor: 1.0
+- id: golf-von-morbihan
+  name: Golf von Morbihan
+  country: FR
+  region: ''
+  lat: 47.599566
+  lon: -2.799153
+  water_body: unknown
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "https://www.youtube.com/watch?v=DvnltED5HeM"
+  source: https://www.google.com/maps/place/Golf+von+Morbihan/data=!4m2!3m1!1s0x481004ad4bc6c283:0xd41c45262bd7b7ac
+  verified: true
+  wind_factor: 1.0
+- id: plage-de-goulien
+  shorebreak:
+    status: "yes"
+    note: "Surfstrand auf Crozon, nach Westen offen; Shorebreak bei Swell."
+    source: "Spotwissen — unbelegt, bitte prüfen"
+  name: Plage de Goulien
+  country: FR
+  region: ''
+  lat: 48.243225
+  lon: -4.550357
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "https://www.youtube.com/watch?v=_byYeX36xCE"
+  source: https://www.google.com/maps/place/Plage+de+Goulien/data=!4m2!3m1!1s0x4816c15b813c7775:0x8834aa1384deb867
+  verified: true
+  wind_factor: 1.0
+- id: west-surfing-association
+  shorebreak:
+    status: "yes"
+    note: "Surfstrand von Guidel-Plage; Shorebreak bei Swell."
+    source: "Spotwissen — unbelegt, bitte prüfen"
+  name: "Guidel-Plages (West Surfing Association)"
+  country: FR
+  region: ''
+  lat: 47.762753
+  lon: -3.528714
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "https://sportihome.com/de/s/spot/wing--foil/France---Bretagne---Clohars-Carnoet/007959/guidel-plage"
+  source: https://www.google.com/maps/place/West+Surfing+Association/data=!4m2!3m1!1s0x4810f3931425412d:0xf87d66d9db0805b4
+  verified: true
+  wind_factor: 1.0
+- id: home-la-mer
+  name: "Pentrez – Plomodiern (Home La Mer)"
+  country: FR
+  region: ''
+  lat: 48.174328
+  lon: -4.314194
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Home+La+Mer/data=!4m2!3m1!1s0x480e0b0db9055189:0x6e9babe846a6e14
+  verified: true
+  wind_factor: 1.0
+- id: centre-nautique-frehel
+  name: Centre Nautique Fréhel
+  country: FR
+  region: ''
+  lat: 48.642381
+  lon: -2.406821
+  water_body: unknown
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "https://wingpassion.de/wingfoilen-normandie-und-bretagne"
+  source: https://www.google.com/maps/place/Centre+Nautique+Fr%C3%A9hel/data=!4m2!3m1!1s0x480e74ee3fa0b2a7:0x1257108532afa75b
+  verified: true
+  wind_factor: 1.0
+- id: pin-47-5066-2-7289
+  name: "Suscinio"
+  country: FR
+  region: ''
+  lat: 47.506565
+  lon: -2.728872
+  water_body: "sea"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "https://www.instagram.com/p/CYMZVjSoDPG/?utm_medium=copy_link"
+  source: https://www.google.com/maps/search/47.5065646,-2.7288724
+  verified: true
+  wind_factor: 1.0
+- id: pin-47-4947-2-6813
+  name: "Penvins"
+  country: FR
+  region: ''
+  lat: 47.494763
+  lon: -2.680192
+  water_body: "sea"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "https://www.instagram.com/p/CYTIpVwIwSQ/?utm_medium=copy_link"
+  source: https://www.google.com/maps/search/47.4946921,-2.6812883
+  verified: true
+  wind_factor: 1.0
+- id: pin-56-9607-8-3751
+  name: "Nørre Vorupør"
+  country: DK
+  region: ''
+  lat: 56.960912
+  lon: 8.373513
+  water_body: "sea"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/search/56.960663,8.3750578
+  verified: true
+  wind_factor: 1.0
+- id: griset-odde-fyr
+  name: Grisetåodde Fyr
+  country: DK
+  region: ''
+  lat: 56.581777
+  lon: 8.567448
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Griset%C3%A5odde+Fyr/data=!4m2!3m1!1s0x464a29deff51d7eb:0x8b6919c7b98b8a3b
+  verified: true
+  wind_factor: 1.0
+- id: bulbjerg
+  name: Bulbjerg
+  country: DK
+  region: ''
+  lat: 57.159287
+  lon: 9.044065
+  water_body: unknown
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Bulbjerg/data=!4m2!3m1!1s0x464906377cef7cc5:0x88a26d2b4972d22b
+  verified: true
+  wind_factor: 1.0
+- id: niobe
+  name: "Fehmarn – Gammendorf (Niobe)"
+  country: DE
+  region: ''
+  lat: 54.522364
+  lon: 11.155125
+  water_body: unknown
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "Niobe"
+  source: https://www.google.com/maps/search/54.5223641,11.1551246
+  verified: true
+  wind_factor: 1.0
+- id: pin-56-7702-8-2742
+  name: "Krik – Nissum Bredning"
+  country: DK
+  region: ''
+  lat: 56.770217
+  lon: 8.27423
+  water_body: unknown
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "WSW. An Mole parken dann reinlaufen. Gute Tiefe"
+  source: https://www.google.com/maps/search/56.7702168,8.2742299
+  verified: true
+  wind_factor: 1.0
+- id: sorte-bakker-strand
+  name: Sorte Bakker Strand
+  country: DK
+  region: ''
+  lat: 56.072419
+  lon: 8.251419
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "Bei WNW"
+  source: https://www.google.com/maps/place/Sorte+Bakker+Strand/data=!4m2!3m1!1s0x464a5ae4eb9ea287:0x3946de8f17ebdb8d
+  verified: true
+  wind_factor: 1.0
+- id: skaven-strand
+  name: Skaven Strand
+  country: DK
+  region: ''
+  lat: 55.895264
+  lon: 8.361325
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "Bei WNW"
+  source: https://www.google.com/maps/place/Skaven+Strand/data=!4m2!3m1!1s0x464af8c308753225:0xad838d47e11217cc
+  verified: true
+  wind_factor: 1.0
+- id: plansee
+  name: Plansee
+  country: AT
+  region: ''
+  lat: 47.4694
+  lon: 10.8056
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Plansee/data=!4m2!3m1!1s0x479cfa34b844b6dd:0xfb2418cc27d5da20
+  verified: true
+  wind_factor: 1.0
+- id: bise-noire
+  name: "Murtensee – Murten (Bise Noire)"
+  country: CH
+  region: ''
+  lat: 46.93151
+  lon: 7.111588
+  water_body: "lake"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/BISE+NOIRE/data=!4m2!3m1!1s0x478e12c297210fc3:0xaa142a43ef006b96
+  verified: true
+  wind_factor: 1.0
+- id: vignola-mare-2
+  name: Vignola Mare
+  country: IT
+  region: ''
+  lat: 41.130702
+  lon: 9.077668
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "West Spot. Bei Ost wird es hier wellig. Campingplatz laute Musik bis ca. 23:30-24:00 Uhr"
+  source: https://www.google.com/maps/place/Vignola+Mare/data=!4m2!3m1!1s0x12dbe45661719aff:0x384fa8fe3dc128c5
+  verified: true
+  wind_factor: 1.0
+- id: baia-saraceno
+  name: Baia Saraceno
+  country: IT
+  region: ''
+  lat: 41.18211
+  lon: 9.396014
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Baia+Saraceno/data=!4m2!3m1!1s0x12d942e045c7dc9d:0x3c77970d942d14c1
+  verified: true
+  wind_factor: 1.0
+- id: lago-di-santa-croce
+  thermal:
+    name: "Vento termico"
+    kind: "talwind"
+    months: [3, 4, 5, 6, 7, 8, 9]
+    from: 12
+    to: 18
+    dir: 180
+    typical_kn: 20
+    reliability: 0.55
+    source: "scuolakitevkc.it"
+    note: "Am kräftigsten April und Mai; im Hochsommer schwächer. Uhrzeiten von der Quelle nicht genannt"
+  name: Lago di Santa Croce
+  country: IT
+  region: ''
+  lat: 46.1057
+  lon: 12.3358
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Lago+di+Santa+Croce/data=!4m2!3m1!1s0x4779097d6db27a01:0xe6634c53f0355ac3
+  verified: true
+  wind_factor: 1.0
+- id: lago-di-viverone
+  name: Lago di Viverone
+  country: IT
+  region: ''
+  lat: 45.417
+  lon: 8.033
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Lago+di+Viverone/data=!4m2!3m1!1s0x47862914091dd451:0x9efbc2ecadba89a3
+  verified: true
+  wind_factor: 1.0
+- id: chiemsee-feldwies
+  thermal:
+    name: "Mittagsthermik"
+    kind: "seewind"
+    months: [5, 6, 7, 8, 9]
+    from: 12
+    to: 19
+    reliability: 0.4
+    source: "chiemsee-segeln.de"
+    note: "Thermische Winde um die Mittagszeit, Morgenbrise gegen 9 bis 10 Uhr; eine Stunde vor Sonnenuntergang schläft der Wind ein. Keine Quelle nennt Stärken — es wird deshalb keine angenommen"
+  name: CHIEMSEE - FELDWIES
+  country: "DE"
+  region: ''
+  lat: 47.842921
+  lon: 12.476019
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "CHIEMSEE - FELDWIES Im Vergleich zu Chieming sind hier in Feldwies bei starkem Westwind die Verhältnisse gemäßigter. Die Wellen werden zwar auch schon durchaus Airtime-tauglich, aber lange nicht so hoch. Aber auch hier sind vorwiegend westliche Winde surfbar, von auflandigem West bis Nord-Nordwest, der dann fast sideshore von rechts weht. Südwest dagegen ist nur bedingt gut, da das nahe südliche Ufer mit dem Campingplatz den Wind abdecken und für böige Verhältnisse sorgen. Für Ostwind dagegen lohnt der Weg auf die andere Seite des Sees zum Nordufer nach Seebruck oder an den nahen Simssee, der bei Nordost eine echte Alternative ist. Der Einstieg in Feldwies ist denkbar komfortabel mit viel Rasenfläche zum Aufriggen und einem schönen und vor allem flach abfallenden Sand- und Kiesstrand. In Ufernähe habt Ihr einen 50 bis 200 m breiten stehtiefen Streifen, den Ihr bei Westwind nicht verlassen müsst. Geparkt wird auf diversen Parkplätzen direkt am Spot."
+  source: https://www.google.com/maps/search/47.842921,12.476019
+  verified: true
+  wind_factor: 1.0
+- id: thunersee
+  thermal:
+    name: "Alpenthermik"
+    kind: "talwind"
+    months: [5, 6, 7, 8, 9]
+    from: 12
+    to: 19
+    reliability: 0.45
+    source: "esys.org"
+    note: "Ab spätestens Mittag konstante thermische Winde mittlerer Stärke; die Quelle nennt weder Richtung noch Stärke"
+  name: Thunersee
+  country: CH
+  region: ''
+  lat: 46.683
+  lon: 7.717
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Thunersee/data=!4m2!3m1!1s0x478fae3554ddf6eb:0xc692ca79d2500aea
+  verified: true
+  wind_factor: 1.0
+- id: alpnachersee
+  name: Alpnachersee
+  country: CH
+  region: ''
+  lat: 46.9667
+  lon: 8.3167
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "Thermischer Wind ab 11-12 Uhr für 3-4 Stunden"
+  source: https://www.google.com/maps/place/Alpnachersee/data=!4m2!3m1!1s0x478ff0c458791ddf:0x3f1059a4bd8d804f
+  verified: true
+  wind_factor: 1.0
+- id: neusiedler-see
+  name: Neusiedler See
+  country: AT
+  region: ''
+  lat: 47.834592
+  lon: 16.748829
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Neusiedler+See/data=!4m2!3m1!1s0x476c3ffe58617d7d:0xea246ea46ba19a1e
+  verified: true
+  wind_factor: 1.0
+- id: heiligenhafen
+  name: Heiligenhafen
+  country: DE
+  region: ''
+  lat: 54.375358
+  lon: 10.977402
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "Beste Windrichtung West bis Nordwest auf der Ostsee, Südwest bis Nordwest und Nordost bis Ost auf dem Binnensee, bei Westsüdwest kann an der Nehrung bei der DLRG Station auch schon gestartet werden allerdings weht es dann dort gleich ablandig"
+  source: https://www.google.com/maps/place/Heiligenhafen/data=!4m2!3m1!1s0x47b281f168f7e5a1:0x4248963c6582730
+  verified: true
+  wind_factor: 1.0
+- id: tegernsee
+  name: Tegernsee
+  country: "DE"
+  region: ''
+  lat: 47.7217
+  lon: 11.7367
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "In der Früh liefern klare Nächte einen zuverlässigen Bergwind. Nur bei Föhnunterstützung gibt es manchmal Starkwind. Ansonsten warten 10 bis 13 Knoten. Je kälter die Nächte desto mehr Wind ist zu erwarten. Ideal sind der Mai Juni und Juli aber auch in kälteren Monaten funktioniert das Windsystem"
+  source: https://www.google.com/maps/place/Tegernsee/data=!4m2!3m1!1s0x479d8c219a91bd33:0x41d25a40937a060
+  verified: true
+  wind_factor: 1.0
+- id: riedsee
+  name: Riedsee
+  country: DE
+  region: ''
+  lat: 49.683707
+  lon: 8.431406
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "Am besten fubktioniert der Spot bei Nord- und Südwind. Einstiegsstelle wie eingezeichnet, befindet sich an einer keinen Landzuge, die die beiden Teile vom Riedsee voneinander trennt. Allerdings gehört das Areal zum Segel-Verein Biblis und der Zutritt ist nur Mitgliedern gestattet. Am besten funktioniert die hintere Seeseite bei Westwind, der dann ziemlich frei und konstant sideoffshore einfallen kann. Aber grundsätzlich sind in Biblis eigentlich alle Windrichtungen surfbar, wenn man etwas böigen Wind in Kauf nimmt."
+  source: https://www.google.com/maps/place/Riedsee/data=!4m2!3m1!1s0x4797d5e42af16657:0x5100b6eec05ecfb5
+  verified: true
+  wind_factor: 1.0
+- id: silbersee
+  name: Silbersee
+  country: DE
+  region: ''
+  lat: 49.572431
+  lon: 8.377676
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "Nordostwind kommt noch am konstantesten, denn Wind aus dieser Richtung kann sich über der gesamten Länge des Silbersees noch stabilisieren - aber wann hat man schon mal Nordost-Wind ? Westliche Winde wiederum wehen ablandig am Spot, ermöglichen aber dafür die längsten Schläge auf dem See, wenn man das mühsame Höhelaufen in Kauf nimmt. Bei westlichen bis nördlichen Winden lohnt auch der Weg auf die Landzunge, hierfür benötigt Ihr allerdings unbedingt einen Surfwagen, da dieser Bereich nicht mit dem Auto befahren werden darf. Dafür kommt hier der Wind deutlich konstanter und stabiler."
+  source: https://www.google.com/maps/place/Silbersee/data=!4m2!3m1!1s0x47962d3a5410b223:0x9c847254de16d590
+  verified: true
+  wind_factor: 1.0
+- id: schluchsee
+  name: Schluchsee
+  country: DE
+  region: ''
+  lat: 47.8214
+  lon: 8.1528
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "Durch das bergige Umland und die längliche Form des Sees ist eigentlich nur West- oder Ostwind surfbar. Wind aus West-Nordwest presst sich zwischen den Hügeln durch bis auf den Schluchsee und kann auch im Westteil des Sees schon früh frei einfallen und über dem restlichen See auswehen, da hier das Hinterland über dem Zufluss etwas flacher verläuft. Aber auch Wind aus Südost hat 7 km Platz, um sich frei zu entfalten und in Aha entsprechend konstant anzukommen."
+  source: https://www.google.com/maps/place/Schluchsee/data=!4m2!3m1!1s0x4790f617d445933f:0x41f6bb7a5df5a20
+  verified: true
+  wind_factor: 1.0
+- id: vegatrappa-parkering
+  name: "Vega – Vegatrappa (Parkering)"
+  country: "NO"
+  region: ''
+  lat: 65.659707
+  lon: 11.786442
+  water_body: "sea"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Vegatrappa+Parkering/data=!4m2!3m1!1s0x4674bb200d7d62f1:0xa5cb4939eae54c7e
+  verified: true
+  wind_factor: 1.0
+- id: nato-rampe-rheinmuenster
+  name: NATO Rampe Rheinmünster
+  country: DE
+  region: ''
+  lat: 48.7883
+  lon: 8.0525
+  water_body: unknown
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: "NO"
+  source: https://www.google.com/maps/place/NATO+Rampe+Rheinm%C3%BCnster/data=!4m2!3m1!1s0x4796e10814c0438b:0x55b1ca5baf1a6b21
+  verified: true
+  wind_factor: 1.0
+- id: udsigtspunkt-hanstholm-surfspot
+  shorebreak:
+    status: "yes"
+    note: "Nordseeküste bei Hanstholm, Surfrevier; bei Swell bricht die Welle nahe am Ufer."
+    source: "Spotwissen — unbelegt, bitte prüfen"
+  name: Udsigtspunkt Hanstholm Surfspot
+  country: DK
+  region: ''
+  lat: 57.12648
+  lon: 8.623152
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Udsigtspunkt+Hanstholm+Surfspot/data=!4m2!3m1!1s0x4649bb4364702d89:0x6aa4cc8488f1e3f6
+  verified: true
+  wind_factor: 1.0
+- id: lac-d-annecy
+  name: Lac d'Annecy
+  country: "FR"
+  region: ''
+  lat: 45.85
+  lon: 6.167
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Lac+d'Annecy/data=!4m2!3m1!1s0x478b903251364787:0xabd5b4f52247c86b
+  verified: true
+  wind_factor: 1.0
+- id: kollersee
+  name: Kollersee
+  country: DE
+  region: ''
+  lat: 49.3791
+  lon: 8.474
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Kollersee/data=!4m2!3m1!1s0x4797b62012d63625:0xa4a9f27222892b86
+  verified: true
+  wind_factor: 1.0
+- id: sihlsee
+  name: Sihlsee
+  country: CH
+  region: ''
+  lat: 47.117
+  lon: 8.783
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  source: https://www.google.com/maps/place/Sihlsee/data=!4m2!3m1!1s0x479ab4ceed158e33:0x17bb9291fd06c7a5
+  verified: true
+  wind_factor: 1.0
+
+- id: wissant
+  comment: "Parken nicht am Wasser, offenes Meer, shorebreak bei Ebbe - CHECK BEDINGUNGEN BEI FLUT"
+  shorebreak:
+    status: "possible"
+    note: "Strand an der Côte d'Opale: bei auflandigem Wind und Swell Shorebreak möglich, je nach Tide."
+    source: "Spotwissen — unbelegt, bitte prüfen"
+  name: Wissant
+  country: FR
+  region: ''
+  lat: 50.893965
+  lon: 1.663709
+  water_body: unknown
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: Selbst eingetragen. Gewässerart, Untergrund und Land sind geraten — das Landeskürzel stammt aus
+    groben Rahmen und liegt in Grenznähe gelegentlich daneben (es steuert nur die Wetterwarnungen).
+  source: eigene Eingabe
+  verified: true
+  wind_factor: 1.0
+
+- id: wimereux-pointe-aux-oies
+  comment: "Parken am Wasser, offenes Meer, shorebreak bei Ebbe - CHECK BEDINGUNGEN BEI FLUT"
+  shorebreak:
+    status: "possible"
+    note: "Strand an der Côte d'Opale: bei auflandigem Wind und Swell Shorebreak möglich, je nach Tide."
+    source: "Spotwissen — unbelegt, bitte prüfen"
+  name: Wimereux – Pointe aux Oies
+  country: FR
+  region: ''
+  lat: 50.787524
+  lon: 1.60366
+  water_body: unknown
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: Selbst eingetragen. Gewässerart, Untergrund und Land sind geraten — das Landeskürzel stammt aus
+    groben Rahmen und liegt in Grenznähe gelegentlich daneben (es steuert nur die Wetterwarnungen).
+  source: eigene Eingabe
+  verified: true
+  wind_factor: 1.0
+
+- id: the-harbor-of-boulogne-sur-mer
+  comment: "Parken am Wasser, offenes Meer aber abgeschirmt durch Steinmauer am Hafen, shorebreak bei Ebbe - CHECK BEDINGUNGEN BEI FLUT"
+  geo_ok: true
+  name: "Boulogne-sur-Mer – Hafen"
+  country: FR
+  region: ''
+  lat: 50.735314
+  lon: 1.588789
+  water_body: "sea"
+  shallow: none
+  seagrass: none
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  sectors: []
+  sectors_unknown: true
+  notes: Selbst eingetragen. Gewässerart, Untergrund und Land sind geraten — das Landeskürzel stammt aus
+    groben Rahmen und liegt in Grenznähe gelegentlich daneben (es steuert nur die Wetterwarnungen).
+  source: eigene Eingabe
+  verified: true
+  wind_factor: 1.0

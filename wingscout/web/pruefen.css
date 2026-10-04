@@ -1,0 +1,37 @@
+
+.pliste{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+.pkarte{background:var(--surface);border-radius:12px;box-shadow:var(--schatten);padding:16px 18px}
+.pkarte.aktiv{outline:2px solid var(--accent);outline-offset:0}
+.pkarte .kmt{margin:4px 0 8px}
+.pkopf{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.pkopf b{font-size:1rem}
+.pgrund{font-size:.84rem;color:var(--stop)}
+.pgrund.mild{color:var(--accent)}
+.pgrund.offen{color:var(--muted)}
+.pfilter{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 0}
+.pfilter button{font:600 12px/1 inherit;padding:9px 14px;border:1px solid var(--line);
+border-radius:9px;background:none;color:var(--muted);cursor:pointer}
+.pfilter button.an{background:var(--accent);color:#fff;border-color:var(--accent)}
+.pfilter button:not(.an):hover{color:var(--ink)}
+.pleer{color:var(--muted);font-size:.9rem;margin-top:14px}
+.pkoord{font:12px/1.4 ui-monospace,Menlo,monospace;color:var(--muted);margin:6px 0 0}
+.pzeile{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.pzeile input[type=text]{flex:1;min-width:190px}
+.pzeile a{font-size:.84rem;white-space:nowrap}
+.perledigt{opacity:.45}
+.pmsg{font-size:.84rem;margin-top:8px;min-height:1.2em}
+.pmsg.ok{color:var(--ok)}
+.pmsg.err{color:var(--stop)}
+/* Nicht die Karte klebt, sondern ihre Spalte. Das ist der Unterschied, an dem
+   es lag: `position: sticky` braucht Platz zum Wandern innerhalb des eigenen
+   Elternelements, und das Elternelement der Karte war genauso hoch wie sie
+   selbst. Die Spalte dagegen steht in einem Raster neben der Liste, ist durch
+   `align-items:start` nicht gestreckt und darf deshalb die ganze Listenhöhe
+   entlangwandern. Damit bleibt die Karte stehen und nur die Liste bewegt sich. */
+.pmapsp{position:sticky;top:12px}
+#pmap{height:min(74vh,600px);border-radius:12px;border:1px solid var(--line);
+background:var(--surface-2);z-index:0}
+.pzahl{color:var(--muted);font-weight:400;font-variant-numeric:tabular-nums}
+.pspalten{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+@media (max-width:820px){.pspalten{grid-template-columns:1fr}
+.pmapsp{position:static}#pmap{height:300px}}

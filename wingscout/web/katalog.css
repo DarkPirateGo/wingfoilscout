@@ -1,0 +1,108 @@
+
+.ksuche{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.ksuche > div{flex:1;min-width:180px}
+.ksuche select{width:auto;min-width:140px;max-width:100%}
+/* „Land“ und „Gewässer“ so breit wie ihr längster Eintrag, mindestens 180 px:
+   „tous les plans d’eau“ war am Ende abgeschnitten. `!important`, weil das
+   Markup `style='flex:0'` setzt. „Zeige nur“ bleibt bei 180 px — sein
+   längster Eintrag ist nicht der Vorgabewert, er würde nur Platz kosten. */
+.ksuche > div:has(> #kland, > #kwasser){flex:0 0 auto !important}
+.kzahl{font-size:.84rem;color:var(--muted);margin:10px 0 0}
+.kspalten{display:grid;grid-template-columns:3fr 2fr;gap:16px;align-items:start;margin-top:16px}
+/* Ohne `min-width:0` wächst ein Rasterkind mit seinem breitesten Inhalt —
+   die Tabelle dehnte am Handy die ganze Seite, statt zu wischen. */
+.kspalten > *{min-width:0}
+@media (max-width:900px){.kspalten{grid-template-columns:1fr}.kmapsp{position:static}#kmap{height:320px}}
+.kmapsp{position:sticky;top:12px}
+#kmap{height:min(76vh,640px);border-radius:12px;border:1px solid var(--line);background:var(--surface-2);z-index:0}
+.kliste{max-height:min(76vh,640px);overflow:auto;border-radius:12px;background:var(--surface);box-shadow:var(--schatten)}
+.kliste table{width:100%;border-collapse:collapse;font-size:.86rem;table-layout:fixed}
+.kliste th:nth-child(2){width:92px}.kliste th:nth-child(3){width:100px}.kliste th:nth-child(4){width:64px}
+.kliste td.name{overflow:hidden}
+.kliste th{position:sticky;top:0;background:var(--surface);text-align:left;font-size:.7rem;letter-spacing:.08em;
+text-transform:uppercase;color:var(--muted);padding:10px 12px;border-bottom:1px solid var(--line);cursor:pointer;z-index:1}
+.kliste th.sort::after{content:" ↓";color:var(--accent)}
+.kliste th.sort.auf::after{content:" ↑"}
+.kliste td{padding:8px 12px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+.kliste tr{cursor:pointer}
+.kliste tr:hover td{background:var(--ground)}
+.kliste tr.aktiv td{background:var(--accent-soft)}
+.kliste td.name b{font-weight:600}
+.kliste td.name small{display:block;color:var(--muted);font-size:.76rem;margin-top:3px;
+white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kliste td.name .kpill{vertical-align:1px}
+.kliste td.n{font:12px/1.5 ui-monospace,Menlo,monospace;color:var(--muted);white-space:nowrap}
+.kpill{display:inline-block;font-size:10px;letter-spacing:.04em;padding:2px 6px;border-radius:3px;white-space:nowrap;margin:0 3px 2px 0}
+.kp-ok{background:var(--ok-soft);color:var(--ok)}.kp-info{background:var(--surface-2);color:var(--ink-2)}
+.kp-warn{background:var(--stop-soft);color:var(--stop)}.kp-th{background:#F6E6D0;color:#8E5A0A}
+.kp-tide{background:#DCEBF3;color:#2F6F8F}
+@media (prefers-color-scheme:dark){.kp-th{background:#3A2B14;color:#E8B36A}.kp-tide{background:#183241;color:#8CC0DC}}
+.ktide label{display:inline-flex;gap:4px;align-items:center;font-size:.8rem;color:var(--ink-2)}
+.ktide select,.ktide input[type=number]{font-size:.85rem;padding:3px 6px;max-width:100%}
+.ktide input[type=number]{width:64px}
+.kdoppel{margin-top:16px}
+.kdoppel .treffer{font-size:.86rem;margin-top:8px;color:var(--ink-2)}
+.kdoppel .treffer b{font-variant-numeric:tabular-nums}
+.klinks{display:flex;flex-wrap:wrap;gap:0 10px;margin-top:3px;line-height:1.8}
+.kakt{display:inline-flex;gap:8px;margin-left:8px;font-size:.74rem}
+/* Am Rechner erst, wenn die Zeile unter der Maus oder im Fokus ist — vier
+   Links in jeder von 278 Zeilen sind sonst Rauschen (Review 25.09., U7).
+   Am Handy (kein Hover) bleiben sie sichtbar. */
+@media (hover:hover) and (pointer:fine){
+  .kliste tr:not(:hover):not(:focus-within):not(.aktiv) .kakt{visibility:hidden}
+}
+.kakt a{color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--line)}
+.kakt a:hover{color:var(--accent)}
+.kakt a.weg{color:var(--stop)}
+.kedit{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:2px 0}
+.kedit input[type=text]{font-size:.9rem;padding:4px 8px;min-width:220px}
+button.klein{background:var(--accent);color:#fff;border:0;border-radius:6px;padding:5px 11px;font-size:.8rem;cursor:pointer}
+button.klein.grau{background:var(--surface-2);color:var(--ink-2)}
+button.klein[disabled]{opacity:.6;cursor:default}
+.kmeld{font-size:.84rem;margin-top:8px;min-height:1em}
+.kmeld.ok{color:var(--ok)}.kmeld.err{color:var(--stop)}
+.kzieh{margin-top:10px;font-size:.86rem;background:var(--accent-soft);padding:10px 12px;border-radius:10px}
+.kzieh .mono{font:12px ui-monospace,Menlo,monospace}
+.kneuform{margin-top:14px}
+.kneuform summary{cursor:pointer;font-weight:600;font-size:.9rem}
+.kfelder{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;margin:10px 0}
+.kfelder .breit{grid-column:1/-1}
+.kfelder label{display:block;font-size:.78rem;color:var(--muted);margin-bottom:3px}
+.kfelder label.check{font-size:.84rem;color:var(--ink-2)}
+/* Wie `.row` (basis.css): bricht eine Beschriftung um („Country (code, empty =
+   guess)“), bleiben die Felder der Zeile trotzdem auf einer Linie. */
+@supports (grid-template-rows:subgrid){
+  .kfelder > div:not(.breit):has(> label + :is(input,select,textarea)){display:grid;grid-row:span 2;
+    grid-template-rows:subgrid;grid-template-columns:minmax(0,1fr);row-gap:0}
+  .kfelder > div:not(.breit) > label{align-self:end}
+  .kfelder > div:not(.breit) > :is(input,select,textarea){align-self:start}
+}
+.kfelder > div:not(.breit) > label{text-wrap:balance}
+.kfelder input[type=text],.kfelder select,.kfelder textarea{width:100%;box-sizing:border-box}
+.kfelder textarea{font:inherit;font-size:.9rem;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:inherit;resize:vertical}
+.kliste .kmt{margin-top:4px}
+.klinks a{font-size:.78rem;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}  /* „Location: …“ war in der Zelle abgeschnitten */
+.klinks a.fund{color:var(--ink-2);border-bottom:1px dotted var(--line)}
+
+/* ── Handy (seit 1.17.0) ──────────────────────────────────────────────────
+   Der Katalog ist Arbeit am Rechner (Karte, Filter, Tabelle) und steht am
+   Handy nicht in der Reiterleiste. Erreichbar ist er trotzdem, also darf er
+   dort auch nicht über den Rand laufen. */
+@media (max-width:700px){
+  /* `min-width:180px` je Feld sprengt bei 320–430 pt die Zeile: zwei Felder
+     nebeneinander passen nicht, und die Suchleiste dehnte die Seite. */
+  .ksuche > div{min-width:0;flex:1 1 100%}
+  /* … nur kam `flex:1 1 100%` bei den drei Auswahlfeldern nie an: ihr
+     `style='flex:0'` im Markup schlägt jede Regel hier. Sie waren 0 px breit,
+     ihre Beschriftungen lagen übereinander (in jeder Sprache). Als Raster mit
+     einer Spalte gilt das `flex` nicht mehr — jedes Feld hat seine Zeile. */
+  .ksuche{display:grid;grid-template-columns:minmax(0,1fr)}
+  .ksuche select{min-width:0;width:100%}
+  .kliste{max-height:min(60vh,520px)}
+  .kliste table{min-width:520px}
+  .kliste th,.kliste td{padding:7px 9px;font-size:.8rem}
+  .kfilter,.kzeile{flex-wrap:wrap;gap:8px}
+  .kspalten{grid-template-columns:1fr}
+}
+/* „Für alle vorschlagen“ (seit 2.3.0): der Weg in den Katalog für alle, unter dem eigenen Eintragen */
+.kvorschlag{font-size:.84rem;color:var(--muted);margin:12px 0 0;line-height:1.45}

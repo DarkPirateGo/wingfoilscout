@@ -1,0 +1,82 @@
+# „Spot vorschlagen“ (seit 2.3.0): so kommt ein Spot aus der Community in den
+# Katalog — ohne Git, mit einem kostenlosen GitHub-Konto. Wingfoilscout öffnet
+# dieses Formular vorausgefüllt (Katalog → „Für alle vorschlagen“ bzw.
+# „Korrektur vorschlagen“); die `id`s der Felder sind die Namen in der Adresse
+# (…/issues/new?template=spot.yml&name=…&koordinate=…) und dürfen sich nicht
+# ändern, ohne dass webui.py und web/katalog.js mitziehen (der Test in
+# tests/test_spot_vorschlag.py hält das fest). Übernommen wird von Hand:
+# CONTRIBUTING.md, „Suggesting a spot“.
+name: Suggest a spot
+description: A wingfoil spot missing from Wingfoilscout's catalogue — or a correction to one that is there.
+title: "Spot: "
+labels: ["spot"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping! Every suggestion is checked by hand and then goes into the catalogue (`spots.yaml`) of the next version — everyone who updates gets it.
+        Deutsch, français or español are fine too. Please don't add anything personal (home addresses, phone numbers, other people's names).
+  - type: dropdown
+    id: art
+    attributes:
+      label: New spot or correction?
+      options:
+        - New spot
+        - Correction to a spot that is already in the catalogue
+    validations:
+      required: true
+  - type: input
+    id: name
+    attributes:
+      label: Spot name
+      description: As people there call it — place and beach, e.g. "Fehmarn – Wallnau".
+      placeholder: "Brouwersdam – Kabbelaarsbank"
+    validations:
+      required: true
+  - type: input
+    id: koordinate
+    attributes:
+      label: Coordinates or Google Maps link
+      description: Where you launch — in the water rather than on the car park. Decimal degrees (latitude, longitude) or a pasted Maps link.
+      placeholder: "51.7625, 3.854"
+    validations:
+      required: true
+  - type: dropdown
+    id: gewaesser
+    attributes:
+      label: Water
+      options:
+        - Sea
+        - Lagoon or bay
+        - Lake
+        - Reservoir
+        - Not sure
+    validations:
+      required: true
+  - type: input
+    id: richtungen
+    attributes:
+      label: Good wind directions
+      description: Where the wind is good from here, e.g. "SW–NW" or "225–315°". Leave empty if you don't know.
+      placeholder: "SW–NW"
+  - type: textarea
+    id: hinweise
+    attributes:
+      label: What should others know?
+      description: Launch and parking, depth (standing area?), seagrass, rules or bans, dogs, hazards, best tide — whatever you know.
+  - type: input
+    id: quelle
+    attributes:
+      label: Where does your knowledge come from?
+      description: Your own sessions, a local school or club, a website (please give the link).
+    validations:
+      required: true
+  - type: checkboxes
+    id: zustimmung
+    attributes:
+      label: Permission
+      options:
+        - label: I agree that my suggestion may be published in Wingfoilscout under its licence (PolyForm Noncommercial 1.0.0), and that DARK may also use and license it under other terms.
+          required: true
+        - label: What I wrote is my own knowledge or comes from a source that allows sharing it.
+          required: true

@@ -1,0 +1,43 @@
+# Projektangaben an einer Stelle, maschinenlesbar (seit 1.16.0).
+# Wingfoilscout wird nicht installiert, sondern aus dem Ordner gestartet — diese
+# Datei ist trotzdem die übliche Stelle für Name, Python-Version,
+# Abhängigkeiten und die Einstellungen der Werkzeuge. Die Versionsnummer steht
+# weiter nur in wingscout/__init__.py und wird von hier aus gelesen.
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wingscout"
+dynamic = ["version"]
+description = "Findet Wingfoil-Sessions in Windmodellen und Spotwissen"
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.9"
+dependencies = ["PyYAML>=6,<7"]
+
+[project.optional-dependencies]
+# Für die Entwicklung: der Linter. `python3 -m pip install ruff`
+dev = ["ruff"]
+
+[tool.setuptools.dynamic]
+version = { attr = "wingscout.__version__" }
+
+[tool.setuptools.packages.find]
+include = ["wingscout*"]
+
+[tool.setuptools.package-data]
+wingscout = ["web/*.css", "web/*.js", "web/*.png", "lang/*.json", "hilfe/*.html"]
+
+# ── Linter ───────────────────────────────────────────────────────────────────
+# ruff mit den Regeln, die Fehler finden, nicht Stil: Pyflakes (ungenutzte
+# Importe und Variablen, Namen, die es nicht gibt, f-Strings ohne Platzhalter),
+# Syntaxfehler, veränderliche Voreinstellungen von Argumenten, doppelte
+# Einträge in Mengen. Zeilenlänge und Formatierung bleiben frei.
+[tool.ruff]
+target-version = "py39"
+extend-exclude = ["cache", "Claude outputs"]
+
+[tool.ruff.lint]
+select = ["F", "E9", "B006", "B008", "B033"]

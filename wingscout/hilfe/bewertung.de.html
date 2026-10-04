@@ -1,0 +1,1038 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<!-- Wie Wingfoilscout rechnet — die deutsche Fassung von docs/bewertung.html für die Hilfe
+     in der App, inhaltlich gleich der veröffentlichten englischen Seite. Keine Skripte,
+     keine Abrufe von außen. -->
+<title>Wie Wingfoilscout rechnet</title>
+<style>
+  /* Layout: eine Lesespalte, Abbildungen dürfen breiter werden und scrollen in
+     ihrem eigenen Rahmen; die Nummern folgen dem Weg einer Stunde durchs Programm.
+     Schriften aus dem System — die Seite liegt auch als Datei im Repository und
+     soll ohne Netz und ohne Abruf bei Dritten lesbar sein. */
+  :root{
+    --schrift-titel:"Iowan Old Style","Charter","Palatino Linotype",Palatino,Georgia,serif;
+    --schrift-text:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,Roboto,sans-serif;
+    --schrift-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+    --papier:#F5F3EE;
+    --flaeche:#FFFFFF;
+    --tinte:#131C19;
+    --gedaempft:#5E6B66;
+    --linie:#DAD6CB;
+    --linie-zart:#E9E5DC;
+    --gruen:#3B8F63;
+    --orange:#C67A1E;
+    --rot:#C24A38;
+    --dunkelrot:#7A1F14;
+    --petrol:#1F4E5A;
+    --raster:#E4E0D5;
+    color-scheme:light;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --papier:#0E1513;
+      --flaeche:#151E1B;
+      --tinte:#E6E3DA;
+      --gedaempft:#98A69F;
+      --linie:#27342F;
+      --linie-zart:#1D2825;
+      --gruen:#5CB585;
+      --orange:#E0A24A;
+      --rot:#E07260;
+      --dunkelrot:#C0554A;
+      --petrol:#78B6C4;
+      --raster:#23302B;
+      color-scheme:dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --papier:#0E1513;
+    --flaeche:#151E1B;
+    --tinte:#E6E3DA;
+    --gedaempft:#98A69F;
+    --linie:#27342F;
+    --linie-zart:#1D2825;
+    --gruen:#5CB585;
+    --orange:#E0A24A;
+    --rot:#E07260;
+    --dunkelrot:#C0554A;
+    --petrol:#78B6C4;
+    --raster:#23302B;
+    color-scheme:dark;
+  }
+
+  body{
+    background:var(--papier);
+    color:var(--tinte);
+    font-family:var(--schrift-text);
+    font-size:16px;
+    line-height:1.62;
+    -webkit-font-smoothing:antialiased;
+  }
+  .huelle{
+    max-width:1000px;
+    margin:0 auto;
+    padding-inline:16px;
+    padding-block:0 96px;
+  }
+  .schmal{max-width:66ch;}
+
+  h1,h2,h3{font-family:var(--schrift-titel);text-wrap:balance;margin:0;}
+  h1{font-size:clamp(2rem,6vw,3.1rem);font-weight:600;line-height:1.08;letter-spacing:-.018em;}
+  h2{font-size:clamp(1.35rem,3.4vw,1.75rem);font-weight:600;line-height:1.2;letter-spacing:-.01em;}
+  h3{font-size:1.02rem;font-weight:600;line-height:1.35;margin-bottom:.2em;}
+  p{margin:0 0 1em;}
+  a{color:var(--petrol);}
+
+  /* Kopf */
+  header.kopf{
+    border-bottom:1px solid var(--linie);
+    padding-block:clamp(44px,9vw,84px) clamp(28px,5vw,44px);
+    margin-bottom:clamp(34px,6vw,60px);
+  }
+  .eyebrow{
+    font-family:var(--schrift-mono);
+    font-size:.72rem;letter-spacing:.13em;text-transform:uppercase;
+    color:var(--gedaempft);margin:0 0 1.1em;
+  }
+  .lead{font-size:clamp(1.02rem,2.2vw,1.2rem);color:var(--tinte);max-width:62ch;margin-top:1.1em;}
+  .stempel{
+    font-family:var(--schrift-mono);
+    font-size:.76rem;color:var(--gedaempft);
+    display:flex;flex-wrap:wrap;gap:6px 22px;margin-top:2em;
+  }
+
+  /* Abschnitte */
+  section{margin-bottom:clamp(46px,8vw,86px);scroll-margin-top:24px;}
+  .abschnittkopf{display:flex;gap:16px;align-items:baseline;margin-bottom:1.1em;}
+  .nummer{
+    font-family:var(--schrift-mono);
+    font-size:.82rem;color:var(--gruen);font-weight:500;
+    padding-top:.2em;flex:0 0 auto;
+  }
+
+  /* Figuren */
+  figure{margin:2em 0;}
+  .figrahmen{
+    background:var(--flaeche);
+    border:1px solid var(--linie);
+    border-radius:3px;
+    padding:20px 18px 14px;
+    overflow-x:auto;
+  }
+  figure svg{display:block;height:auto;color:var(--tinte);}
+  figcaption{
+    font-size:.86rem;color:var(--gedaempft);margin-top:.85em;max-width:62ch;
+  }
+  .svgtext{font-family:var(--schrift-text);font-size:12px;fill:currentColor;}
+  .svgmono{font-family:var(--schrift-mono);font-size:11px;fill:currentColor;}
+  .svgklein{font-family:var(--schrift-mono);font-size:10px;fill:var(--gedaempft);}
+
+  /* Tabellen */
+  .tabellenrahmen{overflow-x:auto;margin:1.8em 0;}
+  table{border-collapse:collapse;width:100%;min-width:520px;font-size:.9rem;}
+  th,td{text-align:left;padding:9px 14px 9px 0;border-bottom:1px solid var(--linie-zart);vertical-align:top;}
+  th{
+    font-family:var(--schrift-mono);font-size:.72rem;letter-spacing:.09em;
+    text-transform:uppercase;color:var(--gedaempft);font-weight:500;
+    border-bottom:1px solid var(--linie);
+  }
+  td.zahl{font-family:var(--schrift-mono);font-variant-numeric:tabular-nums;white-space:nowrap;}
+
+  code,.formel{font-family:var(--schrift-mono);}
+  code{font-size:.88em;background:var(--linie-zart);padding:.1em .34em;border-radius:2px;}
+  .formel{
+    display:block;background:var(--flaeche);border-left:2px solid var(--gruen);
+    padding:13px 16px;margin:1.4em 0;font-size:.88rem;line-height:1.75;
+    overflow-x:auto;white-space:pre;
+  }
+
+  ul{margin:0 0 1em;padding-left:1.1em;}
+  li{margin-bottom:.45em;}
+
+  .marke{
+    display:inline-block;font-family:var(--schrift-mono);font-size:.72rem;
+    padding:1px 7px;border-radius:2px;border:1px solid currentColor;
+    letter-spacing:.03em;white-space:nowrap;
+  }
+  .m-veto{color:var(--rot);}
+  .m-daempf{color:var(--orange);}
+  .m-gruen{color:var(--gruen);}
+
+  .notiz{
+    border-top:1px solid var(--linie);
+    padding-top:1.1em;margin-top:2em;font-size:.9rem;color:var(--gedaempft);
+    max-width:62ch;
+  }
+  .grenzen li{margin-bottom:.8em;}
+  .grenzen strong{color:var(--tinte);font-weight:600;}
+
+  hr{border:0;border-top:1px solid var(--linie);margin:0;}
+
+  @media (prefers-reduced-motion:no-preference){
+    a{transition:color .15s ease;}
+  }
+  a:focus-visible,summary:focus-visible{outline:2px solid var(--gruen);outline-offset:3px;}
+</style>
+<style>body{margin:0}</style>
+</head>
+<body>
+<div class="huelle">
+
+<header class="kopf">
+  <p class="eyebrow"><a href="index.html">Wingfoilscout</a> · Methodik</p>
+  <h1>Wie Wingfoilscout rechnet</h1>
+  <p class="lead">Von acht Datenquellen zu drei Zielen: jede Schwelle, jede Gewichtung und jeder
+  Ausschluss, die im Code tatsächlich stehen — und die Stellen, an denen das Werkzeug schätzt,
+  statt zu wissen.</p>
+  <div class="stempel">
+    <span>Version 2.1.0</span>
+    <span>278 Spots im Katalog</span>
+    <span>Werte aus config.example.yaml</span>
+    <span>Dieselben Zahlen wie SCORING.md</span>
+  </div>
+</header>
+
+<!-- ============================ 00 ============================ -->
+<section id="pipeline">
+  <div class="abschnittkopf"><span class="nummer">00</span><h2>Der Weg einer Stunde</h2></div>
+  <div class="schmal">
+    <p>Wingfoilscout bewertet nicht Spots, sondern <strong>Stunden</strong>. Jede Stunde jedes Spots
+    bekommt einen Score zwischen 0 und 1, harte Ausschlüsse setzen ihn auf 0 und tragen einen Grund
+    ein. Alles Weitere — Sessions, Ziele, Reihenfolge — entsteht aus diesen Stundenwerten durch
+    Zusammenfassen. Nichts davon ist Blackbox: jede Stunde weiß, warum sie ist, was sie ist.</p>
+  </div>
+
+  <figure>
+    <div class="figrahmen">
+      <svg viewBox="0 0 900 690" style="min-width:660px;max-width:900px;width:100%" role="img" aria-label="Ablaufdiagramm: 278 Spots werden nach Radius, Saison, Gewässer und Fahrzeit vorgefiltert, dann kommen Vorhersage, Regionalmodell, Windfaktor, Thermik und am Meer Wassertemperatur, Welle und Tide hinzu, jede Stunde wird bewertet, daraus entstehen Sessions, Ziele und die Reihenfolge.">
+        <defs>
+          <marker id="pf" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,1 L9,5 L0,9 z" fill="currentColor"/>
+          </marker>
+        </defs>
+
+        <!-- Spalte links: Quellen -->
+        <text class="svgklein" x="8" y="18">QUELLEN</text>
+        <g stroke="currentColor" stroke-width="1" fill="none" opacity=".45">
+          <rect x="8" y="30" width="150" height="26" rx="2"/>
+          <rect x="8" y="64" width="150" height="26" rx="2"/>
+          <rect x="8" y="196" width="150" height="26" rx="2"/>
+          <rect x="8" y="230" width="150" height="26" rx="2"/>
+          <rect x="8" y="282" width="150" height="26" rx="2"/>
+          <rect x="8" y="316" width="150" height="26" rx="2"/>
+          <rect x="8" y="512" width="150" height="26" rx="2"/>
+          <rect x="8" y="546" width="150" height="26" rx="2"/>
+        </g>
+        <g class="svgmono">
+          <text x="18" y="47">spots.yaml</text>
+          <text x="18" y="81">OSRM (Fahrzeit)</text>
+          <text x="18" y="213">Open-Meteo ×3</text>
+          <text x="18" y="247">Regionalmodell</text>
+          <text x="18" y="299">Open-Meteo Marine</text>
+          <text x="18" y="333">OSM / Overpass</text>
+          <text x="18" y="529">ICON-EPS (40)</text>
+          <text x="18" y="563">Park4Night</text>
+        </g>
+
+        <!-- Hauptspalte -->
+        <g stroke="currentColor" stroke-width="1.4" fill="none">
+          <rect x="300" y="26" width="300" height="46" rx="3"/>
+          <rect x="300" y="118" width="300" height="46" rx="3"/>
+          <rect x="300" y="210" width="300" height="46" rx="3"/>
+          <rect x="300" y="302" width="300" height="46" rx="3"/>
+        </g>
+        <rect x="300" y="394" width="300" height="46" rx="3" fill="none" stroke="var(--gruen)" stroke-width="2"/>
+        <g stroke="currentColor" stroke-width="1.4" fill="none">
+          <rect x="300" y="486" width="300" height="46" rx="3"/>
+          <rect x="300" y="578" width="300" height="46" rx="3"/>
+        </g>
+
+        <g class="svgtext" text-anchor="middle">
+          <text x="450" y="47">Vorfilter</text>
+          <text x="450" y="139">Fahrzeit je Spot</text>
+          <text x="450" y="231">Windreihe je Stunde</text>
+          <text x="450" y="323">Richtung &amp; Wasserzustand</text>
+          <text x="450" y="415" fill="var(--gruen)">Stundenscore 0 … 1</text>
+          <text x="450" y="507">Sessions je Tag</text>
+          <text x="450" y="599">Ziele, sortiert</text>
+        </g>
+        <g class="svgklein" text-anchor="middle">
+          <text x="450" y="63">Radius · Saison · Gewässer · Fahrzeit (+35 %)</text>
+          <text x="450" y="155">OSRM, sonst Luftlinie × 1,22 · dann genau</text>
+          <text x="450" y="247">3 Modelle + regional · Windfaktor · Thermik</text>
+          <text x="450" y="339">Fetch-Rose, sonst Katalogsektoren</text>
+          <text x="450" y="431">5 Teilscores × Modell-Einigkeit</text>
+          <text x="450" y="523">≥ 0,55 · ≥ 2 h · hell · ein Tag</text>
+          <text x="450" y="615">Güte × Fahrt × Dauer · Plan B</text>
+        </g>
+
+        <!-- Pfeile Hauptspalte -->
+        <g stroke="currentColor" stroke-width="1.4" marker-end="url(#pf)">
+          <line x1="450" y1="72" x2="450" y2="112"/>
+          <line x1="450" y1="164" x2="450" y2="204"/>
+          <line x1="450" y1="256" x2="450" y2="296"/>
+          <line x1="450" y1="348" x2="450" y2="388"/>
+          <line x1="450" y1="440" x2="450" y2="480"/>
+          <line x1="450" y1="532" x2="450" y2="572"/>
+        </g>
+
+        <!-- Quellen-Zuflüsse -->
+        <g stroke="currentColor" stroke-width="1" opacity=".55" marker-end="url(#pf)">
+          <path d="M158,43 H230 V49 H294" fill="none"/>
+          <path d="M158,77 H250 V141 H294" fill="none"/>
+          <path d="M158,209 H230 V233 H294" fill="none"/>
+          <path d="M158,243 H250 V237 H294" fill="none"/>
+          <path d="M158,295 H240 V316 H294" fill="none"/>
+          <path d="M158,329 H250 V325 H294" fill="none"/>
+          <path d="M158,525 H230 V601 H294" fill="none"/>
+          <path d="M158,559 H250 V607 H294" fill="none"/>
+        </g>
+
+        <!-- Rechts: Vetos und Dämpfungen -->
+        <text class="svgklein" x="640" y="18">EINGRIFFE</text>
+        <g stroke="var(--rot)" stroke-width="1.3" fill="none">
+          <rect x="640" y="382" width="250" height="70" rx="3"/>
+        </g>
+        <text class="svgmono" x="652" y="401" fill="var(--rot)">Vetos → Score 0</text>
+        <text class="svgklein" x="652" y="417">vorbei · Nacht · Wasser unter 7 °C</text>
+        <text class="svgklein" x="652" y="431">Tidenfenster · kein Wing · ablandig</text>
+        <text class="svgklein" x="652" y="445">Gewitter · Lufttemperatur</text>
+        <line x1="636" y1="417" x2="604" y2="417" stroke="var(--rot)" stroke-width="1.3" marker-end="url(#pf)"/>
+
+        <g stroke="var(--orange)" stroke-width="1.3" fill="none">
+          <rect x="640" y="566" width="250" height="84" rx="3"/>
+        </g>
+        <text class="svgmono" x="652" y="585" fill="var(--orange)">Ensemble dämpft</text>
+        <text class="svgklein" x="652" y="601">40 Rechnungen derselben Lage</text>
+        <text class="svgklein" x="652" y="615">Faktor 0,5 … 1,0 auf den Score</text>
+        <text class="svgklein" x="652" y="629">für die vordersten 20 Ziele</text>
+        <text class="svgklein" x="652" y="643">Thermik: Verlässlichkeit des Spots</text>
+        <line x1="636" y1="601" x2="604" y2="601" stroke="var(--orange)" stroke-width="1.3" marker-end="url(#pf)"/>
+
+        <!-- Fußnote im Bild -->
+        <text class="svgklein" x="8" y="672">Jede Quelle darf ausfallen: fehlt sie, rechnet Wingfoilscout ohne sie weiter und schreibt es ins Protokoll.</text>
+      </svg>
+    </div>
+    <figcaption>Der ganze Lauf in einem Bild. Links die Quellen, in der Mitte die sieben Stufen,
+    rechts die beiden Stellen, an denen etwas abgezogen statt addiert wird. Die grüne Stufe ist
+    die einzige, in der wirklich gerechnet wird — alles darüber sammelt Zahlen, alles darunter
+    fasst sie zusammen.</figcaption>
+  </figure>
+</section>
+
+<!-- ============================ 01 ============================ -->
+<section id="quellen">
+  <div class="abschnittkopf"><span class="nummer">01</span><h2>Woher die Zahlen kommen</h2></div>
+  <div class="schmal">
+    <p>Acht Quellen, alle ohne Schlüssel und ohne Konto. Keine davon ist tragend: fällt eine aus,
+    läuft der Report ohne sie und sagt im Protokoll, was fehlt. Das ist Absicht — ein Werkzeug,
+    das bei einem fremden Serverausfall gar nichts liefert, ist im entscheidenden Moment wertlos.</p>
+  </div>
+
+  <div class="tabellenrahmen">
+    <table>
+      <thead>
+        <tr><th>Quelle</th><th>liefert</th><th>Auflösung</th><th>wenn sie ausfällt</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Open-Meteo Forecast</td><td>Wind, Böe, Richtung, Temperatur, Regen, CAPE, Wettercode, Bewölkung, Einstrahlung, Sonnenzeiten</td><td class="zahl">7–25 km</td><td>kein Report</td></tr>
+        <tr><td>Regionalmodelle</td><td>dieselbe Windreihe, feiner — überschreibt stundenweise</td><td class="zahl">1–2,5 km</td><td>es bleibt beim groben Modell</td></tr>
+        <tr><td>ICON-EPS Ensemble</td><td>40 Rechnungen derselben Lage → Wahrscheinlichkeit</td><td class="zahl">gröber</td><td>keine Dämpfung, nur Rohscore</td></tr>
+        <tr><td>Open-Meteo Marine</td><td>Wassertemperatur, Wellenhöhe, Wasserstand (Meer und Lagune)</td><td class="zahl">8 km</td><td>keine Tide, kein Neopren-Hinweis, kein Kaltwasser-Veto</td></tr>
+        <tr><td>OpenStreetMap / Overpass</td><td>Küstenlinie → Fetch-Rose je Spot, Schutzgebiete</td><td class="zahl">36 Richtungen, 25 km</td><td>Sektoren aus dem Katalog</td></tr>
+        <tr><td>OSRM</td><td>echte Fahrzeit und Straßenkilometer</td><td class="zahl">—</td><td>Luftlinie × 1,22 bei 85 km/h, markiert mit „(geschätzt)“</td></tr>
+        <tr><td>Park4Night</td><td>Stellplätze, Hund zwingend erlaubt</td><td class="zahl">top 8 Ziele</td><td>Ziele ohne Stellplatzliste</td></tr>
+        <tr><td>MeteoAlarm</td><td>amtliche Unwetterwarnungen je Region</td><td class="zahl">—</td><td>keine Warnplaketten</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="schmal">
+    <p>Der <strong>Vorfilter</strong> läuft vor jeder Netzabfrage und wirft heraus, was ohnehin
+    nicht in Frage kommt, in dieser Reihenfolge: nur Referenzspot, im Katalog deaktiviert,
+    ausgeschlossene Gewässerart, starker Seegrasbewuchs, durchgehender Stehbereich, Hundeverbot
+    und Wingfoil-Verbot (beide nur, wenn du das eingeschaltet hast), außerhalb der Saison,
+    außerhalb des Radius, zu weit zu fahren. Radius und Fahrzeit prüft er mit der Schätzung
+    (Luftlinie × 1,22 bei 85 km/h) und einem Zuschlag von 35 Prozent, damit ein Spot nicht an
+    einer zu pessimistischen Faustformel scheitert. Erst danach werden die echten Fahrzeiten
+    geholt, und mit ihnen gelten Radius und Obergrenze genau. Spots mit unbekannter Gewässerart
+    bleiben bewusst drin; die Ufergeometrie klärt später, worin der Punkt liegt.</p>
+  </div>
+</section>
+
+<!-- ============================ 02 ============================ -->
+<section id="modelle">
+  <div class="abschnittkopf"><span class="nummer">02</span><h2>Welches Modell den Wind liefert</h2></div>
+  <div class="schmal">
+    <p>Drei globale Modelle laufen immer: <code>dwd_icon_seamless</code> als Hauptmodell,
+    <code>ncep_gfs_seamless</code> und <code>ecmwf_ifs</code> daneben. Das Hauptmodell liefert den
+    Wert, die anderen füllen Lücken — und vor allem messen sie die <strong>Einigkeit</strong>.
+    Beide Abfragen, grob wie fein, nehmen ausdrücklich die <em>nächstgelegene</em> Gitterzelle:
+    Open-Meteo würde eine Koordinate sonst auf eine Zelle ähnlicher Höhe <em>an Land</em>
+    verschieben, und über Land ist der Wind wegen der Rauigkeit systematisch schwächer.</p>
+    <p>Bevor irgendetwas bewertet wird, skaliert der <strong>Windfaktor</strong> des Spots
+    (<code>wind_factor</code> im Katalog) Wind und Böen. Er ist für Spots gedacht, an denen es
+    erfahrungsgemäß mehr oder weniger weht, als die Modelle sagen; das Tagebuch schlägt ihn aus
+    deinen eingetragenen Sessions vor. 1,15 heißt: dort weht es 15 Prozent mehr. Heute steht er
+    bei allen Spots auf 1,0.</p>
+  </div>
+
+  <figure>
+    <div class="figrahmen">
+      <svg viewBox="0 0 880 330" style="min-width:640px;max-width:880px;width:100%" role="img" aria-label="Entscheidungsbaum: Liegt der Spot in der Reichweite eines Regionalmodells? Ist es das Modell seines Landes (nach Landeskürzel, sonst nach Kernland)? Das Modell des Landes gewinnt vor dem feineren Nachbarmodell.">
+        <defs>
+          <marker id="pf2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,1 L9,5 L0,9 z" fill="currentColor"/>
+          </marker>
+        </defs>
+
+        <rect x="10" y="130" width="150" height="44" rx="3" fill="none" stroke="currentColor" stroke-width="1.4"/>
+        <text class="svgtext" x="85" y="149" text-anchor="middle">Spot (lat, lon)</text>
+        <text class="svgklein" x="85" y="164" text-anchor="middle">+ Landeskürzel</text>
+
+        <line x1="160" y1="152" x2="208" y2="152" stroke="currentColor" stroke-width="1.4" marker-end="url(#pf2)"/>
+
+        <rect x="212" y="122" width="176" height="60" rx="3" fill="none" stroke="currentColor" stroke-width="1.4"/>
+        <text class="svgtext" x="300" y="145" text-anchor="middle">In der Reichweite</text>
+        <text class="svgtext" x="300" y="161" text-anchor="middle">eines Regionalmodells?</text>
+
+        <!-- nein -->
+        <line x1="300" y1="182" x2="300" y2="248" stroke="currentColor" stroke-width="1.2" marker-end="url(#pf2)"/>
+        <text class="svgklein" x="308" y="212">nein</text>
+        <rect x="212" y="252" width="176" height="40" rx="3" fill="none" stroke="currentColor" stroke-width="1" opacity=".6"/>
+        <text class="svgmono" x="300" y="277" text-anchor="middle" opacity=".75">nur globale Modelle</text>
+
+        <!-- ja -->
+        <line x1="388" y1="152" x2="436" y2="152" stroke="currentColor" stroke-width="1.4" marker-end="url(#pf2)"/>
+        <text class="svgklein" x="396" y="143">ja</text>
+
+        <rect x="440" y="122" width="176" height="60" rx="3" fill="none" stroke="currentColor" stroke-width="1.4"/>
+        <text class="svgtext" x="528" y="143" text-anchor="middle">Modell seines</text>
+        <text class="svgtext" x="528" y="159" text-anchor="middle">Landes?</text>
+        <text class="svgklein" x="528" y="175" text-anchor="middle">Kürzel, sonst Kernland</text>
+
+        <line x1="616" y1="140" x2="664" y2="118" stroke="var(--gruen)" stroke-width="1.6" marker-end="url(#pf2)"/>
+        <text class="svgklein" x="624" y="112" fill="var(--gruen)">ja</text>
+        <rect x="668" y="78" width="200" height="56" rx="3" fill="none" stroke="var(--gruen)" stroke-width="1.8"/>
+        <text class="svgtext" x="768" y="100" text-anchor="middle" fill="var(--gruen)">Modell des Landes</text>
+        <text class="svgklein" x="768" y="118" text-anchor="middle">bei mehreren: das feinste</text>
+
+        <line x1="616" y1="166" x2="664" y2="192" stroke="currentColor" stroke-width="1.3" marker-end="url(#pf2)"/>
+        <text class="svgklein" x="624" y="196">nein</text>
+        <rect x="668" y="172" width="200" height="56" rx="3" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".75"/>
+        <text class="svgtext" x="768" y="194" text-anchor="middle">Nachbarmodell</text>
+        <text class="svgklein" x="768" y="212" text-anchor="middle">erst danach, auch wenn feiner</text>
+
+        <text class="svgklein" x="10" y="308">Warum die Reihenfolge: Ein Modell am Rand seines Gebiets ist auch bei feinerem Gitter nicht die bessere</text>
+        <text class="svgklein" x="10" y="322">Auskunft — dort fehlen dem Anbieter die Stationen, gegen die er rechnet.</text>
+      </svg>
+    </div>
+    <figcaption>Der erste Probelauf gab dem Gardasee das Schweizer 1-km-Modell und Zeeland das
+    französische: beide antworten dort, weil ihre Domains weit über die Landesgrenze reichen.
+    Seit 1.4.1 entscheidet erst die Zuständigkeit, dann die Auflösung; seit 1.8.1 zählt dabei
+    zuerst das Landeskürzel des Spots und erst ohne Kürzel das Rechteck — Fehmarn liegt in
+    beiden, dem deutschen und dem dänischen, und bekommt ICON-D2. Die Regionalmodelle reichen
+    höchstens drei Tage weit.</figcaption>
+  </figure>
+
+  <div class="tabellenrahmen">
+    <table>
+      <thead><tr><th>Regionalmodell</th><th>Kürzel</th><th>Gitter</th><th>Kernland</th></tr></thead>
+      <tbody>
+        <tr><td>meteoswiss_icon_ch1</td><td class="zahl">CH1</td><td class="zahl">1,0 km</td><td>Schweiz</td></tr>
+        <tr><td>meteofrance_arome_france_hd</td><td class="zahl">AROME-HD</td><td class="zahl">1,5 km</td><td>Frankreich</td></tr>
+        <tr><td>italia_meteo_arpae_icon_2i</td><td class="zahl">ICON-2I</td><td class="zahl">2,0 km</td><td>Italien</td></tr>
+        <tr><td>dwd_icon_d2</td><td class="zahl">ICON-D2</td><td class="zahl">2,0 km</td><td>Deutschland</td></tr>
+        <tr><td>knmi_harmonie_arome_netherlands</td><td class="zahl">HARMONIE</td><td class="zahl">2,0 km</td><td>Niederlande</td></tr>
+        <tr><td>dmi_harmonie_arome_europe</td><td class="zahl">DMI</td><td class="zahl">2,0 km</td><td>Dänemark</td></tr>
+        <tr><td>geosphere_arome_austria</td><td class="zahl">AROME-AT</td><td class="zahl">2,5 km</td><td>Österreich</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="schmal">
+    <p>Welches Modell welchen Punkt abdeckt, <strong>dokumentiert Open-Meteo nirgends</strong> — in
+    der Doku steht „Central Europe“. Und ein Punkt außerhalb der Domain wird mit HTTP 400
+    beantwortet statt mit leeren Werten, was bei einer Sammelabfrage über zwanzig Koordinaten alle
+    anderen mitreißt. Wingfoilscout halbiert deshalb abgelehnte Gruppen, bis die Ausreißer feststehen,
+    und merkt sich das Ergebnis je Spot. Dieser Tanz findet einmal statt, nicht bei jedem Lauf.</p>
+  </div>
+
+  <figure>
+    <div class="figrahmen">
+      <svg viewBox="0 0 360 200" style="min-width:320px;max-width:400px;width:100%" role="img" aria-label="Kurve: Bis 3 Knoten Abstand zwischen den Modellen gilt Einigkeit 1,0; ab 9 Knoten Abstand fällt sie auf 0,4 und bleibt dort.">
+        <g stroke="var(--raster)" stroke-width="1">
+          <line x1="40" y1="30" x2="340" y2="30"/>
+          <line x1="40" y1="65" x2="340" y2="65"/>
+          <line x1="40" y1="100" x2="340" y2="100"/>
+          <line x1="40" y1="135" x2="340" y2="135"/>
+        </g>
+        <line x1="40" y1="170" x2="340" y2="170" stroke="currentColor" stroke-width="1"/>
+        <line x1="40" y1="30" x2="40" y2="170" stroke="currentColor" stroke-width="1"/>
+        <polyline points="40,42.7 104.3,42.7 232.9,119.1 340,119.1" fill="none" stroke="var(--gruen)" stroke-width="2"/>
+        <g class="svgklein" text-anchor="end">
+          <text x="34" y="46">1,0</text>
+          <text x="34" y="123">0,4</text>
+          <text x="34" y="174">0</text>
+        </g>
+        <g class="svgklein" text-anchor="middle">
+          <text x="40" y="188">0</text>
+          <text x="104" y="188">3</text>
+          <text x="233" y="188">9</text>
+          <text x="340" y="188">14 kn</text>
+        </g>
+        <text class="svgklein" x="190" y="16" text-anchor="middle">Einigkeit über den Modellabstand</text>
+      </svg>
+    </div>
+    <figcaption>Der Abstand ist Maximum minus Minimum der Modelle in dieser Stunde, das
+    Regionalmodell eingeschlossen, wenn es den Wind liefert. Die
+    Einigkeit multipliziert den fertigen Stundenscore mit <code>0,7 + 0,3 · Einigkeit</code> — eine
+    Fahrt plant man nicht auf einen Ausreißer. Da die Einigkeit nie unter 0,4 fällt, behält eine
+    Stunde, bei der die Modelle völlig uneins sind, noch 82 Prozent ihres Scores.</figcaption>
+  </figure>
+</section>
+
+<!-- ============================ 03 ============================ -->
+<section id="stundenscore">
+  <div class="abschnittkopf"><span class="nummer">03</span><h2>Die Stundenbewertung</h2></div>
+  <div class="schmal">
+    <p>Fünf Teilscores, jeder zwischen 0 und 1, gewichtet summiert und durch die Summe der Gewichte
+    geteilt. Danach die Modell-Einigkeit als Faktor. Die Gewichte stehen in der Konfiguration und
+    sind eine Meinung, keine Messung — Wind und Richtung tragen zusammen 58 Prozent, weil ohne die
+    beiden gar nichts geht.</p>
+  </div>
+
+  <figure>
+    <div class="figrahmen">
+      <svg viewBox="0 0 860 168" style="min-width:600px;max-width:860px;width:100%" role="img" aria-label="Gewichtsbalken: Wind 0,34, Richtung 0,24, Wasser 0,16, Wetter 0,14, Böigkeit 0,12.">
+        <rect x="10" y="40" width="272" height="42" fill="var(--gruen)" opacity=".85"/>
+        <rect x="282" y="40" width="192" height="42" fill="var(--petrol)" opacity=".8"/>
+        <rect x="474" y="40" width="128" height="42" fill="currentColor" opacity=".38"/>
+        <rect x="602" y="40" width="112" height="42" fill="currentColor" opacity=".26"/>
+        <rect x="714" y="40" width="96" height="42" fill="currentColor" opacity=".16"/>
+        <g class="svgtext" text-anchor="middle" fill="var(--tinte)">
+          <text x="146" y="30">Wind</text>
+          <text x="378" y="30">Richtung</text>
+          <text x="538" y="30">Wasser</text>
+          <text x="658" y="30">Wetter</text>
+          <text x="762" y="30">Böen</text>
+        </g>
+        <g class="svgmono" text-anchor="middle" font-size="12">
+          <text x="146" y="100">0,34</text>
+          <text x="378" y="100">0,24</text>
+          <text x="538" y="100">0,16</text>
+          <text x="658" y="100">0,14</text>
+          <text x="762" y="100">0,12</text>
+        </g>
+        <text class="svgklein" x="10" y="124">× Modell-Einigkeit: Gesamtscore × (0,7 + 0,3 · Einigkeit)</text>
+        <text class="svgklein" x="10" y="142">× Gewitterschatten: bis 2 h vor und nach einer Gewitterstunde zusätzlich × 0,4</text>
+        <text class="svgklein" x="10" y="160">Ein Veto setzt den Score auf 0 — die Gewichtung kommt dann gar nicht erst zum Zug.</text>
+      </svg>
+    </div>
+    <figcaption>Die Gewichte aus <code>config.example.yaml</code>. Sie lassen sich ändern, ohne
+    dass irgendwo sonst etwas angepasst werden muss — die Summe wird immer normiert.</figcaption>
+  </figure>
+
+  <h3>Wind: Wing-Mitte mal Wohlfühlband</h3>
+  <div class="schmal">
+    <p>Zwei Fragen in einer Zahl. Erstens: liegt der Wind zentral im Bereich eines Wings oder an
+    dessen Rand? Zweitens: liegt er im eingestellten Wohlfühlband? Der Sägezahn im Bild ist kein
+    Fehler, sondern das Quiver — bei jedem Wingwechsel beginnt die Zentralität von vorn.</p>
+  </div>
+
+  <figure>
+    <div class="figrahmen">
+      <svg viewBox="0 0 480 210" style="min-width:420px;max-width:520px;width:100%" role="img" aria-label="Windscore über der Windgeschwindigkeit: null unter 10 Knoten, voll im Band 14 bis 28 Knoten, danach mit Sägezahn fallend, null über 43 Knoten.">
+        <rect x="108" y="30" width="159" height="140" fill="var(--gruen)" opacity=".1"/>
+        <g stroke="var(--raster)" stroke-width="1">
+          <line x1="40" y1="30" x2="470" y2="30"/>
+          <line x1="40" y1="65" x2="470" y2="65"/>
+          <line x1="40" y1="100" x2="470" y2="100"/>
+          <line x1="40" y1="135" x2="470" y2="135"/>
+        </g>
+        <line x1="40" y1="170" x2="470" y2="170" stroke="currentColor" stroke-width="1"/>
+        <line x1="40" y1="30" x2="40" y2="170" stroke="currentColor" stroke-width="1"/>
+        <g transform="translate(40,30)">
+          <polyline fill="none" stroke="var(--gruen)" stroke-width="2" points="0.0,140.0 11.4,140.0 17.0,140.0 22.7,89.1 28.4,72.5 34.1,55.0 39.7,36.7 45.4,25.5 51.1,22.3 56.8,19.1 62.4,15.9 68.1,12.7 73.8,12.7 79.5,12.7 85.1,12.7 90.8,12.7 96.5,12.7 102.2,12.7 107.8,12.7 113.5,12.7 119.2,12.7 124.9,12.7 130.5,12.7 136.2,12.7 141.9,12.7 147.6,12.7 153.2,12.7 158.9,12.7 164.6,12.7 170.3,12.7 175.9,12.7 181.6,12.7 187.3,12.7 193.0,12.7 198.6,12.7 204.3,12.7 210.0,12.7 215.7,12.7 221.4,12.7 227.0,12.7 232.7,26.2 238.4,36.9 244.1,32.7 249.7,28.8 255.4,28.6 261.1,31.8 266.8,35.0 272.4,38.2 278.1,41.4 283.8,44.5 289.5,47.7 295.1,50.9 300.8,54.1 306.5,57.3 312.2,60.5 317.8,63.6 323.5,63.6 329.2,63.6 334.9,63.6 340.5,63.6 346.2,63.6 351.9,65.9 357.6,70.4 363.2,74.8 368.9,79.4 374.6,83.9 380.3,88.3 385.9,92.8 391.6,97.4 397.3,101.8 403.0,140.0 408.6,140.0 414.3,140.0"/>
+        </g>
+        <g class="svgklein" text-anchor="end">
+          <text x="34" y="46">1,0</text>
+          <text x="34" y="104">0,5</text>
+          <text x="34" y="174">0</text>
+        </g>
+        <g class="svgklein" text-anchor="middle">
+          <text x="63" y="188">10</text>
+          <text x="108" y="188">14</text>
+          <text x="267" y="188">28</text>
+          <text x="437" y="188">43 kn</text>
+        </g>
+        <text class="svgklein" x="188" y="163" text-anchor="middle" fill="var(--gruen)">Wohlfühlband 14–28 kn</text>
+        <text class="svgklein" x="40" y="16">Windscore · Quiver 6,5 / 5,0 / 4,2 / 3,5 / 2,5 m²</text>
+        <text class="svgklein" x="46" y="204">unter 10 und über 43 kn: kein passender Wing → Veto</text>
+      </svg>
+    </div>
+    <figcaption>Außerhalb des Bandes fällt der Score weich ab (höchstens auf 0,6 des
+    Zentralitätswerts), nicht auf null — 12 Knoten sind kein guter Tag, aber auch kein
+    Ausschlussgrund. Der harte Schnitt kommt erst, wenn kein Wing mehr passt.</figcaption>
+  </figure>
+
+  <h3>Böigkeit: Böe geteilt durch Mittelwind</h3>
+  <figure>
+    <div class="figrahmen">
+      <svg viewBox="0 0 360 200" style="min-width:320px;max-width:400px;width:100%" role="img" aria-label="Böigkeitsscore: bis Faktor 1,25 voller Score, danach linear fallend bis 0,3 bei Faktor 1,60, darüber konstant 0,3.">
+        <g stroke="var(--raster)" stroke-width="1">
+          <line x1="40" y1="30" x2="340" y2="30"/>
+          <line x1="40" y1="65" x2="340" y2="65"/>
+          <line x1="40" y1="100" x2="340" y2="100"/>
+          <line x1="40" y1="135" x2="340" y2="135"/>
+        </g>
+        <line x1="40" y1="170" x2="340" y2="170" stroke="currentColor" stroke-width="1"/>
+        <line x1="40" y1="30" x2="40" y2="170" stroke="currentColor" stroke-width="1"/>
+        <g transform="translate(40,30)">
+          <polyline points="0.0,12.7 62.5,12.7 150.0,101.8 300.0,101.8" fill="none" stroke="var(--orange)" stroke-width="2"/>
+        </g>
+        <g class="svgklein" text-anchor="end">
+          <text x="34" y="46">1,0</text>
+          <text x="34" y="135">0,3</text>
+          <text x="34" y="174">0</text>
+        </g>
+        <g class="svgklein" text-anchor="middle">
+          <text x="40" y="188">1,0</text>
+          <text x="103" y="188">1,25</text>
+          <text x="190" y="188">1,60</text>
+          <text x="332" y="188">2,2</text>
+        </g>
+        <text class="svgklein" x="190" y="16" text-anchor="middle">Böigkeitsscore über dem Böenfaktor</text>
+      </svg>
+    </div>
+    <figcaption>Zusätzlich gedeckelt auf 0,25, wenn die Böe mehr als 6 Knoten über dem oberen
+    Ende des Quiver-Bereichs liegt — dann hilft auch ein guter Mittelwind nichts mehr.</figcaption>
+  </figure>
+
+  <h3>Vetos: die Kaskade vor der Rechnung</h3>
+  <div class="schmal">
+    <p>Ein Veto ist keine Abwertung, sondern ein Abbruch: Score 0, Grund eingetragen, nächste
+    Stunde. Die Reihenfolge im Code ist bewusst so gewählt — was die Stunde grundsätzlich
+    unmöglich macht, wird zuerst geprüft.</p>
+  </div>
+
+  <div class="tabellenrahmen">
+    <table>
+      <thead><tr><th>#</th><th>Prüfung</th><th>Schwelle</th><th>Folge</th></tr></thead>
+      <tbody>
+        <tr><td class="zahl">1</td><td>Stunde bereits vorbei</td><td class="zahl">Uhrzeit des Laufs</td><td><span class="marke m-veto">Veto</span></td></tr>
+        <tr><td class="zahl">2</td><td>Wassertemperatur — nur Meer und Lagune, mit dem Haken „Wassertemperatur und Wellenmodell“</td><td class="zahl">&lt; 7 °C</td><td><span class="marke m-veto">Veto</span></td></tr>
+        <tr><td class="zahl">3</td><td>Tageslicht</td><td class="zahl">Aufgang + 30 min … Untergang − 30 min</td><td><span class="marke m-veto">Veto</span></td></tr>
+        <tr><td class="zahl">4</td><td>Tidenfenster — nur, wo im Katalog eines steht</td><td class="zahl">z. B. HW ± 2 h</td><td><span class="marke m-veto">Veto</span></td></tr>
+        <tr><td class="zahl">5</td><td>Passender Wing im Quiver</td><td class="zahl">10 … 43 kn</td><td><span class="marke m-veto">Veto</span></td></tr>
+        <tr><td class="zahl">6</td><td>Ablandig mit viel Wasser in Lee — nur mit <code>offshore_veto_km</code> über 0, Standard aus</td><td class="zahl">km freies Wasser in Lee</td><td><span class="marke m-veto">Veto</span></td></tr>
+        <tr><td class="zahl">7</td><td>Gewitter gemeldet oder Lufttemperatur außerhalb des Bereichs</td><td class="zahl">WMO 95 / 96 / 99 · 7 … 35 °C</td><td><span class="marke m-veto">Veto</span></td></tr>
+        <tr><td class="zahl">—</td><td>Nah an der Temperaturgrenze</td><td class="zahl">&lt; 3 °C Abstand</td><td><span class="marke m-daempf">× 0,8</span></td></tr>
+        <tr><td class="zahl">—</td><td>Regen</td><td class="zahl">ab 0,6 mm/h · ab 3,0 mm/h</td><td><span class="marke m-daempf">linear … × 0,2</span></td></tr>
+        <tr><td class="zahl">—</td><td>Gewitterneigung (CAPE)</td><td class="zahl">ab 1200 · ab 2000 J/kg</td><td><span class="marke m-daempf">× 0,7 · × 0,35</span></td></tr>
+        <tr><td class="zahl">—</td><td>Gewitterschatten</td><td class="zahl">± 2 h um eine Gewitterstunde</td><td><span class="marke m-daempf">× 0,4</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="schmal">
+    <p>Der <strong>Gewitterschatten</strong> ist die Stelle, an der das Werkzeug über ein
+    Forecast-Portal hinausgeht: Das Modell markiert nur die Stunde, in der es an diesem Gitterpunkt
+    ein Gewitter rechnet — auf dem Wasser interessiert einen das Fenster drumherum genauso.</p>
+  </div>
+</section>
+
+<!-- ============================ 04 ============================ -->
+<section id="geometrie">
+  <div class="abschnittkopf"><span class="nummer">04</span><h2>Richtung und Wasser aus der Ufergeometrie</h2></div>
+  <div class="schmal">
+    <p>Windsektoren von Hand zu pflegen skaliert nicht auf 278 Spots — heute haben 29 welche.
+    Wingfoilscout misst die Windlage deshalb
+    aus OpenStreetMap: von der Spotkoordinate aus in 36 Richtungen je bis zu 25 km, bis Land kommt.
+    Das ergibt die <strong>Fetch-Rose</strong> — wie weit der Wind über Wasser angelaufen ist, aus
+    jeder Richtung. Von Hand gepflegte Sektoren schlagen die Geometrie, wenn beide da sind.</p>
+    <p>Aus zwei Zahlen der Rose folgt der Rest: die Anlauflänge in <em>Luv</em> und der Platz nach
+    <em>Lee</em>.</p>
+  </div>
+
+  <figure>
+    <div class="figrahmen">
+      <svg viewBox="0 0 860 258" style="min-width:640px;max-width:860px;width:100%" role="img" aria-label="Skala des Verhältnisses von Luv-Fetch zu Lee-Platz: unter 0,15 ablandig, 0,35 bis 2,9 sideshore mit vollem Score, über 6,7 auflandig.">
+        <text class="svgklein" x="10" y="24">Verhältnis Luv-Fetch ÷ Lee-Platz</text>
+
+        <rect x="10" y="44" width="150" height="46" fill="var(--orange)" opacity=".16"/>
+        <rect x="160" y="44" width="110" height="46" fill="currentColor" opacity=".08"/>
+        <rect x="270" y="44" width="300" height="46" fill="var(--gruen)" opacity=".2"/>
+        <rect x="570" y="44" width="130" height="46" fill="currentColor" opacity=".08"/>
+        <rect x="700" y="44" width="150" height="46" fill="var(--rot)" opacity=".14"/>
+        <rect x="10" y="44" width="840" height="46" fill="none" stroke="currentColor" stroke-width="1"/>
+        <g stroke="currentColor" stroke-width="1" opacity=".5">
+          <line x1="160" y1="44" x2="160" y2="90"/>
+          <line x1="270" y1="44" x2="270" y2="90"/>
+          <line x1="570" y1="44" x2="570" y2="90"/>
+          <line x1="700" y1="44" x2="700" y2="90"/>
+        </g>
+
+        <g class="svgtext" text-anchor="middle">
+          <text x="85" y="72">ablandig</text>
+          <text x="215" y="72">side-on</text>
+          <text x="420" y="72">sideshore</text>
+          <text x="635" y="72">side-on</text>
+          <text x="775" y="72">auflandig</text>
+        </g>
+        <g class="svgmono" text-anchor="middle" font-size="11" opacity=".8">
+          <text x="85" y="110">0,50</text>
+          <text x="215" y="110">0,88</text>
+          <text x="420" y="110">1,00</text>
+          <text x="635" y="110">0,88</text>
+          <text x="775" y="110">0,55</text>
+        </g>
+        <g class="svgklein" text-anchor="middle">
+          <text x="160" y="128">0,15</text>
+          <text x="270" y="128">0,35</text>
+          <text x="570" y="128">2,9</text>
+          <text x="700" y="128">6,7</text>
+        </g>
+        <text class="svgklein" x="10" y="148">glatt, aber du treibst raus</text>
+        <text class="svgklein" x="850" y="148" text-anchor="end">Welle und Shorebreak vor der Nase</text>
+
+        <line x1="10" y1="176" x2="850" y2="176" stroke="var(--linie)" stroke-width="1"/>
+        <text class="svgklein" x="10" y="198">Vorab zwei harte Grenzen aus der Rose:</text>
+        <text class="svgmono" x="10" y="218">Luv ≤ 400 m → ablandig   ·   Lee ≤ 500 m → auflandig   ·   beides zu → „kein offenes Wasser“, Score 0,10</text>
+        <text class="svgklein" x="10" y="242">Die Zahl unter jedem Feld ist der Richtungsscore, der in die gewichtete Summe eingeht.</text>
+      </svg>
+    </div>
+    <figcaption>Dieselbe Rose beantwortet beide Fragen, die an einem Spot zählen: Steht der Wind
+    günstig, und wie viel Wasser liegt vor mir, wenn etwas schiefgeht?</figcaption>
+  </figure>
+
+  <div class="schmal">
+    <p>Die Anlauflänge in Luv ergibt außerdem die Wellenhöhe, über die fetch-begrenzte
+    Ingenieursnäherung des Shore Protection Manual:</p>
+  </div>
+
+  <div class="formel">H_s = 0,0016 · U · √(F / g)        U in m/s, F in m, g = 9,81 m/s²
+
+H_s &lt; 0,25 m  →  flat     Wasserscore 1,00
+H_s &lt; 0,60 m  →  chop     Wasserscore 0,80
+sonst         →  wave     Wasserscore 0,59</div>
+
+  <div class="schmal">
+    <p>Die Wasserscores entstehen aus der Kabbelaversion in der Konfiguration (Standard 0,7): bei
+    0 ist der Wasserzustand egal, bei 1 zählt nur noch glattes Wasser. Über 22 Knoten kommen auf
+    alles außer <code>flat</code> weitere 10 Prozent Abzug.</p>
+    <p>Das ist ausdrücklich eine Näherung. Sie unterstellt, dass der Wind lange genug aus derselben
+    Richtung weht, und rechnet mit dem 10-Meter-Wind statt mit dem Windstressfaktor. Am Meer ersetzt
+    sie deshalb das <strong>Wellenmodell</strong> von Open-Meteo, wo es einen Wert liefert — mit
+    Dünung, Tide und Bodenprofil; die Anlauflänge bleibt für die Windlage. An Binnenseen bleibt es
+    bei der Näherung. Wo von Hand gepflegte Sektoren gelten, kommt der Wasserzustand aus dem Sektor
+    und das Wellenmodell steht nur zur Anzeige da.</p>
+    <p>Hat ein Spot weder Rose noch Sektoren, wird die Richtung mit <strong>0,6</strong> bewertet —
+    neutral. Hat er Sektoren, aber keiner passt, sind es <strong>0,2</strong>: das ist eine Aussage,
+    keine Lücke. Der Unterschied ist wichtig, weil sonst jeder importierte Spot ohne gepflegte
+    Sektoren unsichtbar würde.</p>
+  </div>
+</section>
+
+<!-- ============================ 05 ============================ -->
+<section id="thermik">
+  <div class="abschnittkopf"><span class="nummer">05</span><h2>Thermik: wo die Modelle versagen</h2></div>
+  <div class="schmal">
+    <p>Ora, Malojawind, Breva, Maestral: An diesen Spots ist die Zirkulation kleiner als das
+    Rechengitter. Das Modell sieht 5 Knoten, wo tatsächlich 18 stehen. Für 71 Spots steht deshalb
+    im Katalog, welche Thermik dort läuft, wann, aus welcher Richtung, wie stark und wie
+    verlässlich — mit Quelle. Wingfoilscout rechnet daraus, ob sie <em>heute</em> läuft.</p>
+    <p>Drei Größen entscheiden das, und alle drei sind belegt statt geraten:</p>
+  </div>
+
+  <figure>
+    <div class="figrahmen">
+      <svg viewBox="0 0 800 210" style="min-width:660px;max-width:800px;width:100%" role="img" aria-label="Zwei Kurven: links der Gegenwindfaktor, der bei 3 Knoten auf 1,15 steigt und ab 9 Knoten null ist; rechts der Tagesgang im Thermikfenster.">
+        <!-- links: Gegenwind -->
+        <g stroke="var(--raster)" stroke-width="1">
+          <line x1="40" y1="30" x2="340" y2="30"/><line x1="40" y1="65" x2="340" y2="65"/>
+          <line x1="40" y1="100" x2="340" y2="100"/><line x1="40" y1="135" x2="340" y2="135"/>
+        </g>
+        <line x1="40" y1="170" x2="340" y2="170" stroke="currentColor" stroke-width="1"/>
+        <line x1="40" y1="30" x2="40" y2="170" stroke="currentColor" stroke-width="1"/>
+        <g transform="translate(40,30)">
+          <polyline points="0.0,23.3 75.0,5.8 150.0,23.3 162.5,59.0 175.0,88.1 187.5,110.8 200.0,127.0 212.5,136.8 225.0,140.0 300.0,140.0" fill="none" stroke="var(--gruen)" stroke-width="2"/>
+        </g>
+        <line x1="40" y1="53.3" x2="340" y2="53.3" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3" opacity=".45"/>
+        <g class="svgklein" text-anchor="end">
+          <text x="34" y="40">1,15</text><text x="34" y="57">1,0</text><text x="34" y="174">0</text>
+        </g>
+        <g class="svgklein" text-anchor="middle">
+          <text x="40" y="188">0</text><text x="115" y="188">3</text><text x="190" y="188">6</text>
+          <text x="265" y="188">9</text><text x="332" y="188">12 kn</text>
+        </g>
+        <text class="svgklein" x="40" y="16">Gegenwind-Faktor über dem ablandigen Gradientwind</text>
+        <text class="svgklein" x="46" y="204">schwacher Gegenwind verstärkt · ab 9 kn keine Brise</text>
+
+        <!-- rechts: Tagesgang -->
+        <g stroke="var(--raster)" stroke-width="1">
+          <line x1="460" y1="30" x2="760" y2="30"/><line x1="460" y1="65" x2="760" y2="65"/>
+          <line x1="460" y1="100" x2="760" y2="100"/><line x1="460" y1="135" x2="760" y2="135"/>
+        </g>
+        <line x1="460" y1="170" x2="760" y2="170" stroke="currentColor" stroke-width="1"/>
+        <line x1="460" y1="30" x2="460" y2="170" stroke="currentColor" stroke-width="1"/>
+        <g transform="translate(460,30)">
+          <polyline points="0.0,93.3 75.0,23.3 210.0,23.3 300.0,110.8" fill="none" stroke="var(--orange)" stroke-width="2"/>
+        </g>
+        <g class="svgklein" text-anchor="end">
+          <text x="454" y="57">1,0</text><text x="454" y="127">0,4</text><text x="454" y="174">0</text>
+        </g>
+        <g class="svgklein" text-anchor="middle">
+          <text x="460" y="188">12:00</text><text x="535" y="188">13:45</text><text x="670" y="188">16:54</text><text x="752" y="188">19:00</text>
+        </g>
+        <text class="svgklein" x="460" y="16">Tagesgang im hinterlegten Fenster (hier 12:00–19:00)</text>
+        <text class="svgklein" x="466" y="204">steigt ab 0,4, Plateau 25–70 %, flaut ab auf 0,25</text>
+      </svg>
+    </div>
+    <figcaption>Der Knick bei 3 Knoten ist kein Schönheitsfehler: Ein schwacher ablandiger
+    Gradientwind <em>verstärkt</em> die Seebrise, statt sie zu schwächen (Arritt 1993). Erst
+    darüber kippt es, und ab etwa 7–8 Knoten ablandig bleibt nach dem Centro Meteo Ligure gar
+    nichts mehr übrig.</figcaption>
+  </figure>
+
+  <div class="schmal">
+    <p>Die dritte Größe ist die <strong>eingestrahlte Energie seit Sonnenaufgang</strong>, nicht die
+    Sonne dieser Stunde: Die Thermik lebt davon, wie viel Wärme der Vormittag schon in den Boden
+    gebracht hat. Ab 1800 Wh/m² gilt sie als voll; fehlt die Einstrahlung im Modell, ist die
+    Bewölkung der Rückfall.</p>
+  </div>
+
+  <div class="formel">Stundenpotenzial = Tagesgang · Energie · Gegenwind          (0 … 1,15)
+
+Tagespotenzial  = Σ Stundenpotenzial ÷ Σ Tagesgang · Verlässlichkeit
+
+Angenommener Wind = typische Stärke · trust · Stundenpotenzial
+                    — nur wenn das über dem liegt, was das Modell ohnehin zeigt</div>
+
+  <div class="schmal">
+    <p>Die Verlässlichkeit steht nicht mehr im angenommenen Wind: 16 Knoten bei 70 Prozent gaben
+    bis 1.6.1 11 Knoten, eine Zahl, die an keinem Tag auftritt — läuft die Ora, sind es 16, sonst
+    0. Sie ist eine Wahrscheinlichkeit und geht jetzt dort ein, wo Wahrscheinlichkeiten
+    hingehören: in die Reihenfolge der Ziele, an der Stelle des Ensembles (Abschnitt 07).</p>
+    <p>Beim Tagespotenzial kürzt sich der Tagesgang heraus. Übrig bleibt, was heute tatsächlich
+    verschieden ist: Einstrahlung und Gegenwind, mal der Verlässlichkeit des Spots. Bis 1.5.1 stand
+    dort das Maximum über die Session — und das ist an jedem sonnigen Tag die eine Stunde, in der
+    alle drei Zutaten zufällig passen. Im Lauf vom 16. September lagen deshalb alle fünf
+    Thermikziele zwischen 96 und 100 Prozent.</p>
+    <p>Und eine Regel, die keine Kurve ist: Manche Thermik stirbt an einer bestimmten
+    Grundströmung. Beim Malojawind reicht laut SRF Meteo eine Höhenströmung von Nord bis Südost,
+    dann läuft er praktisch nie. Solche Sektoren stehen bei 28 Spots im Katalog
+    (<code>suppressed_by</code>) und setzen das Potenzial ab 6 Knoten aus dieser Richtung hart auf
+    null. Unter 8 Knoten Grundwind gibt die Thermik auch die Richtung vor, darüber bleibt die des
+    Modells.</p>
+    <p><strong>Wingfoilscout erfindet keine Thermik.</strong> Es rechnet nur an Spots, für die im
+    Katalog steht, dass es dort eine gibt. Wo keine Quelle eine Stärke nennt — Chiemsee, Bodensee,
+    Thunersee —, wird <em>keine angenommen</em>; der Spot erscheint nur als Kandidat. Angenommener
+    Wind ist im Report immer als Annahme gekennzeichnet, nie als Messwert.</p>
+  </div>
+</section>
+
+<!-- ============================ 06 ============================ -->
+<section id="tide">
+  <div class="abschnittkopf"><span class="nummer">06</span><h2>Tide: immer angezeigt, entscheidend nur auf Wunsch</h2></div>
+  <div class="schmal">
+    <p>An Meer und Lagune holt Wingfoilscout den Wasserstand aus dem Marine-Modell von Open-Meteo und
+    rechnet daraus Hoch- und Niedrigwasser auf die Minute: eine Parabel durch die drei Stunden um
+    jeden Scheitel. Das Modell selbst ist nicht minutengenau — es rechnet auf einem 8-km-Raster,
+    Tide und Windstau zusammen, und ist keine amtliche Tafel. Wie weit es von einem Pegel abweicht,
+    ist noch nicht gegen eine Tafel geprüft.</p>
+    <p><strong>Ob die Tide an einem Spot gilt,</strong> entscheidet der Katalog: <code>tidal: true</code>
+    oder <code>false</code>, sonst die Automatik — Meer oder Lagune mit mindestens 0,5 m modelliertem
+    Hub (<code>tide.auto_hub_min</code>). Von Hand gesetzt sind heute neun Spots auf „ja“ und zwei
+    Lagunen hinter Dämmen auf „nein“, weil das 8-km-Raster dort die offene See davor sieht.</p>
+    <p><strong>Ohne Tidenfenster ändert die Tide keine Note.</strong> Sie steht am Ziel und im
+    Stundenraster, und der Report rechnet die Lage beim Öffnen neu:
+    „Jetzt auflaufend · Hochwasser um 14:50“. Erst ein Fenster im Katalog macht aus ihr ein
+    Veto:</p>
+  </div>
+
+  <div class="tabellenrahmen">
+    <table>
+      <thead><tr><th>tide: fahrbar</th><th>fahrbar ist</th><th>Beispiel</th></tr></thead>
+      <tbody>
+        <tr><td class="zahl">hochwasser</td><td>die Stunden um jedes Hochwasser</td><td class="zahl">HW ± 2 h</td></tr>
+        <tr><td class="zahl">niedrigwasser</td><td>die Stunden um jedes Niedrigwasser</td><td class="zahl">NW ± 2 h</td></tr>
+        <tr><td class="zahl">auflaufend</td><td>von Niedrig- bis Hochwasser, Scheitel zu Scheitel</td><td class="zahl">NW → HW</td></tr>
+        <tr><td class="zahl">ablaufend</td><td>von Hoch- bis Niedrigwasser</td><td class="zahl">HW → NW</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="schmal">
+    <p>Gezählt wird die Stundenmitte: „13:00“ steht für 13:00 bis 14:00 und ist bei Hochwasser um
+    14:25 mit ± 2 h dabei. Wingfoilscout liefert keine Fenster mit — welches ein Spot braucht, weiß nur,
+    wer ihn kennt. Heute ist an keinem Spot eines gesetzt.</p>
+  </div>
+</section>
+
+<!-- ============================ 07 ============================ -->
+<section id="ziele">
+  <div class="abschnittkopf"><span class="nummer">07</span><h2>Von Stunden zu Zielen</h2></div>
+  <div class="schmal">
+    <p>Aus bewerteten Stunden werden zusammenhängende Blöcke, aus Blöcken Ziele, aus Zielen eine
+    Reihenfolge. Jede Stufe wirft Information weg — und genau an diesen Stellen entstehen die
+    Fehler, die man im Report nicht mehr sieht.</p>
+  </div>
+
+  <figure>
+    <div class="figrahmen">
+      <svg viewBox="0 0 860 300" style="min-width:660px;max-width:860px;width:100%" role="img" aria-label="Drei Stufen: Stunden werden zu Sessions, Sessions zu Zielen, Ziele werden nach Güte, Fahrt und Dauer sortiert.">
+        <defs>
+          <marker id="pf3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,1 L9,5 L0,9 z" fill="currentColor"/>
+          </marker>
+        </defs>
+
+        <text class="svgklein" x="10" y="20">STUNDEN</text>
+        <g>
+          <rect x="10" y="32" width="18" height="26" fill="currentColor" opacity=".12"/>
+          <rect x="30" y="32" width="18" height="26" fill="currentColor" opacity=".12"/>
+          <rect x="50" y="32" width="18" height="26" fill="var(--gruen)" opacity=".75"/>
+          <rect x="70" y="32" width="18" height="26" fill="var(--gruen)" opacity=".9"/>
+          <rect x="90" y="32" width="18" height="26" fill="var(--gruen)" opacity=".9"/>
+          <rect x="110" y="32" width="18" height="26" fill="var(--gruen)" opacity=".6"/>
+          <rect x="130" y="32" width="18" height="26" fill="currentColor" opacity=".12"/>
+          <rect x="150" y="32" width="18" height="26" fill="var(--gruen)" opacity=".8"/>
+          <rect x="170" y="32" width="18" height="26" fill="var(--gruen)" opacity=".7"/>
+          <rect x="190" y="32" width="18" height="26" fill="currentColor" opacity=".12"/>
+        </g>
+        <text class="svgklein" x="218" y="50">grün = Score ≥ 0,55 und kein Veto</text>
+
+        <line x1="100" y1="68" x2="100" y2="98" stroke="currentColor" stroke-width="1.3" marker-end="url(#pf3)"/>
+
+        <rect x="10" y="102" width="330" height="80" rx="3" fill="none" stroke="currentColor" stroke-width="1.4"/>
+        <text class="svgtext" x="24" y="124">Session</text>
+        <text class="svgklein" x="24" y="141">mindestens 2 zusammenhängende Stunden,</text>
+        <text class="svgklein" x="24" y="155">im Hellen, innerhalb eines Tages;</text>
+        <text class="svgklein" x="24" y="169">eine knappe Stunde dazwischen wird überbrückt</text>
+
+        <line x1="340" y1="133" x2="386" y2="133" stroke="currentColor" stroke-width="1.4" marker-end="url(#pf3)"/>
+
+        <rect x="390" y="102" width="330" height="62" rx="3" fill="none" stroke="currentColor" stroke-width="1.4"/>
+        <text class="svgtext" x="404" y="124">Ziel</text>
+        <text class="svgklein" x="404" y="141">alle Sessions eines Spots · Wasserstunden je Tag</text>
+        <text class="svgklein" x="404" y="155">auf 5 h gedeckelt („rechnest du dir nicht schön“)</text>
+
+        <line x1="555" y1="164" x2="555" y2="198" stroke="currentColor" stroke-width="1.4" marker-end="url(#pf3)"/>
+
+        <rect x="390" y="202" width="460" height="82" rx="3" fill="none" stroke="var(--gruen)" stroke-width="1.8"/>
+        <text class="svgtext" x="404" y="224" fill="var(--gruen)">Reihenfolge</text>
+        <text class="svgmono" x="404" y="245">Rang = Güte × Fahrt × min(1 ; 0,55 + 0,15 · Stunden)</text>
+        <text class="svgklein" x="404" y="263">Güte = stundengewichteter Mittelwert der Session-Scores</text>
+        <text class="svgklein" x="404" y="277">Fahrt = 1,0 innerhalb der Regel, sonst fallend bis 0</text>
+
+        <rect x="10" y="202" width="330" height="82" rx="3" fill="none" stroke="var(--orange)" stroke-width="1.3"/>
+        <text class="svgtext" x="24" y="224" fill="var(--orange)">Fahrtregel</text>
+        <text class="svgmono" x="24" y="245">3 h Fahrt je 1 h Wasser pro Tag</text>
+        <text class="svgklein" x="24" y="263">+ 50 % je Übernachtung, hart gedeckelt bei 12 h</text>
+        <text class="svgklein" x="24" y="277">darüber fällt der Rang, bei +125 % auf null</text>
+        <line x1="340" y1="243" x2="386" y2="243" stroke="var(--orange)" stroke-width="1.3" marker-end="url(#pf3)"/>
+      </svg>
+    </div>
+    <figcaption>Die 5-Stunden-Deckelung je Tag ist die wichtigste der drei Vereinfachungen: Ohne
+    sie gewinnt jeder Spot, an dem der Wind zwölf Stunden lang mittelmäßig weht, gegen den, an dem
+    er vier Stunden perfekt steht. Die Überbrückung gilt für eine einzelne Stunde bis 0,1 unter der
+    Schwelle zwischen zwei tragenden, ohne Veto — 0,54 mitten im Nachmittag zerschnitt bis 1.6.1
+    fünf Stunden in zweimal zwei. Der Fahrtfaktor ist 1 − 0,8 × Überschreitung ÷ erlaubte Zeit:
+    eine Stunde zu viel bei vier erlaubten kostet 20 Prozent, und bei 125 Prozent über der
+    erlaubten Zeit (dem 2,25-Fachen der erlaubten Fahrt) ist der Faktor null.</figcaption>
+  </figure>
+
+  <h3>Das Ensemble dämpft die Reihenfolge</h3>
+  <div class="schmal">
+    <p>Dasselbe Wetter, vierzigmal mit leicht gestörten Anfangsbedingungen gerechnet (ICON-EPS).
+    Der Anteil der Rechnungen, die in mindestens zwei Stunden der Session den unteren Rand deines
+    Quivers erreichen, ist die ehrlichere Zahl als jeder Einzelwert — er sagt, wie stabil die Lage
+    ist. Die Grenze wird dafür um Regionalmodell und Windfaktor zurückgerechnet, damit das Ensemble
+    dieselbe Zahl beurteilt, die im Report steht. Seit 1.5.0 steht der Anteil nicht nur im Report,
+    sondern entscheidet mit:</p>
+  </div>
+
+  <div class="formel">Faktor = (1 − Gewicht) + Gewicht · Anteil        Standard: Gewicht = 0,5
+
+Anteil 100 %  →  Faktor 1,00   Score unverändert
+Anteil  50 %  →  Faktor 0,75
+Anteil   0 %  →  Faktor 0,50   halber Score, aber nicht verschwunden</div>
+
+  <div class="schmal">
+    <p>Roh zu multiplizieren würde den Report bei unsicherer Wetterlage leeren — dann steht dort
+    nichts, obwohl es etwas zu entscheiden gibt. <code>weight: 0.0</code> stellt den Zustand bis
+    1.4.3 her: die Plakette wird angezeigt und ändert nichts.</p>
+    <p>Eine Grenze gehört dazu: Die Wahrscheinlichkeit wird nur für die vordersten 20 Ziele geholt.
+    Wer dahinter liegt, wird weder belohnt noch bestraft — und kann dadurch an einem gedämpften
+    Ziel vorbeiziehen.</p>
+    <p><strong>An Thermiksessions</strong> steht statt des Ensembles die Verlässlichkeit des Spots
+    aus dem Katalog (<code>reliability</code>, ohne Angabe 0,6), mit demselben gedämpften Faktor und
+    an allen Thermiksessions, nicht nur den vordersten zwanzig. Das Ensemble sieht dort den
+    Modellwind von 5 Knoten und meldete 0 Prozent — bis 1.6.1 halbierte das genau die Sessions,
+    die das Werkzeug eigens korrigiert hatte.</p>
+    <p>Zu jedem Ziel steht schließlich ein <strong>Plan B</strong>: das beste andere Ziel innerhalb
+    von 120 km geschätzter Straße (<code>drive.plan_b_km</code>, Luftlinie × 1,22) mit mindestens
+    einem gemeinsamen Tag.</p>
+  </div>
+</section>
+
+<!-- ============================ 08 ============================ -->
+<section id="grenzen">
+  <div class="abschnittkopf"><span class="nummer">08</span><h2>Was das Werkzeug nicht kann</h2></div>
+  <div class="schmal">
+    <p>Diese Liste ist kein Kleingedrucktes, sondern Teil der Methode. Jeder Punkt ist eine Stelle,
+    an der eine Zahl im Report selbstbewusster aussieht, als sie ist.</p>
+  </div>
+
+  <ul class="grenzen schmal">
+    <li><strong>Die Wellenhöhe ist eine Näherung.</strong> Die SPM-Beziehung unterstellt stationären
+    Wind aus konstanter Richtung. Sie trennt glatt von kabbelig, sie sagt keine Welle vorher.</li>
+
+    <li><strong>Die Verlässlichkeit der Thermik ist meist geraten.</strong> In der gesamten
+    gesichteten Literatur gibt es nur zwei quantifizierte Angaben — Malojawind 95 % unter Bedingung
+    und Nordadria 40–60 %. Alle anderen Werte im Katalog sind bewusst vorsichtige Annahmen, und
+    25 der 71 Thermikspots tragen gar keine Stärkeangabe.</li>
+
+    <li><strong>Die Domains der Regionalmodelle sind unbekannt.</strong> Wingfoilscout hat sie durch
+    Ausprobieren eingegrenzt. Die hinterlegten Rechtecke sind Kompromisse, keine Karten der
+    Anbieter.</li>
+
+    <li><strong>Das Ensemble liegt auf einem gröberen Gitter.</strong> Am Brouwersdam landet die
+    Abfrage 15 km vom Spot, das deterministische ICON auf 3 km. Deshalb wird daraus nur eine
+    Wahrscheinlichkeit gerechnet und nie ein Windwert überschrieben.</li>
+
+    <li><strong>Die Modell-Plakette nennt den Median, nicht die Wirkung.</strong> Sie sagt, wie
+    weit das feine Modell vom groben abweicht — nicht, welches von beiden recht hat. Im Lauf vom
+    16. September brachte nur CH1 in den Alpen einen durchgehenden Unterschied (Median +5 kn);
+    ICON-D2 an flachen deutschen Binnenseen brachte null, und das ist die Kontrollgruppe, die
+    zeigt, dass die Rechnung stimmt.</li>
+
+    <li><strong>Ohne Routing ist die Anfahrt Luftlinie mal 1,22.</strong> In Zeeland liegen Dämme
+    und Fähren dazwischen, in den Alpen Pässe — dort liegt die Schätzung gern 20 bis 50 Prozent
+    daneben. Betroffene Ziele sind im Report mit „(geschätzt)“ markiert.</li>
+
+    <li><strong>Die Tide ist ein Modell, keine Tafel.</strong> 8-km-Raster, Tide und Windstau
+    zusammen; in Buchten und Mündungen liegt es vermutlich weiter daneben als an offener Küste —
+    wie weit, ist noch nicht gegen einen Pegel geprüft. Für „läuft bis 15:00 auf“ reicht es, fürs
+    Wattwandern nicht.</li>
+
+    <li><strong>Windsektoren von Hand gibt es an 29 Spots.</strong> Alle anderen bekommen Windlage
+    und Wasserzustand aus der Ufergeometrie. Die Koordinaten sind inzwischen alle bestätigt; wo
+    eine Geometrie nicht zur Koordinate passt, meldet sich der Spot auf der Seite
+    „Koordinaten prüfen“.</li>
+  </ul>
+
+  <p class="notiz">Alle Zahlen auf dieser Seite stammen aus dem Code und aus
+  <code>config.example.yaml</code>, Stand Version 2.1.0; <code>SCORING.md</code> im Repository
+  sagt dasselbe als Text, Schritt für Schritt. Wer die Gewichte, Schwellen oder das Wohlfühlband
+  ändert, muss auch diese Seite ändern — sie beschreibt die Voreinstellung, nicht ein
+  Naturgesetz. Ein Test im Repository erinnert daran, wenn eine Zahl nicht mehr stimmt.</p>
+</section>
+
+</div>
+</body>
+</html>

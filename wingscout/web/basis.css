@@ -1,0 +1,191 @@
+
+:root{--ground:#F2F4F5;--surface:#FFFFFF;--surface-2:#E4ECEF;--ink:#14303C;--ink-2:#3A5966;
+--muted:#536E7A;--line:#CFDCE0;--line-soft:#E4EAEC;--accent:#AE1F68;--accent-soft:#F9E8F0;
+--ok:#276B4F;--ok-soft:#DDEBE3;--stop:#A33526;--stop-soft:#F4E0DC;--warn:#8E650A;--warn-soft:#F2E9D2;
+--schatten:0 1px 2px rgba(20,48,60,.06),0 8px 24px rgba(20,48,60,.05);}
+@media (prefers-color-scheme:dark){:root{--ground:#0B171E;--surface:#14262F;--surface-2:#1C3644;
+--ink:#DCE8EC;--ink-2:#B0C6CE;--muted:#7E99A3;--line:#2A4654;--line-soft:#203945;--accent:#F075AC;
+--accent-soft:#33162A;--ok:#6FC79B;--ok-soft:#152E27;--stop:#E88274;--stop-soft:#311D1B;
+--warn:#D9B35C;--warn-soft:#2C2617;--schatten:0 1px 2px rgba(0,0,0,.3);}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);-webkit-font-smoothing:antialiased;
+font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:44px 20px 80px}
+.wrap.weit{max-width:1180px}
+h1{font-size:2rem;margin:0 0 4px;letter-spacing:-.022em;font-weight:600}
+.sub{color:var(--muted);font-size:.92rem;margin:0 0 28px}
+/* Der Untertitel der Suchseite bricht englisch und französisch am Handy um —
+   ausgewogen, statt dass „kn“ allein in der zweiten Zeile steht. */
+#wrap > .sub{text-wrap:balance}
+
+/* ── Die Karte, auf der alles Wichtige steht ───────────────────────────── */
+.karte{background:var(--surface);border-radius:14px;box-shadow:var(--schatten);padding:22px 22px 24px}
+.feldzeile{display:flex;gap:8px;align-items:center}
+.feldzeile input[type=text],.feldzeile input[type=datetime-local]{flex:1;min-width:0}
+/* „Ab wann?“ (seit 2.3.0) — das zweite Feld der Karte, unter „Von wo aus?“ */
+.abwann{margin-top:16px}
+.klein{font-size:.84rem;color:var(--muted);margin:10px 0 0}
+
+/* ── Voreinstellungen als große Schalter ───────────────────────────────── */
+.presets{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:22px 0 4px}
+.preset{display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;
+padding:14px 15px;border:1.5px solid var(--line);border-radius:11px;background:var(--ground);
+color:var(--ink);cursor:pointer;font:inherit;transition:border-color .12s,background .12s}
+.preset:hover{border-color:var(--muted)}
+.preset b{font-size:1rem;font-weight:600;letter-spacing:-.01em}
+.preset span{font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.preset[aria-pressed=true]{border-color:var(--accent);background:var(--accent-soft)}
+.preset[aria-pressed=true] span{color:var(--accent)}
+.eigen{font-size:.8rem;color:var(--muted);margin:10px 0 0;min-height:1.2em}
+
+/* ── Formular ──────────────────────────────────────────────────────────── */
+form{display:block}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px 16px}
+label{display:block;font-size:.78rem;color:var(--ink-2);margin-bottom:4px}
+label .u{color:var(--muted)}
+/* Felder einer Zeile: die Eingabefelder stehen auf einer Linie, auch wenn eine
+   Beschriftung umbricht (französisch und spanisch oft, „Böigkeit max.
+   Böe/Mittel ?“ auch). Jedes Feld nimmt zwei Zeilen des Rasters (subgrid): die
+   obere ist so hoch wie die längste Beschriftung der Zeile, die untere trägt
+   die Felder. Bei einzeiligen Beschriftungen ändert sich nichts. */
+@supports (grid-template-rows:subgrid){
+  .row > div:has(> label + :is(input,select,textarea)){display:grid;grid-row:span 2;
+    grid-template-rows:subgrid;grid-template-columns:minmax(0,1fr);row-gap:0}
+  .row > div > label{align-self:end}
+  .row > div > :is(input,select,textarea){align-self:start}
+}
+.row > div > label{text-wrap:balance}
+/* Am Handy steht ein Auswahlfeld allein in seiner Zeile — in der halben
+   Spalte war schon „nur starken Bewuchs“ abgeschnitten, französisch blieb
+   „seulement les“. */
+@media (max-width:560px){.row > div:has(> select){grid-column:1/-1}}
+/* Fragezeichen hinter einem Feldnamen. Der title-Text reicht der Maus, die
+   eigene Box zeigt den Text auch bei Tastaturfokus und ohne Wartezeit. */
+.info{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;
+margin-left:5px;border-radius:50%;border:1px solid var(--line);color:var(--muted);
+font-size:10px;font-weight:700;line-height:1;cursor:help;position:relative;vertical-align:-2px}
+.info:hover,.info:focus{border-color:var(--accent);color:var(--accent);outline:none}
+.infobox{position:absolute;top:calc(100% + 7px);left:-8px;width:270px;max-width:72vw;z-index:30;
+display:none;background:var(--ink);color:var(--ground);font:400 12px/1.5 -apple-system,sans-serif;
+padding:9px 11px;border-radius:8px;box-shadow:0 6px 20px rgba(20,48,60,.22);text-align:left;
+white-space:normal;pointer-events:none}
+.info:hover .infobox,.info:focus .infobox{display:block}
+/* Der Kasten darf nicht über den Fensterrand. Am Rechner öffnet er in der
+   vierten Spalte nach links — dort steht das „?“ bei langen Beschriftungen am
+   weitesten rechts (französisch lief er bei 1024 px rechts hinaus). Am Handy
+   steht er fest über der Reiterleiste, in voller Breite: am „?“ ausgerichtet
+   lief er je nach Spalte links aus dem Bild, auch deutsch. */
+@media (min-width:761px){.row > div:nth-child(4n) .infobox{left:auto;right:-8px}}
+@media (max-width:700px){.infobox{position:fixed;top:auto;bottom:calc(72px + env(safe-area-inset-bottom));
+  left:calc(12px + env(safe-area-inset-left));right:calc(12px + env(safe-area-inset-right));
+  width:auto;max-width:none;z-index:70}}
+textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;
+font:13px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--ground);color:var(--ink);resize:vertical}
+input[type=number],input[type=text],input[type=datetime-local],select{width:100%;padding:10px 12px;border:1px solid var(--line);
+border-radius:9px;background:var(--ground);color:var(--ink);font:15px/1.3 inherit;
+font-variant-numeric:tabular-nums}
+input[type=number],select{font-family:ui-monospace,Menlo,monospace;font-size:14px}
+input:focus,select:focus,textarea:focus{outline:3px solid var(--accent-soft);outline-offset:0;border-color:var(--accent)}
+.checks{display:flex;flex-wrap:wrap;gap:11px 22px;align-items:center}
+.checks label{display:flex;align-items:center;gap:8px;margin:0;font-size:.92rem;color:var(--ink);cursor:pointer}
+/* Ein Haken mit „?“ (Hochauflösende Modelle, Wassertemperatur …) als
+   Fließtext: bricht der Text um, steht das „?“ hinter dem letzten Wort — als
+   eigenes Flex-Element stand es rechts außen neben dem ganzen Textblock.
+   Einzeilig sieht es aus wie vorher: Haken mittig auf der ersten Zeile
+   (halbe Zeilenhöhe .92rem × 1,5 ÷ 2 minus halbe Kastenhöhe), 8 + 5 px Abstand. */
+.checks label:has(> .info){display:block;position:relative;padding-left:26px;text-wrap:balance}
+.checks label:has(> .info) > input[type=checkbox]{position:absolute;left:0;top:calc(.69rem - 9px)}
+.checks label:has(> .info) > .info{margin-left:13px;vertical-align:2px}
+input[type=checkbox]{accent-color:var(--accent);width:18px;height:18px;margin:0;flex:none}
+
+/* ── Knöpfe ────────────────────────────────────────────────────────────── */
+button{font:600 15px/1 inherit;padding:13px 22px;border-radius:10px;border:1.5px solid transparent;
+cursor:pointer;transition:filter .12s}
+button:hover{filter:brightness(.97)}
+button.go{background:var(--accent);color:#fff;width:100%;padding:16px;font-size:1.05rem;margin-top:18px;
+box-shadow:0 1px 2px rgba(174,31,104,.3)}
+button.go:disabled{opacity:.6;cursor:progress}
+button.ghost{background:transparent;color:var(--ink-2);border-color:var(--line)}
+button.mini{padding:10px 13px;font-size:.86rem;border-radius:9px;flex:none}
+/* Der Link „Koordinaten prüfen“ unter „Ufergeometrie“ sieht aus wie ein Knopf,
+   schrumpfte aber neben dem langen Hinweis und brach in zwei Zeilen um — in
+   jeder Sprache. Er bleibt so breit wie sein Text, wie die Knöpfe. */
+.fuss > a.mini{flex:none}
+button.stop{color:var(--stop);border-color:transparent}
+button.stop.armed{background:var(--stop-soft);border-color:var(--stop)}
+
+/* ── Aufklappbares ─────────────────────────────────────────────────────── */
+details{background:var(--surface);border-radius:12px;box-shadow:var(--schatten);margin-top:10px;
+overflow:hidden}
+details > summary{list-style:none;cursor:pointer;padding:15px 20px;font-weight:600;font-size:.95rem;
+display:flex;align-items:center;gap:9px;color:var(--ink-2)}
+details > summary::-webkit-details-marker{display:none}
+details > summary::before{content:"";width:6px;height:6px;border-right:2px solid var(--muted);
+border-bottom:2px solid var(--muted);transform:rotate(-45deg);transition:transform .15s;flex:none;margin-left:2px}
+details[open] > summary::before{transform:rotate(45deg)}
+details > summary:hover{color:var(--ink)}
+.inhalt{padding:2px 20px 20px}
+.gruppe{margin-top:20px}
+.gruppe:first-child{margin-top:4px}
+.gruppe > h4{margin:0 0 10px;font-size:.72rem;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);font-weight:600}
+
+/* ── Fuß, Protokoll, Ergebnis ──────────────────────────────────────────── */
+.fuss{display:flex;gap:10px;align-items:center;margin-top:22px}
+.fuss .rechts{margin-left:auto}
+.hint{color:var(--muted);font-size:.84rem}
+#panel{margin-top:18px;display:none}
+#panel.on{display:block}
+.status{display:flex;align-items:center;gap:10px;font-size:.95rem;color:var(--ink-2);
+background:var(--surface);border-radius:12px;box-shadow:var(--schatten);padding:15px 20px}
+.spinner{width:15px;height:15px;border:2px solid var(--line);border-top-color:var(--accent);
+border-radius:50%;animation:dreh .7s linear infinite;flex:none}
+@keyframes dreh{to{transform:rotate(360deg)}}
+pre{background:var(--ground);border-radius:9px;padding:12px 14px;margin:0;max-height:220px;overflow:auto;
+font:12px/1.65 ui-monospace,Menlo,monospace;color:var(--ink-2)}
+.banner{padding:14px 18px;border-radius:12px;font-size:.95rem;margin-bottom:12px;font-weight:500}
+.b-ok{background:var(--ok-soft);color:var(--ok)}
+.b-err{background:var(--stop-soft);color:var(--stop);white-space:pre-wrap}
+.b-warn{background:var(--warn-soft);color:var(--warn)}
+iframe{width:100%;height:80vh;border:1px solid var(--line);border-radius:12px;background:var(--surface);margin-top:12px}
+a{color:var(--accent)}
+/* Der Fuß jeder Seite: Logo des Erstellers und Versionsnummer (seit 1.19.1).
+   Am Rechner stehen beide oben in der Reiterleiste, der Fuß bleibt weg; am
+   Handy ist er die einzige Stelle (die Leiste sitzt dort unten, ohne Platz). */
+.seitenfuss{display:none}
+.seitenfuss .marke{display:inline-flex;align-items:center;gap:9px;color:var(--muted);font-size:.8rem;
+  font-variant-numeric:tabular-nums}
+.seitenfuss .marke img{display:block;height:26px;width:auto;border-radius:6px}
+@media (max-width:560px){.presets{grid-template-columns:1fr}.wrap{padding:26px 14px 60px}}
+
+/* ── Handy (seit 1.17.0) ────────────────────────────────────────────────────
+   Die Regeln hier kommen aus dem, was Safari auf iOS erzwingt: Schrift unter
+   16 px in einem Eingabefeld lässt Safari beim Antippen hineinzoomen und nicht
+   wieder heraus; `100vh` ist die Höhe mit eingeklappter Adressleiste, also zu
+   hoch; Dynamic Island und Home-Indikator liegen über dem Inhalt, wenn man
+   `env(safe-area-inset-*)` nicht beachtet (dafür braucht der Viewport
+   `viewport-fit=cover`). Tippziele: 44 px nach Apples Vorgaben. */
+html{color-scheme:light dark}
+@media (max-width:860px),(pointer:coarse){
+  input[type=number],input[type=text],input[type=date],input[type=time],input[type=datetime-local],select,textarea{font-size:16px}
+  button,.reiter a,summary{min-height:44px}
+  button.mini{min-height:38px}
+}
+@media (max-width:700px){
+  .wrap{padding:16px 14px 28px;max-width:100%}
+  .wrap.weit{max-width:100%}
+  .wrap{padding-left:calc(14px + env(safe-area-inset-left));padding-right:calc(14px + env(safe-area-inset-right))}
+  h1{font-size:1.55rem}
+  .sub{font-size:.88rem;margin-bottom:18px}
+  .karte{padding:16px 15px 18px;border-radius:12px}
+  .presets{gap:8px}
+  .fuss{flex-wrap:wrap;gap:8px}
+  .fuss .rechts{margin-left:0}
+  .seitenfuss{display:flex;justify-content:center;align-items:center;gap:9px;margin:30px 0 4px}
+  /* Volle Höhe: svh ist der sichere Wert (Adressleiste sichtbar), dvh folgt ihr */
+  iframe{height:70svh}
+}
+@supports (height:100dvh){@media (max-width:700px){iframe{height:70dvh}}}
+
+/* Sprachumschalter im Fuß am Handy (seit 2.1.0) */
+.seitenfuss .sprachwahl{font:600 .8rem/1 inherit;font-family:inherit;color:var(--ink-2);background:var(--surface);
+  border:1px solid var(--line);border-radius:8px;padding:6px 8px}

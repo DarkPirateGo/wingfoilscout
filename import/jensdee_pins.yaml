@@ -1,0 +1,648 @@
+# Automatisch erzeugt aus der Google-Maps-Liste 'Wingfoil Spots' von Jens Dee
+# https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+# Koordinaten exakt (die Pins tragen sie als Namen), Windsektoren unbekannt.
+
+- id: jd-fraenkisches-seenland-2
+  name: Fränkisches Seenland 2 (Jens-Dee-Pin)
+  lat: 49.12025
+  lon: 10.94172
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 49°07'12.9"N 10°56'30.2"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+- id: jd-fraenkisches-seenland-1
+  name: Fränkisches Seenland 1 (Jens-Dee-Pin)
+  lat: 49.13275
+  lon: 10.95753
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 49°07'57.9"N 10°57'27.1"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+- id: jd-allgaeu-forggensee-1
+  name: Allgäu / Forggensee 1 (Jens-Dee-Pin)
+  lat: 47.57294
+  lon: 10.19203
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 47°34'22.6"N 10°11'31.3"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+- id: jd-achensee-1
+  name: Achensee 1 (Jens-Dee-Pin)
+  lat: 47.45439
+  lon: 11.71392
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 47°27'15.8"N 11°42'50.1"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+- id: jd-achensee-2
+  name: Achensee 2 (Jens-Dee-Pin)
+  lat: 47.43319
+  lon: 11.73114
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 47°25'59.5"N 11°43'52.1"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+- id: jd-chiemsee-1
+  name: Chiemsee 1 (Jens-Dee-Pin)
+  lat: 47.93258
+  lon: 12.46231
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 47°55'57.3"N 12°27'44.3"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+- id: jd-chiemsee-2
+  name: Chiemsee 2 (Jens-Dee-Pin)
+  lat: 47.84292
+  lon: 12.47603
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 47°50'34.5"N 12°28'33.7"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+- id: jd-chiemsee-3
+  name: Chiemsee 3 (Jens-Dee-Pin)
+  lat: 47.88569
+  lon: 12.53361
+  water_body: lake
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 47°53'08.5"N 12°32'01.0"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+- id: jd-zeeland-volkerak-1
+  name: Zeeland / Volkerak 1 (Jens-Dee-Pin)
+  lat: 51.67833
+  lon: 4.13203
+  water_body: lagoon
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 51°40'42.0"N 4°07'55.3"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+- id: jd-zuid-holland-1
+  name: Zuid-Holland 1 (Jens-Dee-Pin)
+  lat: 51.92478
+  lon: 3.98378
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 51°55'29.2"N 3°59'01.6"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+- id: jd-nordseekueste-dithmarschen-1
+  name: Nordseeküste Dithmarschen 1 (Jens-Dee-Pin)
+  lat: 54.09581
+  lon: 8.94944
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 54°05'44.9"N 8°56'58.0"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+- id: jd-fehmarn-west-3
+  name: Fehmarn West 3 (Jens-Dee-Pin)
+  lat: 54.42553
+  lon: 11.09772
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 54°25'31.9"N 11°05'51.8"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+- id: jd-fehmarn-west-1
+  name: Fehmarn West 1 (Jens-Dee-Pin)
+  lat: 54.45225
+  lon: 11.00478
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 54°27'08.1"N 11°00'17.2"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+- id: jd-fehmarn-west-2
+  name: Fehmarn West 2 (Jens-Dee-Pin)
+  lat: 54.48525
+  lon: 11.01208
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 54°29'06.9"N 11°00'43.5"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+- id: jd-fehmarn-ost-1
+  name: Fehmarn Ost 1 (Jens-Dee-Pin)
+  lat: 54.47956
+  lon: 11.24736
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 54°28'46.4"N 11°14'50.5"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+- id: jd-daenemark-4
+  name: Dänemark 4 (Jens-Dee-Pin)
+  lat: 55.53844
+  lon: 8.15233
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 55°32'18.4"N 8°09'08.4"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+- id: jd-daenemark-6
+  name: Dänemark 6 (Jens-Dee-Pin)
+  lat: 55.88869
+  lon: 8.35244
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 55°53'19.3"N 8°21'08.8"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+- id: jd-kroatien-2
+  name: Kroatien 2 (Jens-Dee-Pin)
+  lat: 44.24753
+  lon: 15.18522
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 44°14'51.1"N 15°11'06.8"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+- id: jd-vendee-1
+  name: Vendée 1 (Jens-Dee-Pin)
+  lat: 46.34289
+  lon: -1.43008
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 46°20'34.4"N 1°25'48.3"W. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+- id: jd-daenemark-1
+  name: Dänemark 1 (Jens-Dee-Pin)
+  lat: 56.88511
+  lon: 8.62603
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 56°53'06.4"N 8°37'33.7"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+- id: jd-daenemark-2
+  name: Dänemark 2 (Jens-Dee-Pin)
+  lat: 56.99533
+  lon: 8.86419
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 56°59'43.2"N 8°51'51.1"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+- id: jd-daenemark-5
+  name: Dänemark 5 (Jens-Dee-Pin)
+  lat: 57.005
+  lon: 8.93767
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 57°00'18.0"N 8°56'15.6"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+- id: jd-kroatien-4
+  name: Kroatien 4 (Jens-Dee-Pin)
+  lat: 43.26281
+  lon: 16.60986
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 43°15'46.1"N 16°36'35.5"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+- id: jd-sardinien-nordost-1
+  name: Sardinien Nordost 1 (Jens-Dee-Pin)
+  lat: 41.19272
+  lon: 9.31997
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 41°11'33.8"N 9°19'11.9"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+- id: jd-sardinien-nordost-2
+  name: Sardinien Nordost 2 (Jens-Dee-Pin)
+  lat: 41.19181
+  lon: 9.29619
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 41°11'30.5"N 9°17'46.3"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+- id: jd-kroatien-3
+  name: Kroatien 3 (Jens-Dee-Pin)
+  lat: 43.25658
+  lon: 16.63417
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 43°15'23.7"N 16°38'03.0"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+- id: jd-daenemark-3
+  name: Dänemark 3 (Jens-Dee-Pin)
+  lat: 57.64494
+  lon: 10.46889
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 57°38'41.8"N 10°28'08.0"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true
+- id: jd-kroatien-1
+  name: Kroatien 1 (Jens-Dee-Pin)
+  lat: 42.97892
+  lon: 17.10361
+  water_body: sea
+  shallow: none
+  seagrass: none
+  season:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  sectors: []
+  notes: Gesetzter Pin aus Jens Dees Liste, Originalbeschriftung 42°58'44.1"N 17°06'13.0"E. Koordinate
+    exakt, Name und nutzbare Windrichtungen unbekannt — bitte ergänzen.
+  source: https://maps.app.goo.gl/5QM64ZbUbmcit8rf6
+  verified: true
+  sectors_unknown: true

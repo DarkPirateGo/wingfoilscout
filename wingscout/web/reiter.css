@@ -1,0 +1,109 @@
+
+/* Am Rechner: Reiter oben, wie gehabt. Am Handy (schmal oder Touch): eine
+   feste Leiste unten, im Daumenbereich — so macht es jede iOS-App, und die
+   Reiter oben brachen bei 375 pt in zwei Zeilen und kosteten 230 px Höhe. */
+.reiter{display:flex;gap:2px;margin:0 0 22px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.reiter a{display:inline-block;padding:9px 10px 11px;font-size:.92rem;font-weight:600;color:var(--muted);
+text-decoration:none;border-bottom:2px solid transparent;margin-bottom:-1px}
+.reiter a:hover{color:var(--ink)}
+.reiter a.an{color:var(--accent);border-bottom-color:var(--accent)}
+.reiter svg{display:none}
+/* Rechts in der Leiste das Logo des Erstellers mit der Versionsnummer (seit
+   1.19.1) — still, in der gedämpften Farbe; der Tooltip nennt beides. Die
+   Marke schiebt sich mit `margin-left:auto` nach rechts, Sprache, „?“ und
+   „Beenden“ folgen ihr — seit 2.1.0 alle in `.rechts`, die als Ganzes
+   umbricht, wenn es eng wird. Die Nummer steht klein unter dem Logo: so
+   bleibt die Leiste mit dem „?“ in allen vier Sprachen eine Zeile (gemessen
+   bei 1024 und 1440 px, auch auf den schmalen Seiten mit 760 px). */
+.reiter .rechts{margin-left:auto;align-self:center;display:inline-flex;align-items:center;gap:6px;
+  padding:4px 0}
+.reiter .marke{margin-left:auto;align-self:center;display:inline-flex;flex-direction:column;align-items:center;
+  gap:2px;color:var(--muted);font-size:.64rem;line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap;
+  cursor:default}
+.reiter .marke img{display:block;height:26px;width:auto;border-radius:6px}
+.reiter .marke .version{letter-spacing:.02em}
+/* Hilfe: das runde „?“ zwischen Sprache und „Beenden“ — Anleitung und „Wie
+   Wingfoilscout rechnet“; gefüllt auf den Hilfeseiten (aria-current), das
+   Zeichen dann in der Farbe der Fläche — weiß auf Magenta, dunkel auf dem
+   hellen Rosa des dunklen Modus. Die Tippfläche ist größer als der Kreis
+   (::after). */
+.reiter .hilfeknopf{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:none;
+  width:28px;height:28px;min-height:0;padding:0;margin:0;border:1.5px solid var(--line);border-radius:50%;
+  background:var(--surface);color:var(--ink-2);font-family:inherit;font-size:.86rem;font-weight:700;line-height:1;
+  text-decoration:none}
+.reiter .hilfeknopf:hover{border-color:var(--accent);color:var(--accent)}
+.reiter .hilfeknopf[aria-current=page]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.reiter .hilfeknopf:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.reiter .hilfeknopf::after{content:"";position:absolute;inset:-7px;border-radius:50%}
+/* „Beenden“ ganz rechts — rot umrandet, damit man ihn findet;
+   scharf (nach dem ersten Klick) gefüllt, damit man sieht, dass er es ist */
+.reiter .aus{margin-left:0;align-self:center;font:600 .86rem/1 inherit;padding:8px 12px;min-height:0;
+  border:1.5px solid var(--stop);border-radius:9px;background:transparent;color:var(--stop);cursor:pointer}
+.reiter .aus:hover{background:var(--stop-soft)}
+.reiter .aus.armed{background:var(--stop);color:#fff}
+.reiter .aus[disabled]{opacity:.6;cursor:default}
+/* Ein Lauf im Hintergrund (lauf.js): pulsender Punkt am Reiter, der ihn
+   gestartet hat; stiller Punkt an „Ziele“, wenn ein neuer Report da ist */
+.reiter a.laeuft span::after,.reiter a.neu span::after{content:"";display:inline-block;width:7px;height:7px;
+  border-radius:50%;margin-left:6px;vertical-align:2px;background:var(--accent)}
+.reiter a.laeuft span::after{animation:pulsen 1.1s ease-in-out infinite}
+.reiter a.neu span::after{background:var(--ok)}
+@keyframes pulsen{0%,100%{opacity:.25}50%{opacity:1}}
+
+@media (max-width:700px){
+  .reiter{position:fixed;left:0;right:0;bottom:0;z-index:60;margin:0;gap:0;
+    display:flex;justify-content:space-around;align-items:stretch;
+    background:var(--surface);border-bottom:none;border-top:1px solid var(--line);
+    padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+    box-shadow:0 -1px 12px rgba(20,48,60,.08)}
+  /* `flex:1 1 0` mit `min-width:0`: ohne das wächst ein Reiter über die
+     Fensterbreite hinaus, sobald sein Wort breiter ist als sein Anteil —
+     auf der Rückblickseite war die Leiste damit 444 px breit bei 375 px Fenster. */
+  .reiter a{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:3px;min-height:48px;padding:4px 2px;margin:0;border-bottom:none;
+    border-radius:10px;font-size:.68rem;font-weight:600;letter-spacing:.01em;line-height:1.1;text-align:center}
+  .reiter a span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  /* Katalog und Koordinatenprüfung sind Arbeit mit Karte und Tabelle — am
+     Handy nur, wenn man gerade dort ist (dann trägt der Reiter „an“). */
+  .reiter a.nurgross{display:none}
+  /* Der Kasten „Auf dem iPhone“ (Adresse mit Schlüssel) gehört auf den Mac,
+     nicht aufs iPhone selbst — bis 1.18.3 fehlte diese Regel */
+  .gruppe.nurgross{display:none}
+  /* Logo, Version und Sprache haben in der Leiste unten keinen Platz — am
+     Handy stehen sie im Fuß der Seite (`.seitenfuss`, basis.css) */
+  .reiter .marke{display:none}
+  .reiter .rechts .sprachwahl{display:none}
+  /* Am Handy bleiben von der Gruppe „?“ und „Beenden“: fest oben rechts,
+     nebeneinander, auch wenn die Leiste unten sitzt; die erste Zeile der
+     Seite lässt ihnen Platz (unten). */
+  .reiter .rechts{position:fixed;top:calc(10px + env(safe-area-inset-top));right:calc(12px + env(safe-area-inset-right));
+    z-index:61;display:flex;align-items:center;gap:8px;margin:0;padding:0}
+  .reiter .hilfeknopf{width:31px;height:31px;box-shadow:0 1px 6px rgba(20,48,60,.1)}
+  .reiter a.an{color:var(--accent);border-bottom-color:transparent}
+  .reiter a:active{background:var(--ground)}
+  .reiter svg{display:block;width:23px;height:23px;stroke:currentColor;fill:none;
+    stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  /* Platz für die Leiste, damit der letzte Absatz nicht darunter verschwindet */
+  body{padding-bottom:calc(60px + env(safe-area-inset-bottom))}
+  /* „Beenden“ bleibt oben rechts, auch wenn die Leiste unten sitzt: eine
+     kleine Marke neben dem „?“ (die Gruppe darüber ist fest). */
+  .reiter .aus{margin:0;flex:none;padding:7px 10px;font-size:.74rem;background:var(--surface);
+    box-shadow:0 1px 6px rgba(20,48,60,.1)}
+  .reiter .aus.armed{background:var(--stop)}
+  /* Platz für „?“ und „Beenden“ in der ersten Zeile jeder Seite: 12 px Rand,
+     31 px „?“, 8 px Abstand, „Beenden“ (deutsch am breitesten), etwas Luft —
+     abzüglich der 14 px Rand der Seite selbst. */
+  .reiter + h1,.reiter + .sub,.reiter + .banner,.reiter + .hilfekopf > h1{padding-right:124px}
+  /* Im Report steht zwischen Leiste und erster Zeile das eingesetzte Skript
+     (`report_mit_reitern`) — ohne diese Regel lag „Beenden“ über dem Ende von
+     „… erstellt 03.10.2026 21:15“, in jeder Sprache. */
+  .reiter + script + .sub{padding-right:124px}
+}
+
+/* Sprachumschalter neben Logo und Version (seit 2.1.0). So breit wie sein
+   Inhalt: basis.css gibt jedem <select> `width:100%` — seit er neben der
+   Marke steht statt in ihr, zog er sich im Fuß am Handy sonst über die
+   ganze Zeile. */
+.sprachwahl{font:600 .78rem/1 inherit;font-family:inherit;color:var(--ink-2);background:var(--surface);
+  border:1px solid var(--line);border-radius:8px;padding:4px 4px;cursor:pointer;width:auto;flex:none}
+.sprachwahl:focus-visible{outline:2px solid var(--accent);outline-offset:2px}

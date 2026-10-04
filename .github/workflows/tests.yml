@@ -1,0 +1,59 @@
+# Läuft bei jedem Push und bei jedem Pull Request.
+#
+# Der Prüflauf ist derselbe wie lokal (tools/check.sh). Der Sinn hier ist
+# nicht, etwas anderes zu prüfen, sondern es unabhängig davon zu tun, ob
+# jemand den Hook installiert hat: an einem Pull Request steht dann grün
+# oder rot, bevor irgendetwas gemerged wird.
+#
+# Kein Netz nötig — die Tests kommen ohne externe Dienste aus. Genau deshalb
+# taugen sie hier.
+name: Prüflauf
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:          # von Hand auslösbar, unter "Actions"
+
+# Der Prüflauf liest nur. Das Token des Laufs darf nichts schreiben, und
+# actions/checkout legt es danach nicht in .git/config ab, wo jeder spätere
+# Schritt es lesen könnte (Review 04.10.2026, D8).
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 3.9 ist das, was Apple auf dem Mac mitliefert — wer nur gegen eine
+        # neue Fassung entwickelt, baut irgendwann Syntax ein, die dort nicht
+        # einmal eingelesen werden kann. 3.12 ist die Gegenprobe nach oben.
+        python-version: ["3.9", "3.12"]
+    name: Prüflauf (Python ${{ matrix.python-version }})
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: PyYAML installieren
+        run: python3 -m pip install -r requirements.txt
+
+      - name: Prüflauf
+        run: bash tools/check.sh
+
+      # Dieselbe Liste wie in tools/veroeffentlichen.sh und tools/check.sh:
+      # tools/persoenliche_daten.py, deckungsgleich mit .gitignore.
+      - name: Persönliche Dateien dürfen nicht im Repository liegen
+        run: |
+          if git ls-files -z | tr '\n\000' ' \n' | python3 tools/persoenliche_daten.py dateien --mit-grund; then
+            echo "Keine persönlichen Dateien versioniert."
+          else
+            echo "::error::Persönliche Dateien sind versioniert (Liste oben) — sie gehören in .gitignore und mit 'git rm --cached' aus dem Repository."
+            exit 1
+          fi

@@ -1,0 +1,206 @@
+# ─────────────────────────────────────────────────────────────────────────────
+#  Wingfoilscout · Configuration
+#  All wind speeds in KNOTS (kn). Everything here is there to be changed.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Your details. This file is only the template — on the first start, Wingfoilscout
+# creates `config.yaml` from it, and that file belongs to you alone (it is not
+# versioned). Enter your starting point and your gear there.
+rider:
+  name: Fahrer
+  weight_kg: 80
+  home:                       # ← your usual starting point. The placeholder is Hamburg
+    name: Hamburg             #   city centre, the same point as the demo on the website.
+    lat: 53.55
+    lon: 9.99
+
+# ── Rules at the spot ────────────────────────────────────────────────────────
+# Both off by default: spots with a dog ban or unclear permission are
+# shown and marked, not hidden. To hide them, set the option to true here
+# or tick the box in the interface.
+rules:
+  require_dogs: false        # leave out spots with an explicit dog ban
+  exclude_forbidden: false   # leave out spots where wingfoiling is prohibited
+
+# ── Quiver ───────────────────────────────────────────────────────────────────
+# Starting values from the rule of thumb  area × wind ≈ constant, calibrated for 80 kg:
+#   lower limit  ≈ 65 / area      (from here on, the foil lifts)
+#   upper limit  ≈ 108 / area     (from here on, it's hard work to stay in control)
+# These are values from experience, not measurements — correct the numbers after
+# the first session in which you notice that they are off.
+quiver:
+  boards: [85, 95]          # litres
+  wings:
+    - {size: 6.5, low: 10, high: 17}
+    - {size: 5.0, low: 13, high: 22}
+    - {size: 4.2, low: 15, high: 26}
+    - {size: 3.5, low: 19, high: 31}
+    - {size: 2.5, low: 26, high: 43}
+
+# ── Wind ─────────────────────────────────────────────────────────────────────
+wind:
+  # Comfort band: full score inside it, a gentle deduction outside it.
+  preferred_low: 14
+  preferred_high: 28
+  # Gustiness = gust / mean wind. No deduction up to gust_ok, hard penalty from gust_bad.
+  gust_ok: 1.25
+  gust_bad: 1.60
+  # The two red ends of the knots scale in the hourly grid: too little for the
+  # biggest wing, too much for fun. Green in between is always the
+  # comfort band set above. If red_above lies inside the band, it automatically
+  # moves to two knots above the band — so the scale never contradicts itself.
+  red_below: 11
+  red_above: 26
+  # Dark red from here: no longer a matter of taste, but a question of whether
+  # to go out at all. Never below red_above.
+  dark_above: 30
+  # Spots from imported lists often have no stored wind sectors.
+  # What score should the direction get in that case? 0.6 = neutral,
+  # 0.0 = such spots drop out completely.
+  unknown_direction_score: 0.6
+  # Several models in one call. The first is the primary model, the others
+  # supply the agreement. Hours they disagree on are marked down (agreement_weight
+  # = how strongly, 0 = ignore).
+  models: [dwd_icon_seamless, ncep_gfs_seamless, ecmwf_ifs]
+  primary_model: dwd_icon_seamless
+  # Also query high-resolution regional models (1 to 2.5 km instead of 7
+  # to 25). They resolve valley winds and sea breezes that vanish in the coarse
+  # grid, but only reach two to three days ahead. Which model covers which
+  # point is not documented by Open-Meteo — Wingfoilscout tries it out on the
+  # first run and remembers it in cache/highres.json.
+  highres: true
+  agreement_weight: 0.3
+
+# ── Weather ──────────────────────────────────────────────────────────────────
+weather:
+  air_temp_min: 7           # °C
+  air_temp_max: 35          # °C
+  water_temp_min: 7         # °C  (only evaluated with --marine)
+  rain_soft_mm: 0.6         # deduction from here on
+  rain_hard_mm: 3.0         # practically out from here on
+  cape_warn: 1200           # J/kg — thunderstorm potential
+  cape_bad: 2000
+  thunder_codes: [95, 96, 99]   # WMO weather_code = veto
+  thunder_shadow_h: 2       # hours before/after a thunderstorm that are marked down too
+
+# ── Tides (1.18.0) ───────────────────────────────────────────────────────────
+# Whether a spot counts as a tidal spot is set in the catalogue (`tidal: true/false`);
+# if that entry is missing, the modelled tidal range decides: from this many metres
+# between high and low tide, a sea or lagoon spot counts as a tidal spot.
+# 0.5 separates the North Sea and the Atlantic from the Baltic and the Mediterranean.
+tide:
+  auto_hub_min: 0.5
+
+# ── Thermal wind ─────────────────────────────────────────────────────────────
+# Lake Garda, Lake Como, Silvaplana: the models don't see the Ora; the locals do.
+# Spots with `thermal:` in the catalogue get a value from experience in their time
+# window if the model shows less — marked as an assumption, never as a measured value.
+# ── Thermal wind ─────────────────────────────────────────────────────────────
+# At spots with stored thermal knowledge (Ora, Maloja wind, Maestral …),
+# Wingfoilscout assumes wind that the models don't see — their grid averages away
+# exactly the valleys and coastlines that create this circulation. Only what lies
+# above the model wind is assumed; it stays marked as an assumption in the
+# report, and it depends on the weather: irradiation since sunrise,
+# time of day and opposing wind. The thresholds are in wingscout/thermik.py, each
+# with its source.
+thermal:
+  enabled: true
+  trust: 1.0                # 0.8 = more cautious, 0 = as without thermal wind
+
+# ── Water ────────────────────────────────────────────────────────────────────
+water:
+  # How much does chop bother you? 0 = don't care, 1 = want it smooth.
+  chop_aversion: 0.7
+  # Fresh and salt water are both of interest — all types stay in.
+  # To restrict this, remove individual entries.
+  include_types: [sea, lagoon, lake, reservoir]
+
+  # Spots with these properties are excluded completely:
+  exclude_seagrass: heavy       # none | some | heavy
+  exclude_shallow: true         # spots with standing depth throughout
+
+# ── Shoreline geometry (stage 03) ────────────────────────────────────────────
+# Compute once with `python3 build_geometry.py`; usable offline afterwards.
+geometry:
+  ray_count: 36             # directions of the fetch rose (36 = every 10°)
+  max_fetch_km: 25          # how far fetch is measured; beyond that counts as "open"
+  offshore_max_m: 400       # less water upwind = offshore
+  lee_room_min_m: 500       # less room downwind = onshore, shore break
+  prefer_manual_sectors: true   # hand-maintained sectors beat the geometry
+  offshore_warn: true       # safety note in the session when the wind is offshore
+  offshore_veto_km: 0       # >0: offshore with at least this many km of open water downwind
+                            # is no longer a session (getting back!), e.g. 10. 0 = warn only
+
+# ── Drive ────────────────────────────────────────────────────────────────────
+drive:
+  # Your rule: a 6 h drive is fine for 2 h on the water per day → factor 3.
+  hours_per_water_hour: 3.0
+  max_hours: 12.0           # hard limit for the one-way drive (--max-drive overrides)
+  avg_speed_kmh: 85         # for estimating the drive time from straight-line distance
+  detour_factor: 1.22       # fallback if OSRM doesn't respond (road vs. straight line)
+  plan_b_km: 120            # radius for each destination's Plan B
+
+# ── Overnight spots (stage 04) ───────────────────────────────────────────────
+camping:
+  dog_required: true        # the dog always comes along → places not allowing dogs drop out
+  max_distance_km: 15       # radius around the spot
+  prefer_small: true        # prefer small, less family-oriented places
+  min_rating: 3.5           # lowest rating accepted, where ratings exist
+
+# ── Ensemble: how certain is the forecast? ───────────────────────────────────
+# Forty runs of the same weather situation. `p_ride` is the share of runs that
+# support the session. The score is multiplied by it in damped form:
+#     factor = (1 − weight) + weight · p_ride
+# weight: 0.0 → the number only shows in the report and changes nothing (as up to 1.4.3)
+#         0.5 → a session that no run supports keeps half (default)
+#         1.0 → 0 % means a score of 0, the destination disappears
+# The same weight applies to thermal sessions — there, the spot's reliability
+# from the catalogue (`reliability`) takes the place of p_ride, because the ensemble
+# can't see the thermal wind and would otherwise only penalise it.
+ensemble:
+  weight: 0.5
+  top: 20                   # the probability is fetched for this many destinations
+
+# ── Session ──────────────────────────────────────────────────────────────────
+session:
+  min_score: 0.55           # minimum rating for an hour to count as rideable
+  min_hours: 2.0            # shorter blocks don't count as a session
+  useful_hours_cap: 5.0     # counting more than that would be wishful thinking
+
+# ── Weights in the overall score ─────────────────────────────────────────────
+weights:
+  wind: 0.34
+  direction: 0.24
+  water: 0.16
+  weather: 0.14
+  gust: 0.12
+
+# ── Weather stations for the Review and the benchmark ────────────────────────
+# DWD, KNMI, Rijkswaterstaat, GeoSphere, DMI and Météo-France need no key
+# and no entry here. Windguru stations are different: Windguru only hands out
+# a station's measurements through its API, and the API requires the
+# station's API password (which the owner sets in the station admin).
+# Stations whose password you have — your own, or one whose owner gives it
+# to you — go in here; they are then included like any other station.
+# `passwort_md5` is the MD5 hash of the API password (Windguru also
+# accepts the plain-text password under `passwort`; the hash is safer to keep
+# in a file). Without an entry, this source isn't available.
+#
+# stationen:
+#   windguru:
+#     - id: 1234                 # the station number, as it appears in the Windguru URL
+#       name: "Mein Pfahl"
+#       lat: 51.7625
+#       lon: 3.8540
+#       passwort_md5: "0123456789abcdef0123456789abcdef"
+
+# ── Model comparison in the Review ───────────────────────────────────────────
+# Which global weather models the Review compares one by one with the measurement
+# (plus, for each spot, up to three regional models that cover it). Without an
+# entry, the six below apply. Others that Open-Meteo also offers for past dates
+# (checked on 20 Sep 2026): dwd_icon_eu, gem_seamless, jma_seamless,
+# metno_seamless, knmi_seamless, dmi_seamless, cma_grapes_global.
+#
+# rueckblick:
+#   modelle: [dwd_icon_seamless, ecmwf_ifs, ecmwf_aifs025_single, ncep_gfs_seamless,
+#             meteofrance_seamless, ukmo_seamless]

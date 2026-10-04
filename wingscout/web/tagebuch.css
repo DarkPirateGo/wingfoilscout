@@ -1,0 +1,70 @@
+.th2{font-size:1.05rem;margin:0 0 14px;font-weight:600}
+.tform .row{margin-bottom:6px;grid-template-columns:minmax(0,2.2fr) minmax(0,1.1fr) minmax(0,.8fr) minmax(0,.8fr) minmax(0,1.4fr)}
+@media (max-width:860px){.tform .row{grid-template-columns:1fr 1fr}.tbreit{grid-column:span 2}}
+@media (max-width:560px){.tform .row{grid-template-columns:1fr}.tbreit{grid-column:auto}}
+input[type=date],input[type=time]{width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:9px;
+background:var(--ground);color:var(--ink);font:14px/1.3 ui-monospace,Menlo,monospace}
+input.falsch{border-color:var(--stop)}
+.tzeile{display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap;margin:12px 0 0}
+.tlabel{font-size:.78rem;color:var(--ink-2);min-width:70px}
+.twahl{display:flex;flex-wrap:wrap;gap:6px}
+.twahl label{margin:0;cursor:pointer;position:relative}
+.twahl input{position:absolute;opacity:0;width:1px;height:1px;margin:0}
+.twahl span{display:inline-block;padding:7px 14px;border:1.5px solid var(--line);border-radius:999px;
+font-size:.9rem;color:var(--ink);background:var(--ground);min-width:38px;text-align:center}
+.twahl label:hover span{border-color:var(--muted)}
+.twahl input:checked + span{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:600}
+.twahl input:focus-visible + span{outline:3px solid var(--accent-soft);outline-offset:1px}
+.tklein{font-size:.82rem;color:var(--muted)}
+.tkarte{background:var(--surface);border-radius:12px;box-shadow:var(--schatten);padding:16px 18px;margin-top:18px}
+.tkarte h2{font-size:1rem;margin:0 0 4px}
+.tkarte h3{font-size:.74rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:18px 0 4px;font-weight:600}
+.tkarte h3 span{text-transform:none;letter-spacing:0;font-weight:400;margin-left:6px;font-family:ui-monospace,Menlo,monospace}
+.tkopf{display:flex;align-items:baseline;gap:6px 12px;flex-wrap:wrap}
+.tkopf h2{margin:0}
+.tkopf .tknoepfe{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+.tzeit{font-size:.86rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.tliste{display:flex;flex-direction:column;margin-top:8px}
+.tsession{border-top:1px solid var(--line-soft);padding:12px 0}
+.tsession:last-child{padding-bottom:2px}
+.tchips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 0;font-size:.8rem}
+.tchips span{border:1px solid var(--line);border-radius:999px;padding:2px 10px;color:var(--ink-2)}
+.tchips .l-unter{border-color:var(--warn);color:var(--warn)}
+.tchips .l-passt{border-color:var(--ok);color:var(--ok)}
+.tchips .l-ueber{border-color:var(--stop);color:var(--stop)}
+.tzahlen{display:flex;gap:8px 28px;flex-wrap:wrap;margin:10px 0 0;font-size:.9rem}
+.tzahlen div{min-width:120px}
+.tzahlen i{display:block;font-style:normal;color:var(--muted);font-size:.74rem}
+.tzahlen b{font-weight:600;font-variant-numeric:tabular-nums}
+.tzahlen small{display:block;color:var(--muted);font-size:.76rem;max-width:340px}
+.thinweis{font-size:.84rem;color:var(--warn);margin:8px 0 0}
+.tgrund{font-size:.8rem;color:var(--muted);margin:6px 0 0}
+.tvorschlag{border-top:1px solid var(--line-soft);padding:10px 0}
+.tvkopf{display:flex;gap:6px 10px;align-items:center;flex-wrap:wrap;font-variant-numeric:tabular-nums}
+.tpfeil{color:var(--muted)}
+.tneu{color:var(--accent)}
+button.tueber{background:var(--accent);color:#fff;padding:7px 12px;font-size:.82rem;margin-left:6px}
+button.tueber:disabled{opacity:.6;cursor:progress}
+.tvorschlag ul{margin:6px 0 0;padding-left:18px;font-size:.84rem;color:var(--ink-2)}
+.tbelege{font-size:.78rem;color:var(--muted);margin:4px 0 0 18px;line-height:1.55}
+.rerklaer{font-size:.84rem;color:var(--muted);margin:14px 0 0;line-height:1.5}
+ul.rerklaer{padding-left:18px;color:var(--ink-2)}
+ul.rerklaer li{margin:6px 0}
+details.erklaerung > summary{cursor:pointer;font-weight:600;font-size:.92rem;color:var(--ink-2)}
+.tsession button.stop,.tkarte button.ghost{background:transparent;border-color:var(--line)}
+.tsession button.stop.armed{background:var(--stop-soft);border-color:var(--stop)}
+
+/* Trefferliste der Spotauswahl (statt datalist, siehe tagebuch.js) */
+.tspotfeld{position:relative}
+.tspotliste{position:absolute;left:0;right:0;top:100%;z-index:40;margin-top:4px;
+background:var(--surface);border:1px solid var(--line);border-radius:10px;
+box-shadow:0 8px 24px rgba(20,48,60,.14);overflow:hidden;max-height:min(46vh,320px);overflow-y:auto}
+.tspotliste button{display:block;width:100%;text-align:left;border:0;border-radius:0;background:none;
+color:var(--ink);font:inherit;font-size:.92rem;font-weight:400;padding:12px 14px;min-height:44px;cursor:pointer}
+.tspotliste button + button{border-top:1px solid var(--line-soft)}
+.tspotliste button:hover,.tspotliste button.an{background:var(--accent-soft);color:var(--accent)}
+
+@media (max-width:420px){
+  /* Auf schmalen Geräten (SE, 320 pt) muss die Beschriftung umbrechen dürfen. */
+  .tkopf .tknoepfe button{white-space:normal;max-width:100%}
+}

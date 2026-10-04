@@ -1,0 +1,102 @@
+
+/* Die Hilfeseiten: Anleitung (README) und „Wie Wingfoilscout rechnet“
+   (docs/bewertung.html), hinter dem „?“ der Leiste. Farben aus basis.css —
+   hell und dunkel wie der Rest; die Rechenseite bringt ihren eigenen Stil mit,
+   der nur in `.methode` gilt (wingscout/hilfe.py, css_eingrenzen). */
+.wrap.hilfe{max-width:1120px}
+
+/* ── Kopf: Titel links, die Umschaltung rechts (am Handy darunter) ───────── */
+.hilfekopf{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px 24px;margin:0 0 24px}
+.hilfekopf h1{margin:0}
+.hilfewahl{display:inline-flex;gap:3px;padding:3px;background:var(--surface-2);border-radius:11px}
+.hilfewahl a{display:flex;align-items:center;justify-content:center;text-align:center;padding:8px 15px;
+  border-radius:8px;font-size:.88rem;font-weight:600;line-height:1.25;color:var(--ink-2);text-decoration:none}
+.hilfewahl a:hover{color:var(--ink)}
+.hilfewahl a[aria-current=page]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(20,48,60,.16)}
+.hilfewahl a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+/* Im dunklen Modus ist die gewählte Seite die hellere, wie bei iOS */
+@media (prefers-color-scheme:dark){.hilfewahl a[aria-current=page]{background:var(--line);box-shadow:none}}
+.hilfehinweis{margin:-8px 0 22px;padding:10px 14px;border-left:3px solid var(--accent);border-radius:0 9px 9px 0;
+  background:var(--surface);color:var(--ink-2);font-size:.88rem}
+
+/* ── Anleitung: Text links, Inhalt rechts daneben (am Rechner) ──────────── */
+.anleitungsraster{display:grid;grid-template-columns:minmax(0,1fr);gap:0 44px}
+.inhaltsliste{margin:0 0 22px}
+.inhaltsliste nav{padding:0 10px 12px}
+.inhaltsliste ol{list-style:none;margin:0;padding:0}
+.inhaltsliste li a{display:block;padding:6px 10px;border-radius:8px;color:var(--ink-2);text-decoration:none;
+  font-size:.9rem;line-height:1.35}
+.inhaltsliste li a:hover{background:var(--ground);color:var(--ink)}
+@media (min-width:1000px){
+  .anleitungsraster{grid-template-columns:minmax(0,1fr) 250px;align-items:start}
+  .anleitung{grid-column:1;grid-row:1}
+  .inhaltsliste{grid-column:2;grid-row:1;position:sticky;top:18px;margin:0;max-height:calc(100vh - 36px);overflow:auto}
+  .inhaltsliste > summary{padding:13px 20px 8px;font-size:.72rem;letter-spacing:.11em;text-transform:uppercase;
+    color:var(--muted);pointer-events:none}
+  .inhaltsliste > summary::before{display:none}
+}
+
+/* ── Der Text ──────────────────────────────────────────────────────────── */
+.anleitung{min-width:0;max-width:46rem;font-size:1rem;line-height:1.65;color:var(--ink);overflow-wrap:break-word}
+.anleitung > :first-child{margin-top:0}
+.anleitung h2,.anleitung h3,.anleitung h4,.anleitung h5,.anleitung h6{line-height:1.25;scroll-margin-top:16px;
+  text-wrap:balance}
+.anleitung h2{font-size:1.75rem;font-weight:700;letter-spacing:-.02em;margin:0 0 .5em}
+.anleitung h3{font-size:1.32rem;font-weight:600;letter-spacing:-.012em;margin:2.1em 0 .65em;padding-top:1.05em;
+  border-top:1px solid var(--line)}
+.anleitung h4{font-size:1.08rem;font-weight:600;margin:1.8em 0 .5em}
+.anleitung h5,.anleitung h6{font-size:.98rem;font-weight:600;margin:1.5em 0 .4em}
+.anleitung hr + h3{border-top:0;padding-top:0}
+.anleitung p{margin:0 0 1em}
+.anleitung ul,.anleitung ol{margin:0 0 1em;padding-left:1.4em}
+.anleitung li{margin:.32em 0}
+.anleitung li > p{margin:.45em 0}
+.anleitung li > ul,.anleitung li > ol{margin:.3em 0}
+.anleitung a{color:var(--accent);text-underline-offset:2px}
+.anleitung strong{font-weight:650}
+.anleitung code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86em;background:var(--surface-2);
+  padding:.12em .36em;border-radius:5px;overflow-wrap:anywhere}
+.anleitung pre{max-height:none;margin:0 0 1.2em;padding:13px 15px;background:var(--surface);border:1px solid var(--line);
+  border-radius:10px;overflow-x:auto;font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink);
+  -webkit-overflow-scrolling:touch}
+.anleitung pre code{background:none;padding:0;border-radius:0;font-size:inherit;white-space:pre;overflow-wrap:normal}
+.anleitung blockquote{margin:0 0 1.2em;padding:11px 16px;border-left:3px solid var(--accent);background:var(--surface);
+  border-radius:0 10px 10px 0;color:var(--ink-2)}
+.anleitung blockquote > :last-child{margin-bottom:0}
+.anleitung hr{border:0;border-top:1px solid var(--line);margin:2em 0}
+/* Tabellen in ihrem eigenen Kasten, der seitlich wischt, wenn es eng wird.
+   Code in Zellen bricht an Leerzeichen um, eine Zelle mit viel Text (`.lang`)
+   wird nie schmaler als 9em — sonst stand neben einem langen Dateinamen am
+   Handy ein Wort je Zeile. */
+.anleitung .tabelle{margin:0 0 1.3em;overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+  background:var(--surface);-webkit-overflow-scrolling:touch}
+.anleitung table{border-collapse:collapse;width:100%;font-size:.9rem;line-height:1.45}
+.anleitung th,.anleitung td{padding:8px 12px;border-bottom:1px solid var(--line-soft);text-align:left;vertical-align:top}
+.anleitung th{background:var(--surface-2);font-weight:600;color:var(--ink);border-bottom-color:var(--line)}
+.anleitung tbody tr:last-child td{border-bottom:0}
+.anleitung td code{overflow-wrap:normal}
+.anleitung td.lang{min-width:9em}
+
+/* ── Wie Wingfoilscout rechnet: die Seite in ihrem Kasten ─────────────── */
+article.methode{display:block;border-radius:14px;box-shadow:var(--schatten);overflow:hidden}
+/* Die Seite rechnet ohne `box-sizing:border-box` (basis.css setzt es für alles) */
+article.methode *{box-sizing:content-box}
+article.methode .huelle{padding-bottom:56px}
+
+@media (max-width:700px){
+  .hilfekopf{gap:12px;margin-bottom:18px}
+  .hilfewahl{display:flex;width:100%}
+  .hilfewahl a{flex:1 1 0;min-height:42px;padding:7px 8px;font-size:.84rem}
+  .hilfehinweis{margin-top:-4px}
+  .anleitung{font-size:.98rem;line-height:1.62}
+  .anleitung h2{font-size:1.45rem}
+  .anleitung h3{font-size:1.2rem;margin-top:1.8em}
+  .anleitung h4{font-size:1.04rem}
+  .anleitung pre{font-size:12px;padding:11px 12px}
+  .anleitung th,.anleitung td{padding:7px 8px}
+  .anleitung h2,.anleitung h3,.anleitung h4,.anleitung h5,.anleitung h6{scroll-margin-top:52px}
+  /* Die Rechenseite randlos: sie hat ihren eigenen Rand */
+  article.methode{margin-left:calc(-14px - env(safe-area-inset-left));margin-right:calc(-14px - env(safe-area-inset-right));
+    border-radius:0;box-shadow:none}
+  article.methode .huelle{padding-bottom:36px}
+}

@@ -1,0 +1,67 @@
+# Derived and personal data — none of it belongs in the repository.
+# tools/persoenliche_daten.py holds the personal part of this list as patterns:
+# tools/veroeffentlichen.sh, tools/check.sh and the check run on GitHub refuse
+# those paths even if someone adds one by force (git add -f). Change both
+# together — tests/test_sicherheit_repo.py checks that they agree.
+
+# config.yaml is personal (starting point, weight, gear). Only
+# config.example.yaml is versioned; the personal copy is created from it on
+# first start and therefore never conflicts when updating. Copies of it
+# ("config Kopie.yaml", "config-old.yaml") are just as personal.
+config.yaml
+/config*.yaml
+!/config.example.yaml
+cache/
+report.html
+/report*.html
+demo_report.html
+ui_defaults.json
+/ui_defaults*.json
+# The language chosen in the switcher (since 2.1.0) — personal, like ui_defaults.json
+sprache.txt
+# Memory of the model comparison in the Review — your own checks, personal
+modellguete.json
+/modellguete*.json
+# Session logbook — your sessions, personal like config.yaml (since 1.16.0)
+tagebuch.json
+/tagebuch*.json
+# When saving, the app first writes <name>.neu and then renames it: a
+# half-written copy of config.yaml, tagebuch.json, spots.yaml …
+*.neu
+# Raw exports for importing (Google Takeout, GPX tracks, KML, GeoJSON) are
+# personal lists with your own notes — they stay on your computer; the
+# repository only holds the import scripts and whatever ended up in the
+# catalogue from them
+import/*.csv
+import/*.json
+Takeout/
+*.gpx
+*.kml
+*.kmz
+*.geojson
+*.zip
+live_*.json
+live_*.html
+# Screenshots and screen recordings show your starting point and your lists
+Bildschirmfoto*
+Bildschirmaufnahme*
+Screenshot*
+Screen Recording*
+# Backup and swap files of editors
+*.bak
+*~
+.*.sw?
+# Local settings and notes for Claude Code
+.claude/settings.local.json
+CLAUDE.local.md
+__pycache__/
+*.pyc
+.DS_Store
+# Where the Claude desktop app stores files from the chat — not part of the project
+Claude outputs/
+.pytest_cache/
+tests/_tmp/
+
+# Intermediate files from development runs
+*_tmp.html
+vorschau.html

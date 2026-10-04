@@ -1,0 +1,8 @@
+# Wer bei Änderungen an diesen Dateien automatisch als Prüfer eingetragen wird.
+# Der Katalog und die abgeleitete Geometrie sind das Herz des Projekts — an
+# denen soll niemand still vorbeiarbeiten.
+
+spots.yaml            @DarkPirateGo
+geometry.json         @DarkPirateGo
+config.example.yaml   @DarkPirateGo
+import/               @DarkPirateGo

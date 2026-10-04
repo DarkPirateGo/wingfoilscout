@@ -1,0 +1,12 @@
+
+.kmt{font-size:.84rem;line-height:1.5;color:var(--ink-2,#3b4f57)}
+.kmt .kmt-text{white-space:pre-wrap}
+.kmt .kmt-leer{color:var(--muted,#6C858F);font-style:italic}
+.kmt a.kmt-edit{margin-left:6px;font-size:.78rem;color:var(--muted,#6C858F);text-decoration:none;border-bottom:1px dotted currentColor;white-space:nowrap}
+.kmt a.kmt-edit:hover{color:var(--accent,#AE1F68)}
+.kmt textarea{width:100%;box-sizing:border-box;min-height:64px;font:inherit;font-size:.86rem;padding:6px 8px;border:1px solid var(--line,#C6D6DB);border-radius:6px;background:var(--surface,#fff);color:inherit;resize:vertical}
+.kmt .kmt-knoepfe{display:flex;gap:8px;align-items:center;margin-top:5px;flex-wrap:wrap}
+.kmt .kmt-knoepfe button{font:inherit;font-size:.78rem;padding:4px 10px;border:0;border-radius:5px;cursor:pointer;background:var(--accent,#AE1F68);color:#fff}
+.kmt .kmt-knoepfe button.kmt-nein{background:var(--surface-2,#E4EAEC);color:var(--ink-2,#3b4f57)}
+.kmt .kmt-knoepfe button[disabled]{opacity:.6;cursor:default}
+.kmt .kmt-meld{font-size:.78rem;color:var(--stop,#A33526)}

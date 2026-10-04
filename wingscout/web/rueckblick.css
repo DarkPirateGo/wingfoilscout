@@ -1,0 +1,90 @@
+
+.rform{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+.rform > div{min-width:120px}
+.rform input[type=number]{width:120px}
+.rlauf{font-size:.84rem;color:var(--muted);margin:10px 0 0}
+.rabdeckung{font-size:.8rem;color:var(--muted);margin:4px 0 0}
+.rkarte .kmt{margin:6px 0 2px}
+.rliste{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+.rkarte{background:var(--surface);border-radius:12px;box-shadow:var(--schatten);padding:16px 18px}
+.rkopf{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.rkopf b{font-size:1rem}
+.rrang{font:600 11px/1 ui-monospace,monospace;color:#fff;background:var(--accent);padding:4px 7px;border-radius:3px}
+.rstation{font-size:.84rem;color:var(--muted)}
+.rgrund{font-size:.88rem;color:var(--muted);margin-top:6px}
+.rzahlen{display:flex;gap:6px 22px;flex-wrap:wrap;margin:10px 0 4px;font-size:.88rem}
+.rzahlen span b{font-variant-numeric:tabular-nums;font-weight:600}
+.rzahlen span i{font-style:normal;color:var(--muted);font-size:.78rem;display:block}
+.rlegende{display:flex;flex-wrap:wrap;gap:16px;font-size:.78rem;color:var(--muted);margin:8px 0 2px;align-items:center}
+.rlegende i{display:inline-block;width:18px;height:2px;vertical-align:middle;margin-right:6px;border-radius:1px}
+.rliste{--s-mess:#2a78d6;--s-l1:#eb6834;--s-l2:#1baf7a;--s-l3:#eda100}
+@media (prefers-color-scheme:dark){.rliste{--s-mess:#3987e5;--s-l1:#d95926;--s-l2:#199e70;--s-l3:#c98500}}
+.rchart{width:100%;height:150px;display:block;margin-top:4px;background:var(--surface)}
+.rchart .linie{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.rlegende .muster{vertical-align:middle;margin-right:6px}
+.rlegende .flaeche{background:var(--muted);opacity:.28;height:8px;width:18px;border-radius:2px}
+.rchips button.bisher{border-style:dashed}
+.rchips button.bisher.an{border-style:solid}
+.rchips button:disabled{opacity:.45;cursor:not-allowed}
+.rchips button.aus{color:var(--muted)}
+.rbreit{overflow-x:auto}
+/* Die Stundentabelle wird gewischt — ihre Zellen brechen nicht um. Gequetscht
+   stand „2026-10-01 00:00“ in zwei bis drei Zeilen (englisch drei). */
+.rbreit td{white-space:nowrap}
+.rchart .huelle{fill:var(--muted);opacity:.16}
+.rchips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 2px;font-size:.78rem;align-items:center}
+.rchips span{color:var(--muted)}
+.rchips button{font:inherit;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;
+padding:3px 10px;cursor:pointer}
+.rchips button.an{border-color:var(--ink);font-weight:600}
+.rvergleich table td.gut{font-weight:600}
+.rvergleich .art{color:var(--muted);font-size:.72rem;margin-left:6px}
+.rgesamt{background:var(--surface);border-radius:12px;box-shadow:var(--schatten);padding:16px 18px;margin-top:18px}
+.rgesamt h2{font-size:1rem;margin:0 0 4px}
+.rgesamt p{font-size:.82rem;color:var(--muted);margin:0 0 6px;line-height:1.45}
+.rchart .gitter{stroke:var(--line-soft);stroke-width:1}
+.rchart .tag{stroke:var(--line);stroke-width:1}
+.rchart .achse{font:10px -apple-system,sans-serif;fill:var(--muted)}
+.rchart .mess{fill:none;stroke:var(--s-mess);stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
+.rchart .band{fill:var(--surface-2);opacity:.55}
+.rchart .kreuz{stroke:var(--muted);stroke-width:1;stroke-dasharray:3 3;display:none}
+.rchart .punkt{display:none;stroke:var(--surface);stroke-width:2}
+.rchart .fang{fill:transparent;cursor:crosshair}
+.rtip{position:absolute;pointer-events:none;background:var(--ink);color:var(--ground);font:12px/1.45 -apple-system,sans-serif;
+padding:7px 10px;border-radius:7px;box-shadow:0 6px 20px rgba(20,48,60,.22);display:none;z-index:40;white-space:nowrap}
+.rtip b{font-weight:600}
+.rtabelle{margin-top:8px}
+.rtabelle summary{font-size:.82rem;color:var(--muted);cursor:pointer}
+.rtabelle table{width:100%;border-collapse:collapse;font-size:.8rem;margin-top:6px}
+.rtabelle td,.rtabelle th{padding:3px 8px;text-align:right;border-bottom:1px solid var(--line-soft);font-variant-numeric:tabular-nums}
+.rtabelle td:first-child,.rtabelle th:first-child{text-align:left}
+.rerklaer{font-size:.84rem;color:var(--muted);margin:14px 0 0;line-height:1.5}
+ul.rerklaer{padding-left:18px;color:var(--ink-2)}
+ul.rerklaer li{margin:6px 0}
+details.erklaerung > summary{cursor:pointer;font-weight:600;font-size:.92rem;color:var(--ink-2)}
+
+/* ── Handy (seit 1.17.0) ──────────────────────────────────────────────────── */
+.rscroll{overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+/* Ohne `min-width:0` wächst eine Spotkarte als Flex-Kind mit ihrem breitesten
+   Inhalt: das 640 px breite Diagramm dehnte die ganze Seite auf 444 px in
+   einem 375-px-Fenster, statt im Wischbereich zu bleiben. */
+.rliste > .rkarte{min-width:0}
+/* Die Tabellen (Modellvergleich, alle Stunden) haben eine Spalte je Modell und
+   dehnten bei 375 pt die ganze Seite auf 444 px. Sie bekommen ihren eigenen
+   Wischbereich, die erste Spalte bleibt stehen. */
+.rvergleich,.rtabelle{overflow-x:auto;overscroll-behavior-x:contain}
+.rvergleich table th:first-child,.rvergleich table td:first-child,
+.rtabelle table th:first-child,.rtabelle table td:first-child{position:sticky;left:0;
+background:var(--surface);box-shadow:1px 0 0 var(--line-soft)}
+@media (max-width:700px){
+  .rkarte{padding:14px 14px 16px}
+  .rchart{width:640px;max-width:none;height:170px}
+  .rzahlen{gap:6px 18px;font-size:.84rem}
+  .rlegende{font-size:.72rem;gap:4px 12px}
+  .rchips{gap:6px 6px}
+  .rchips button{padding:8px 12px;font-size:.8rem}
+  .rform{gap:8px}
+  .rform input[type=number]{width:100px}
+  .rtabelle table{font-size:.76rem}
+  .rgesamt{padding:14px}
+}

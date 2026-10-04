@@ -1,0 +1,1031 @@
+{
+ "stand": "2026-09-18",
+ "wie": "Google-Websuche je Spot (Stand siehe oben): 'site:instagram.com/explore/locations <Name>' für die Ortsseite und 'site:instagram.com <Name> wingfoil' für Funde. Behalten wurden Treffer, die Wing oder Foil im Titel tragen oder den Spotnamen zusammen mit einem Wassersportwort; Konten, die bei drei und mehr Spots auftauchten, sind raus. Titel und Adressen sind die Suchtreffer, unverändert — kein Beleg, dass dort gewingt wird, nur ein Hinweis, wo man nachsieht. 'urteil': wing = ein Fund nennt Wing/Foil; kite_surf = nur Kite/Windsurf/Surf; treffer = Funde ohne Sportbezug im Titel; keine = kein brauchbarer Fund (die Ortsseite kann trotzdem da sein); offen = die zweite Suche ist für diesen Spot noch nicht gelaufen.",
+ "spots": {
+  "alpnachersee": {
+   "ort": "https://www.instagram.com/explore/locations/436736947/alpnachersee/",
+   "ort_titel": "Alpnachersee",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/surfstation.alpnachersee/",
+     "titel": "Surfstation Alpnachersee (@surfstation.alpnachersee)"
+    },
+    {
+     "url": "https://www.instagram.com/alpinefoil.fr/",
+     "titel": "AlpineFoil Wingfoil (@alpinefoil.fr)"
+    }
+   ],
+   "urteil": "wing"
+  },
+  "ancona": {
+   "funde": [
+    {
+     "url": "https://www.instagram.com/wingfoilsantantioco/",
+     "titel": "Wing Foil Club Sant'Antioco (@wingfoilsantantioco)"
+    }
+   ],
+   "urteil": "wing"
+  },
+  "at-podersdorf": {
+   "ort": "https://www.instagram.com/explore/locations/263918857/podersdorf-am-neusiedler-see/",
+   "ort_titel": "Podersdorf am Neusiedler See",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/missiontosurfpodersdorf/",
+     "titel": "Mission to Surf Podersdorf (@missiontosurfpodersdorf) • Fotos y vídeos de Instagram"
+    },
+    {
+     "url": "https://www.instagram.com/kite2flypodersdorf/",
+     "titel": "Duotone Pro Center Neusiedlersee powered by Kite2Fly (@kite2flypodersdorf)"
+    }
+   ],
+   "urteil": "kite_surf"
+  },
+  "baia-saraceno": {
+   "ort": "https://www.instagram.com/explore/locations/638630286/camping-baia-saraceno/",
+   "ort_titel": "Camping Baia Saraceno",
+   "funde": [],
+   "urteil": "keine"
+  },
+  "be-knokke-appelzak": {
+   "ort": "https://www.instagram.com/explore/locations/1019280746/knokke-heist/",
+   "ort_titel": "Knokke-Heist",
+   "funde": [],
+   "urteil": "offen"
+  },
+  "be-spuikom-oostende": {
+   "ort": "https://www.instagram.com/explore/locations/314155570/watersport-oostende-spuikom-wos/",
+   "ort_titel": "Watersport Oostende Spuikom",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/watersportoostendespuikom/",
+     "titel": "Watersport Oostende Spuikom (@watersportoostendespuikom)"
+    },
+    {
+     "url": "https://www.instagram.com/p/DIrcZxatMFK/",
+     "titel": "Watersport Oostende Spuikom | Doen jullie al mee aan de…"
+    }
+   ],
+   "urteil": "treffer"
+  },
+  "beach-seulieres": {
+   "ort": "https://www.instagram.com/explore/locations/219653848572621/plage-des-seulieres/",
+   "ort_titel": "Plage des Seulières",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/lineup.ecoledesurf/",
+     "titel": "LINE UP ECOLE DE SURF & FOIL (@lineup.ecoledesurf)"
+    },
+    {
+     "url": "https://www.instagram.com/wing.surf/",
+     "titel": "@wing.surf (@wing.surf)"
+    },
+    {
+     "url": "https://www.instagram.com/wingfoillife/",
+     "titel": "Wing Foil Life (@wingfoillife)"
+    }
+   ],
+   "urteil": "wing"
+  },
+  "bise-noire": {
+   "ort": "https://www.instagram.com/explore/locations/340140847/bise-noire/",
+   "ort_titel": "Bise Noire",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/roca_cup/",
+     "titel": "Roca Cup Wingfoil Festival (@roca_cup)"
+    }
+   ],
+   "urteil": "wing"
+  },
+  "bodensee-fussach": {
+   "ort": "https://www.instagram.com/explore/locations/388487558/rohrspitz-bodensee/",
+   "ort_titel": "Rohrspitz, Bodensee",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/kitesurfingbodensee/",
+     "titel": "Kitesurfing Bodensee e.V. (@kitesurfingbodensee)"
+    },
+    {
+     "url": "https://www.instagram.com/alpinefoil.fr/",
+     "titel": "AlpineFoil Wingfoil (@alpinefoil.fr)"
+    }
+   ],
+   "urteil": "wing"
+  },
+  "brombachsee": {
+   "ort": "https://www.instagram.com/explore/locations/605157659/grosser-brombachsee/",
+   "ort_titel": "Großer Brombachsee",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/surfschule_brombachsee/",
+     "titel": "Surfschule Brombachsee (@surfschule_brombachsee)"
+    }
+   ],
+   "urteil": "kite_surf"
+  },
+  "brouwersdam": {
+   "ort": "https://www.instagram.com/explore/locations/728136669/",
+   "ort_titel": "Kiteboarding Club Brouwersdam",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/foilschoolnederland/reel/CxDhA8fIip1/",
+     "titel": "Foil School Nederland (@foilschoolnederland)"
+    },
+    {
+     "url": "https://www.instagram.com/brouwersdam/",
+     "titel": "ZEIL & SURFCENTRUM BROUWERSDAM (@brouwersdam)"
+    }
+   ],
+   "urteil": "wing"
+  },
+  "brusand-strand": {
+   "ort": "https://www.instagram.com/explore/locations/104434203031266/brusand-strand/",
+   "ort_titel": "Brusand Strand",
+   "funde": [],
+   "urteil": "keine"
+  },
+  "ch-fluelen-urnersee": {
+   "ort": "https://www.instagram.com/explore/locations/290102313/fluelen-switzerland/",
+   "ort_titel": "Flüelen, Switzerland",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/windsurfingurnersee/",
+     "titel": "Windsurfing Urnersee (@windsurfingurnersee) · Flüelen"
+    }
+   ],
+   "urteil": "kite_surf"
+  },
+  "ch-walenstadt": {
+   "ort": "https://www.instagram.com/explore/locations/114293274965186/promenade-walenstadt/recent/",
+   "ort_titel": "Promenade Walenstadt",
+   "funde": [],
+   "urteil": "keine"
+  },
+  "chiemsee-chieming": {
+   "ort": "https://www.instagram.com/explore/locations/268006128/chieming-chiemsee/",
+   "ort_titel": "Chieming Chiemsee",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/p/CggvbOHqOwu/",
+     "titel": "SUP Club Chiemsee | WingSurf - und WingFoil-Aspirant…"
+    },
+    {
+     "url": "https://www.instagram.com/maria_g209/reel/C_GfHOgot79/",
+     "titel": "Maria Behrens🦋| Wingfoil Windsurfgirl🌺 (@maria_g209)"
+    }
+   ],
+   "urteil": "wing"
+  },
+  "chiemsee-feldwies": {
+   "ort": "https://www.instagram.com/explore/locations/705290517/feldwies-am-chiemsee/",
+   "ort_titel": "Feldwies am Chiemsee",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/p/CggvbOHqOwu/",
+     "titel": "SUP Club Chiemsee | WingSurf - und WingFoil-Aspirant…"
+    },
+    {
+     "url": "https://www.instagram.com/maria_g209/",
+     "titel": "Maria Behrens🦋| Wingfoil Windsurfgirl🌺 (@maria_g209)"
+    }
+   ],
+   "urteil": "wing"
+  },
+  "de-altmuehlsee-schlungenhof": {
+   "ort": "https://www.instagram.com/explore/locations/247309825/gunzenhausen-altmuhlsee/",
+   "ort_titel": "Gunzenhausen Altmühlsee",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/surfcenter_altmuehlsee/",
+     "titel": "Surfcenter Altmühlsee (@surfcenter_altmuehlsee)"
+    }
+   ],
+   "urteil": "kite_surf"
+  },
+  "de-ammersee-eching": {
+   "ort": "https://www.instagram.com/explore/locations/898654143/eching-am-ammersee/",
+   "ort_titel": "Eching am Ammersee",
+   "funde": [],
+   "urteil": "keine"
+  },
+  "de-bodensee-radolfzell": {
+   "funde": [
+    {
+     "url": "https://www.instagram.com/p/DLxdOUOIxF1/",
+     "titel": "she's foiling around 🧚‍♀️ #wingfoil #bodensee #…"
+    }
+   ],
+   "urteil": "wing"
+  },
+  "de-brombachsee-enderndorf": {
+   "ort": "https://www.instagram.com/explore/locations/729370094/groer-brombachsee-enderndorf/",
+   "ort_titel": "Großer Brombachsee - Enderndorf",
+   "funde": [],
+   "urteil": "keine"
+  },
+  "de-brombachsee-mitteldamm": {
+   "ort": "https://www.instagram.com/explore/locations/605157659/grosser-brombachsee/",
+   "ort_titel": "Großer Brombachsee",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/surfschule_brombachsee/",
+     "titel": "Surfschule Brombachsee (@surfschule_brombachsee)"
+    }
+   ],
+   "urteil": "kite_surf"
+  },
+  "de-duemmer-huede": {
+   "ort": "https://www.instagram.com/explore/locations/348167584/hude---dummer-see/",
+   "ort_titel": "Hüde - Dümmer See auf Instagram • Fotos und Videos",
+   "funde": [],
+   "urteil": "keine"
+  },
+  "de-eckwarderhoerne": {
+   "ort": "https://www.instagram.com/explore/locations/264010534/knaus-campingpark-eckwarderhorne/",
+   "ort_titel": "Knaus-Campingpark Eckwarderhörne",
+   "funde": [],
+   "urteil": "keine"
+  },
+  "de-pelzerhaken": {
+   "funde": [
+    {
+     "url": "https://www.instagram.com/california.wingfoil.masters/",
+     "titel": "California Wingfoil Masters (@california.wingfoil.masters)"
+    }
+   ],
+   "urteil": "wing"
+  },
+  "de-ruegen-rosengarten": {
+   "funde": [
+    {
+     "url": "https://www.instagram.com/baysurf_ruegen/",
+     "titel": "Wingfoil und SUP Surfschule Rügen (@baysurf_ruegen)"
+    },
+    {
+     "url": "https://www.instagram.com/ruegenkite.de",
+     "titel": "Rügen Kite (@ruegenkite.de) · Sagard"
+    }
+   ],
+   "urteil": "wing"
+  },
+  "de-steinhuder-meer-mardorf": {
+   "ort": "https://www.instagram.com/explore/locations/1032438619/weisse-dune-mardorf/",
+   "ort_titel": "Weiße Düne Mardorf",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/popular/steinhuder-meer-windsurfen/",
+     "titel": "Steinhuder Meer Windsurfen"
+    },
+    {
+     "url": "https://www.instagram.com/explore/locations/333456126198/surfers-paradise-kitesurfen-mehr-am-steinhuder-meer/",
+     "titel": "Surfer's Paradise - Kitesurfen & mehr am Steinhuder Meer"
+    }
+   ],
+   "urteil": "kite_surf"
+  },
+  "de-usedom-ueckeritz": {
+   "ort": "https://www.instagram.com/explore/locations/412399502/uckeritz-usedom/",
+   "ort_titel": "Ückeritz Usedom",
+   "funde": [],
+   "urteil": "keine"
+  },
+  "domaso": {
+   "ort": "https://www.instagram.com/explore/locations/294801241/domaso-lake-como-italy/",
+   "ort_titel": "Domaso, Lake Como, Italy",
+   "funde": [],
+   "urteil": "keine"
+  },
+  "drejby-strand-camping": {
+   "ort": "https://www.instagram.com/explore/locations/25208660/drejby-strand-camping/",
+   "ort_titel": "Drejby Strand Camping",
+   "funde": [],
+   "urteil": "keine"
+  },
+  "etang-de-berre": {
+   "ort": "https://www.instagram.com/explore/locations/254292706/berre-letang/",
+   "ort_titel": "Berre-l'Étang",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/jawaikiteschool/reel/C5S3xazsiTN/",
+     "titel": "ECOLE DE KITESURF & WINGFOIL (@jawaikiteschool)"
+    }
+   ],
+   "urteil": "wing"
+  },
+  "etang-de-leucate": {
+   "ort": "https://www.instagram.com/explore/locations/254009512/etang-de-leucate/",
+   "ort_titel": "Étang de Leucate",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/surfone_leucate/",
+     "titel": "𝕊𝕦𝕣𝕗𝕠𝕟𝕖 𝕃𝕖𝕦𝕔𝕒𝕥𝕖 (@surfone_leucate)"
+    },
+    {
+     "url": "https://www.instagram.com/p/DXdiohQCiJM/",
+     "titel": "lien en bio 🤙 #leucate #efoil #wingfoil #glissetractee #…"
+    },
+    {
+     "url": "https://www.instagram.com/chinook_leucate/p/C6FBqvHIprE/",
+     "titel": "CHINOOK LEUCATE | 👉📻 La grosse news windsurf de la…"
+    }
+   ],
+   "urteil": "wing"
+  },
+  "fehmarn-gold": {
+   "ort": "https://www.instagram.com/explore/locations/247657689030966/fehmarn-gold-kitebeach/",
+   "ort_titel": "Fehmarn Gold Kitebeach",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/wingfoilfehmarn/",
+     "titel": "Wingfoil Surfschule Fehmarn (@wingfoilfehmarn)"
+    },
+    {
+     "url": "https://www.instagram.com/wingfoilfehmarn/p/C9rceDjoO8x/",
+     "titel": "Wingfoil Surfschule Fehmarn | Summer Days am…"
+    },
+    {
+     "url": "https://www.instagram.com/goldkitefehmarn/",
+     "titel": "Goldkite Fehmarn (@goldkitefehmarn)"
+    },
+    {
+     "url": "https://www.instagram.com/sup_festival/",
+     "titel": "SUP & Wingfoil Festival Fehmarn (@sup_festival)"
+    },
+    {
+     "url": "https://www.instagram.com/primesurf_fehmarn/",
+     "titel": "Primesurf Fehmarn (@primesurf_fehmarn)"
+    }
+   ],
+   "urteil": "wing"
+  },
+  "fehmarn-gruener-brink": {
+   "ort": "https://www.instagram.com/explore/locations/705531722/ostsee-fehmarn---gruner-brink/",
+   "ort_titel": "Ostsee Fehmarn - Grüner Brink",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/wingfoilfehmarn/p/C9rceDjoO8x/",
+     "titel": "Wingfoil Surfschule Fehmarn | Summer Days am…"
+    },
+    {
+     "url": "https://www.instagram.com/wingfoilfehmarn/",
+     "titel": "Wingfoil Surfschule Fehmarn (@wingfoilfehmarn)"
+    },
+    {
+     "url": "https://www.instagram.com/sup_festival/",
+     "titel": "SUP & Wingfoil Festival Fehmarn (@sup_festival)"
+    },
+    {
+     "url": "https://www.instagram.com/wingfoilfehmarn/p/C9r8bPQo5j1/",
+     "titel": "➡️ WING FOIL DAYS ⬅️ am Binnensee in Burgstaaken!…"
+    },
+    {
+     "url": "https://www.instagram.com/kiteboardingfehmarn/",
+     "titel": "KiteBoarding Fehmarn GmbH (@kiteboardingfehmarn)"
+    }
+   ],
+   "urteil": "wing"
+  },
+  "fehmarn-suedstrand": {
+   "ort": "https://www.instagram.com/explore/locations/587902090/sudstrand-burgtiefe-fehmarn/",
+   "ort_titel": "Südstrand Burgtiefe Fehmarn",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/wingfoilfehmarn/p/C9r8bPQo5j1/",
+     "titel": "➡️ WING FOIL DAYS ⬅️ am Binnensee in Burgstaaken!…"
+    },
+    {
+     "url": "https://www.instagram.com/wingfoilfehmarn/p/C9rceDjoO8x/",
+     "titel": "Wingfoil Surfschule Fehmarn | Summer Days am…"
+    },
+    {
+     "url": "https://www.instagram.com/wingfoilfehmarn/",
+     "titel": "Wingfoil Surfschule Fehmarn (@wingfoilfehmarn)"
+    },
+    {
+     "url": "https://www.instagram.com/sup_festival/",
+     "titel": "SUP & Wingfoil Festival Fehmarn (@sup_festival)"
+    }
+   ],
+   "urteil": "wing"
+  },
+  "fehmarn-wallnau": {
+   "ort": "https://www.instagram.com/explore/locations/259953091/wallnau-fehmarn/",
+   "ort_titel": "Wallnau Fehmarn",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/wingfoilfehmarn/",
+     "titel": "Wingfoil Surfschule Fehmarn (@wingfoilfehmarn)"
+    },
+    {
+     "url": "https://www.instagram.com/wingfoilfehmarn/p/C9rceDjoO8x/",
+     "titel": "Wingfoil Surfschule Fehmarn | Summer Days am…"
+    },
+    {
+     "url": "https://www.instagram.com/sup_festival/",
+     "titel": "SUP & Wingfoil Festival Fehmarn (@sup_festival)"
+    }
+   ],
+   "urteil": "wing"
+  },
+  "fos-plage-napoleon": {
+   "ort": "https://www.instagram.com/explore/locations/247375655/plage-napoleon---port-st-louis-du-rhone/",
+   "ort_titel": "Plage Napoléon - Port St Louis Du Rhone",
+   "funde": [],
+   "urteil": "keine"
+  },
+  "foz-do-mi-or": {
+   "funde": [
+    {
+     "url": "https://www.instagram.com/lobosdapraiaoficial/p/DDh9RgNyl8p/",
+     "titel": "Wingfoil lifestyle São Miguel do Gostoso"
+    },
+    {
+     "url": "https://www.instagram.com/scuoladiwingfoil/",
+     "titel": "Foil school (@scuoladiwingfoil)"
+    }
+   ],
+   "urteil": "wing"
+  },
+  "fr-canet-plage": {
+   "ort": "https://www.instagram.com/explore/locations/1331118703634456/canet-plage-canet-en-roussillon/",
+   "ort_titel": "CANET PLAGE Canet-en-Roussillon",
+   "funde": [],
+   "urteil": "keine"
+  },
+  "fr-port-la-nouvelle": {
+   "ort": "https://www.instagram.com/explore/locations/995350598/plage-de-la-vieille-nouvelle/",
+   "ort_titel": "Plage De La Vieille Nouvelle",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/wingfoil_port/",
+     "titel": "Wing Foil Port de la selva (Costa brava ) (@wingfoil_port)"
+    }
+   ],
+   "urteil": "wing"
+  },
+  "gruissan-ayrolle": {
+   "funde": [
+    {
+     "url": "https://www.instagram.com/kiteandfoil/",
+     "titel": "Kite and Foil (@kiteandfoil)"
+    }
+   ],
+   "urteil": "wing"
+  },
+  "hardtsee": {
+   "ort": "https://www.instagram.com/explore/locations/1023639451/ubstadt-weiher-hardtsee/",
+   "funde": [],
+   "urteil": "keine"
+  },
+  "havik-strand": {
+   "funde": [],
+   "urteil": "keine"
+  },
+  "heiligenhafen-graswarder": {
+   "ort": "https://www.instagram.com/explore/locations/407973703354260/graswarder-heiligenhafen/",
+   "ort_titel": "Graswarder, Heiligenhafen",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/jesse_wassersportheiligenhafen/",
+     "titel": "Wassersportcenter Heiligenhafen (@jesse_wassersportheiligenhafen)"
+    }
+   ],
+   "urteil": "treffer"
+  },
+  "hindeloopen": {
+   "ort": "https://www.instagram.com/explore/locations/259802139/strand-hindeloopen/",
+   "ort_titel": "strand Hindeloopen",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/kiteboardingclub/p/C8XH4uFsge9/",
+     "titel": "Wingfoil Camps at KBC Hindeloopen come with perfect…"
+    },
+    {
+     "url": "https://www.instagram.com/p/C8fSj-ys-OX/",
+     "titel": "einer der besten Kitesurf Spots am IJsselmeer. Hier findet…"
+    }
+   ],
+   "urteil": "wing"
+  },
+  "hr-nin-zdrijac": {
+   "ort": "https://www.instagram.com/explore/locations/260614370/nin-plaza-zdrijac/",
+   "ort_titel": "Nin, Plaza Zdrijac",
+   "funde": [],
+   "urteil": "keine"
+  },
+  "hr-premantura-kamenjak": {
+   "ort": "https://www.instagram.com/explore/locations/240831127/rt-kamenjak-premantura",
+   "ort_titel": "Rt Kamenjak-Premantura",
+   "funde": [],
+   "urteil": "keine"
+  },
+  "hr-viganj": {
+   "funde": [],
+   "urteil": "keine"
+  },
+  "hu-fonyod-balaton": {
+   "funde": [],
+   "urteil": "keine"
+  },
+  "hyeres-almanarre": {
+   "ort": "https://www.instagram.com/explore/locations/353278800/hyeres-lalmanarre/",
+   "ort_titel": "Hyeres L'almanarre",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/almanarrekiteschool/",
+     "titel": "école kite almanarre (@almanarrekiteschool)"
+    },
+    {
+     "url": "https://www.instagram.com/riviera.water.life/p/DAolS_nISWU/",
+     "titel": "After work 🤭. . . #wingfoil #wingfoiling #almanarre #hyeres…"
+    },
+    {
+     "url": "https://www.instagram.com/wingschool_/",
+     "titel": "Ecole de wingfoil à Hyères (@wingschool_)"
+    },
+    {
+     "url": "https://www.instagram.com/kgg_kite_school/",
+     "titel": "KGG | École de Kitesurf et Wingfoil | Hyères - Var (@kgg_kite_school)"
+    }
+   ],
+   "urteil": "wing"
+  },
+  "it-grado-pineta": {
+   "ort": "https://www.instagram.com/explore/locations/250419623/grado-beach/",
+   "ort_titel": "Grado Beach",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/kitelifefvg/",
+     "titel": "KiteLife Grado & Marina Julia (@kitelifefvg)"
+    },
+    {
+     "url": "https://www.instagram.com/wingfoilsantantioco/",
+     "titel": "Wing Foil Club Sant'Antioco (@wingfoilsantantioco)"
+    }
+   ],
+   "urteil": "wing"
+  },
+  "it-marina-julia": {
+   "ort": "https://www.instagram.com/explore/locations/48809523/marina-julia/",
+   "ort_titel": "Marina Julia",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/kitelifefvg/",
+     "titel": "KiteLife Grado & Marina Julia (@kitelifefvg)"
+    },
+    {
+     "url": "https://www.instagram.com/marinajuliawindspot/",
+     "titel": "Marina Julia WindSpot (@marinajuliawindspot)"
+    }
+   ],
+   "urteil": "kite_surf"
+  },
+  "jd-kroatien-3": {
+   "ort": "https://www.instagram.com/explore/locations/307583453/bol-zlatni-rat/",
+   "ort_titel": "Bol Zlatni Rat",
+   "funde": [],
+   "urteil": "keine"
+  },
+  "kitespot-strukkamphuk": {
+   "ort": "https://www.instagram.com/explore/locations/709550433/campingplatz-strukkamphuk/",
+   "ort_titel": "Campingplatz Strukkamphuk",
+   "funde": [],
+   "urteil": "keine"
+  },
+  "kystvejens-n-rk-b": {
+   "funde": [],
+   "urteil": "keine"
+  },
+  "lac-de-vouglans": {
+   "ort": "https://www.instagram.com/explore/locations/253587315/lac-de-vouglans/",
+   "ort_titel": "Lac de Vouglans",
+   "funde": [],
+   "urteil": "keine"
+  },
+  "lac-du-der": {
+   "funde": [],
+   "urteil": "keine"
+  },
+  "lago-di-santa-croce": {
+   "ort": "https://www.instagram.com/explore/locations/766202377/lago-di-santa-croce/",
+   "ort_titel": "Lago Di Santa Croce",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/explore/locations/1423566061252075/windsurf-kitesurf-vela-al-lago-di-santa-croce/",
+     "titel": "Windsurf Kitesurf Vela al Lago di Santa Croce"
+    },
+    {
+     "url": "https://www.instagram.com/explore/locations/914113035/scuola-kite-vkc-lago-di-santa-croce/",
+     "titel": "Scuola Kite VKC Lago Di Santa Croce"
+    },
+    {
+     "url": "https://www.instagram.com/bar_la_vela_santacroce/",
+     "titel": "Bar La Vela - lago di Santa Croce (@bar_la_vela_santacroce)"
+    }
+   ],
+   "urteil": "kite_surf"
+  },
+  "lago-di-viverone": {
+   "ort": "https://www.instagram.com/explore/locations/234336212/lago-di-viverone/",
+   "ort_titel": "Lago Di Viverone",
+   "funde": [],
+   "urteil": "keine"
+  },
+  "leucate-la-franqui": {
+   "ort": "https://www.instagram.com/explore/locations/208330059202182/la-franqui-leucate/",
+   "ort_titel": "La franqui Leucate",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/p/DXdiohQCiJM/",
+     "titel": "lien en bio 🤙 #leucate #efoil #wingfoil #glissetractee #…"
+    },
+    {
+     "url": "https://www.instagram.com/wing_fr/",
+     "titel": "Wing.fr (@wing_fr)"
+    }
+   ],
+   "urteil": "wing"
+  },
+  "makkum": {
+   "ort": "https://www.instagram.com/explore/locations/135576556582933/makkum-holle-poarte/",
+   "ort_titel": "Makkum Holle Poarte",
+   "funde": [],
+   "urteil": "keine"
+  },
+  "neuchatel-yvonand": {
+   "ort": "https://www.instagram.com/explore/locations/234966025/plage-yvonand/",
+   "ort_titel": "Plage Yvonand",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/wingfoilrio/",
+     "titel": "Escola de Foil e de Wing, na Barra da Tijuca, Rio…"
+    }
+   ],
+   "urteil": "wing"
+  },
+  "nl-baarland": {
+   "ort": "https://www.instagram.com/explore/locations/300094256/strand-baarland/",
+   "ort_titel": "Strand Baarland",
+   "funde": [],
+   "urteil": "keine"
+  },
+  "nl-cadzand-west": {
+   "ort": "https://www.instagram.com/explore/locations/228577584/cadzand-bad-zeeland-netherlands/",
+   "ort_titel": "Cadzand-Bad, Zeeland, Netherlands",
+   "funde": [],
+   "urteil": "keine"
+  },
+  "nl-callantsoog": {
+   "funde": [
+    {
+     "url": "https://www.instagram.com/surfschoolcallantsoog/",
+     "titel": "Surfschool Callantsoog (@surfschoolcallantsoog)"
+    }
+   ],
+   "urteil": "kite_surf"
+  },
+  "nl-grevelingendam-zuid": {
+   "ort": "https://www.instagram.com/explore/locations/1963480213954366/strand-grevelingendam/",
+   "ort_titel": "Strand Grevelingendam",
+   "funde": [],
+   "urteil": "keine"
+  },
+  "nl-huizen-zomerkade": {
+   "ort": "https://www.instagram.com/explore/locations/313134320/zomerkade-huizen/",
+   "ort_titel": "Zomerkade, Huizen",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/wingfoil_ijsseldelta/",
+     "titel": "Wiepkje de Groot (@wingfoil_ijsseldelta)"
+    }
+   ],
+   "urteil": "wing"
+  },
+  "nl-ijmuiden-zone1": {
+   "ort": "https://www.instagram.com/explore/locations/253628124/ijmuiden-aan-zee/",
+   "ort_titel": "IJmuiden Aan Zee",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/wingfoilmagazine/",
+     "titel": "Wingfoil Magazine (@wingfoilmagazine)"
+    }
+   ],
+   "urteil": "wing"
+  },
+  "nl-lauwersmeer": {
+   "ort": "https://www.instagram.com/explore/locations/255827835351093/hoek-van-de-bant/",
+   "ort_titel": "Hoek van de Bant",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/wingfoilschool_ikwing/",
+     "titel": "ikWING De Wingfoilschool in Loosdrecht…"
+    }
+   ],
+   "urteil": "wing"
+  },
+  "nl-neeltje-jans": {
+   "ort": "https://www.instagram.com/explore/locations/928290058/neeltje-jans/",
+   "ort_titel": "Neeltje Jans",
+   "funde": [],
+   "urteil": "keine"
+  },
+  "nl-texel-paal9": {
+   "ort": "https://www.instagram.com/explore/locations/253764973/paal-9---texel/",
+   "ort_titel": "Paal 9 - Texel",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/wingfoilracing/p/C74bXQlIneL/",
+     "titel": "WingFoil Racing World Cup Series | Texel's wild ride…"
+    },
+    {
+     "url": "https://www.instagram.com/wingfoiltexel/",
+     "titel": "Wing foil Texel (@wingfoiltexel)"
+    },
+    {
+     "url": "https://www.instagram.com/wingfoilracing/reel/C75-ccrI766/",
+     "titel": "WingFoil Racing World Cup Series | Good mornin’ Texel…"
+    }
+   ],
+   "urteil": "wing"
+  },
+  "nl-zeewolde-woldstrand": {
+   "ort": "https://www.instagram.com/explore/locations/1722525118009854/tulpeiland/",
+   "ort_titel": "Tulpeiland",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/desurfloods/",
+     "titel": "DE SURFLOODS ZEEWOLDE (@desurfloods)"
+    }
+   ],
+   "urteil": "kite_surf"
+  },
+  "oesterdam": {
+   "funde": [
+    {
+     "url": "https://www.instagram.com/oosterschelde_watersport/",
+     "titel": "Oosterschelde Watersport (@oosterschelde_watersport)"
+    }
+   ],
+   "urteil": "treffer"
+  },
+  "orrestranda": {
+   "ort": "https://www.instagram.com/explore/locations/1293872507418832/orrestranda/",
+   "ort_titel": "Orrestranda",
+   "funde": [],
+   "urteil": "keine"
+  },
+  "parkering-selestranden": {
+   "funde": [
+    {
+     "url": "https://www.instagram.com/wingsurfers.se/",
+     "titel": "Wingsurfers Stockholm (@wingsurfers.se)"
+    },
+    {
+     "url": "https://www.instagram.com/kiteboardcenter/p/CrGbNW5taP7/",
+     "titel": "KITESURF & WINGFOIL KURSER IGÅNG FÖR 2023…"
+    }
+   ],
+   "urteil": "wing"
+  },
+  "parking-baronnets": {
+   "funde": [
+    {
+     "url": "https://www.instagram.com/wingfoillife/",
+     "titel": "Wing Foil Life (@wingfoillife)"
+    }
+   ],
+   "urteil": "wing"
+  },
+  "parkplatz": {
+   "funde": [],
+   "urteil": "keine"
+  },
+  "parkplatz-strand": {
+   "funde": [
+    {
+     "url": "https://www.instagram.com/wingfoil_la_palma/",
+     "titel": "Wingfoil La Palma (@wingfoil_la_palma)"
+    },
+    {
+     "url": "https://www.instagram.com/lespotkitecenter/reel/C95DVIvojSp/",
+     "titel": "LE SPOT KITE&WING CENTER (@lespotkitecenter)"
+    }
+   ],
+   "urteil": "wing"
+  },
+  "plage-de-pansard": {
+   "funde": [],
+   "urteil": "keine"
+  },
+  "plage-de-saint-colomban": {
+   "ort": "https://www.instagram.com/explore/locations/258097919/plage-de-saint-colomban-carnac/",
+   "ort_titel": "Plage De Saint Colomban, Carnac",
+   "funde": [],
+   "urteil": "keine"
+  },
+  "plage-du-vougo": {
+   "ort": "https://www.instagram.com/explore/locations/1673856652910120/plage-du-vougo/",
+   "ort_titel": "Plage du Vougo",
+   "funde": [],
+   "urteil": "offen"
+  },
+  "plage-nord": {
+   "funde": [
+    {
+     "url": "https://www.instagram.com/wingfoilfrance/",
+     "titel": "WingFoil France (@wingfoilfrance)"
+    },
+    {
+     "url": "https://www.instagram.com/wingfoilcom",
+     "titel": "Wingfoil.com (@wingfoilcom)"
+    }
+   ],
+   "urteil": "wing"
+  },
+  "plage-valentin": {
+   "ort": "https://www.instagram.com/explore/locations/227358443/plage-valentin---batz-sur-mer/",
+   "ort_titel": "Plage Valentin - Batz Sur Mer",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/wing.foilvalencia/",
+     "titel": "WingFoil Valencia (@wing.foilvalencia)"
+    }
+   ],
+   "urteil": "wing"
+  },
+  "playa-del-medano": {
+   "ort": "https://www.instagram.com/explore/locations/329897651/playa-del-medano-tenerife/",
+   "ort_titel": "playa del Médano Tenerife",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/windcenterplayasurf/",
+     "titel": "Wind Center Playa Surf (@windcenterplayasurf) · El Médano"
+    },
+    {
+     "url": "https://www.instagram.com/surf.kitesurfmedano313/",
+     "titel": "Kitesurf 313 Wingfoil (@surf.kitesurfmedano313) · El Médano"
+    }
+   ],
+   "urteil": "wing"
+  },
+  "praia-do-cabedelo": {
+   "ort": "https://www.instagram.com/explore/locations/264822412/praia-do-cabedelo-viana-do-castelo/",
+   "ort_titel": "Praia do Cabedelo, Viana do Castelo",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/p/DYKOkvpAo76/",
+     "titel": "🏄 MUNDIAL DA KITE 2026 na Praia do Cabedelo Até 17…"
+    }
+   ],
+   "urteil": "kite_surf"
+  },
+  "renesse-kabbelaarsbank": {
+   "ort": "https://www.instagram.com/explore/locations/111929796/kabbelaarsbank/",
+   "ort_titel": "Kabbelaarsbank",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/wingfoilschool_ikwing/",
+     "titel": "ikWING De Wingfoilschool in Loosdrecht…"
+    }
+   ],
+   "urteil": "wing"
+  },
+  "salagou": {
+   "ort": "https://www.instagram.com/explore/locations/228738739/lac-du-salagou/",
+   "ort_titel": "Lac du Salagou",
+   "funde": [],
+   "urteil": "keine"
+  },
+  "sankt-peter-ording": {
+   "ort": "https://www.instagram.com/explore/locations/225737506/st-peter-ording/",
+   "ort_titel": "St. Peter Ording",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/kiteguide_spo/reel/C7ok8wrIIf9/",
+     "titel": "Corekites Test Event vom 8.-9.6.24 in St. Peter-Ording und…"
+    },
+    {
+     "url": "https://www.instagram.com/california.wingfoil.masters/",
+     "titel": "California Wingfoil Masters (@california.wingfoil.masters)"
+    },
+    {
+     "url": "https://www.instagram.com/p/BXvcZGkjbJK/",
+     "titel": "Martin | Kitesurf Masters St Peter Ording #2017 #spo…"
+    }
+   ],
+   "urteil": "wing"
+  },
+  "si-izola": {
+   "ort": "https://www.instagram.com/explore/locations/236924811/izola-slovenia/",
+   "ort_titel": "Izola, Slovenia",
+   "funde": [],
+   "urteil": "keine"
+  },
+  "silvaplana": {
+   "ort": "https://www.instagram.com/explore/locations/1022519786/silvaplanersee/",
+   "ort_titel": "Silvaplanersee",
+   "funde": [],
+   "urteil": "keine"
+  },
+  "sk-dshoved-strand": {
+   "ort": "https://www.instagram.com/explore/locations/237023320/skodshoved-strand-arhus-denmark/",
+   "ort_titel": "Skødshoved Strand, Arhus, Denmark",
+   "funde": [],
+   "urteil": "keine"
+  },
+  "sola-strand": {
+   "ort": "https://www.instagram.com/explore/locations/318862002/sola-strand/",
+   "ort_titel": "Sola Strand",
+   "funde": [],
+   "urteil": "keine"
+  },
+  "stellplatz-womo": {
+   "funde": [],
+   "urteil": "keine"
+  },
+  "thunersee": {
+   "funde": [],
+   "urteil": "keine"
+  },
+  "torbole": {
+   "funde": [
+    {
+     "url": "https://www.instagram.com/circolosurftorbole/",
+     "titel": "Circolo Surf Torbole (@circolosurftorbole)"
+    },
+    {
+     "url": "https://www.instagram.com/wingfoilmax/reel/C7rEnMpogbd/",
+     "titel": "Wingsurf | Foilwing | Foiling | Pure Freude am Gardasee…"
+    },
+    {
+     "url": "https://www.instagram.com/windsbartorbole",
+     "titel": "Torbole Lake Garda (@windsbartorbole)"
+    }
+   ],
+   "urteil": "wing"
+  },
+  "veerseer-meer": {
+   "ort": "https://www.instagram.com/explore/locations/1006173590/veerse-meer/",
+   "ort_titel": "Veerse Meer",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/wingxperience/",
+     "titel": "Wingfoilschool WingXperience (@wingxperience)"
+    }
+   ],
+   "urteil": "wing"
+  },
+  "vignola-mare-2": {
+   "ort": "https://www.instagram.com/explore/locations/258720826/vignola-mare/",
+   "ort_titel": "Vignola Mare",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/p/DWf7oLUjmDo/",
+     "titel": "WINDSURFING Istruttore di windsurf e wing Vignola Mare…"
+    }
+   ],
+   "urteil": "wing"
+  },
+  "von-jens": {
+   "funde": [],
+   "urteil": "keine"
+  },
+  "vrouwenpolder": {
+   "ort": "https://www.instagram.com/explore/locations/235389440/vrouwenpolder-strand/",
+   "ort_titel": "Vrouwenpolder Strand",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/surfschool_veersedam/",
+     "titel": "Surfschool Veerse Dam (@surfschool_veersedam)"
+    }
+   ],
+   "urteil": "kite_surf"
+  },
+  "walchensee": {
+   "ort": "https://www.instagram.com/explore/locations/236398761/walchensee-bayern-germany/",
+   "ort_titel": "Walchensee, Bayern, Germany",
+   "funde": [],
+   "urteil": "keine"
+  },
+  "workum": {
+   "ort": "https://www.instagram.com/explore/locations/293080419/workumnl/",
+   "ort_titel": "Workum.nl",
+   "funde": [
+    {
+     "url": "https://www.instagram.com/p/DUlz8vACCkD/",
+     "titel": "Zeilboot op het ijsselmeer bij de Workumerwaard #…"
+    },
+    {
+     "url": "https://www.instagram.com/like2kite.de/",
+     "titel": "Like2Kite - Kitesurfschool in Workum am IJsselmeer🇳🇱 (@like2kite.de)"
+    },
+    {
+     "url": "https://www.instagram.com/p/DNswQtD2vmy/",
+     "titel": "Fly soooooo high! 🏄🏻‍♂️ #kitesurf #kitesurfers #workum #…"
+    }
+   ],
+   "urteil": "kite_surf"
+  }
+ }
+}
