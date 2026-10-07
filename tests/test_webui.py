@@ -118,14 +118,24 @@ class Seite(unittest.TestCase):
         hält den Rückbau fest — wer künftig ein Feld nach vorn zieht, muss hier
         vorbeikommen und sich dabei etwas denken. Seit 2.3.0 steht „Ab wann?“
         vorn (Feld und „Jetzt“), ausdrücklich gewünscht am 04.10.2026: der
-        Startzeitpunkt gehört zur Entscheidung wie der Startort.
+        Startzeitpunkt gehört zur Entscheidung wie der Startort. Seit 2.4.0 die
+        Favoriten, ausdrücklich gewünscht am 06.10.2026 „direkt bei der ersten
+        Sucheingabe“: ein Eingabefeld zum Eintippen, das versteckte Feld mit der
+        Liste und „Favoriten zuerst zeigen“ — der Haken erst, wenn die Liste
+        nicht leer ist; die Plaketten mit ihrem „ד setzt das Skript.
         """
         cfg = load_cfg()
         html = ohne_sprachteile(w.page(cfg, w.form_defaults(cfg)))
         rumpf = re.split(r"<script[^>]*>", html)[0]
         vorn = re.sub(r"<details.*?</details>", "", rumpf, flags=re.S)
-        felder = len(re.findall(r"<(?:input|select|textarea)\b", vorn))
-        self.assertLessEqual(felder, 3, "zu viele Eingabefelder vor den Klappen")
+        felder = re.findall(r"<(?:input|select|textarea)\b[^>]*>", vorn)
+        sichtbar = [f for f in felder if 'type="hidden"' not in f]
+        # Sprachwahl, Startort, Startzeitpunkt, Favorit eintippen, „Favoriten
+        # zuerst zeigen“ — dazu das versteckte Feld mit der Liste
+        self.assertLessEqual(len(sichtbar), 5, "zu viele Eingabefelder vor den Klappen")
+        self.assertLessEqual(len(felder), 6, "zu viele Eingabefelder vor den Klappen")
+        for kennung in ('id="favsuche"', 'name="favoriten"', 'name="fav_zuerst"'):
+            self.assertIn(kennung, vorn)
         self.assertEqual(len(re.findall(r"<button\b", vorn)), 9)
         for klappe in ('id="mehr"', 'id="quellen"', 'id="spots"', 'id="protokoll"'):
             self.assertIn(klappe, rumpf)

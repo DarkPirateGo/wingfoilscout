@@ -171,7 +171,7 @@
     {radius: 7, color: '#14303C', fillColor: '#14303C', fillOpacity: 1, weight: 2}).addTo(map);
   home.bindPopup('<b>' + esc(D.home.name) + '</b><br>' + t('Startpunkt'));
   var ring = L.circle([D.home.lat, D.home.lon], {
-    radius: D.radius_km * 1000 / 1.22, color: '#14303C', weight: 1,
+    radius: D.radius_km * 1000 / (D.umweg || 1.22), color: '#14303C', weight: 1,
     opacity: .35, fillOpacity: .03, dashArray: '5 6',
     interactive: false, pane: 'dekor'          // Dekoration — fängt keinen Klick
   });

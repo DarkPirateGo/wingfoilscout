@@ -18,6 +18,7 @@ import re
 from pathlib import Path
 
 from .i18n import T, TN, N_                                       # noqa: F401
+from .config import BINAER
 
 
 def schreibe_atomar(pfad: str | Path, text: str) -> None:
@@ -43,9 +44,11 @@ def schreibe_atomar(pfad: str | Path, text: str) -> None:
         os.unlink(tmp)
     except FileNotFoundError:
         pass
-    fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_EXCL, modus)
+    # Binär und ohne Übersetzung der Zeilenenden — unter Windows sonst doppelt
+    # (config.BINAER).
+    fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_EXCL | BINAER, modus)
     try:
-        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as fh:
             fh.write(text)
         os.replace(tmp, pfad)
     except BaseException:

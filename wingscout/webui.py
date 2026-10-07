@@ -38,6 +38,7 @@ from .config import load_config, quiver_range, KonfigFehler
 from .spots import KatalogFehler
 from .geo import parse_position
 from .cli import run_search
+from . import favoriten as fav_mod
 from . import instagram
 from . import zeitraum
 from .report import KOMMENTAR_CSS, KOMMENTAR_JS, kommentar_kasten, fassung as report_fassung
@@ -70,6 +71,8 @@ from . import SPOT_FORMULAR                                         # noqa: E402
 
 
 SUCHE_JS = _web("suche.js")
+# Favoriten in der Startmaske (seit 2.4.0): Trefferliste, Plaketten, Speichern
+FAVORITEN_JS = _web("favoriten.js")
 # Klappt am Handy zusammen, was am Rechner ausgeschrieben dasteht (lange
 # Erklärungen, Karte, Parameter) — siehe web/mobil.js.
 # Am Ende jeder Seite: mobil.js (klappt am Handy zusammen), beenden.js (der
@@ -280,6 +283,11 @@ def form_defaults(cfg) -> dict:
         "highres": True,
         "camping": True, "routing": True,
     }
+    # Favoriten (seit 2.4.0): eigene Datei, gemerkt bei jeder Änderung
+    # (POST /favoriten) — „Als Standard merken“ fasst sie nicht an.
+    gemerkte_fav = fav_mod.laden()
+    values["favoriten"] = gemerkte_fav["ids"]
+    values["fav_zuerst"] = gemerkte_fav["zuerst"]
     if DEFAULTS_FILE.exists():
         try:
             gemerkt = json.loads(DEFAULTS_FILE.read_text(encoding="utf-8"))
@@ -293,7 +301,7 @@ def form_defaults(cfg) -> dict:
             # Escaping in ein value="…" geschrieben wird.
             roh = {}
             for key, wert in gemerkt.items():
-                if key not in values:
+                if key not in values or key in NICHT_GEMERKT:
                     continue
                 if isinstance(wert, list):
                     roh[key] = [str(x) for x in wert]
@@ -305,8 +313,14 @@ def form_defaults(cfg) -> dict:
             geprueft = parse_form(roh, values)
             # Nur, was gemerkt wurde — ein Haken, den es beim Merken noch
             # nicht gab, behält seinen Startwert statt auf „aus“ zu fallen.
-            values.update({k: geprueft[k] for k in gemerkt if k in geprueft})
+            values.update({k: geprueft[k] for k in gemerkt if k in geprueft and k not in NICHT_GEMERKT})
     return values
+
+
+# Was „Als Standard merken“ nicht in ui_defaults.json schreibt: der Startpunkt
+# gilt für heute und hier (leer heißt Zuhause), ebenso der Startzeitpunkt (seit
+# 2.3.0, leer heißt jetzt); die Favoriten haben ihre eigene Datei (seit 2.4.0).
+NICHT_GEMERKT = ("start", "start_name", "ab", "favoriten", "fav_zuerst")
 
 
 def parse_form(raw: dict, base: dict) -> dict:
@@ -347,6 +361,11 @@ def parse_form(raw: dict, base: dict) -> dict:
         "highres": "highres" in raw,
         "routing": "routing" in raw,
         "alerts": "alerts" in raw,
+        # Favoriten (seit 2.4.0): Spot-IDs mit Komma aus dem versteckten Feld —
+        # nur, was nach einer ID aussieht, höchstens zehn; unbekannte meldet
+        # die Suche (cli.run_search) und lässt sie aus.
+        "favoriten": fav_mod.bereinigen(txt("favoriten", 1000)),
+        "fav_zuerst": "fav_zuerst" in raw,
     }
 
 
@@ -392,6 +411,8 @@ def make_args(v: dict):
         no_highres=not v.get("highres", True),
         no_camping=not v.get("camping", True),
         no_routing=not v.get("routing", True),
+        # Mit „Favoriten zuerst zeigen“ die Liste aus dem Formular, sonst keine
+        favoriten=list(v.get("favoriten") or []) if v.get("fav_zuerst") else [],
     )
 
 
@@ -625,6 +646,11 @@ CSS = _web("basis.css")
 # hier und nicht als Fließtext neben dem Feld, weil sie beim zweiten Mal nur
 # noch stören — man liest sie einmal und danach nie wieder.
 ERKLAERUNG = {
+    # Seit 2.4.0: „Radius“ klang nach Luftlinie (gefragt am 07.10.2026).
+    "radius": N_("Gemessen als Fahrstrecke, nicht als Luftlinie: Wingfoilscout lässt die Strecke vom "
+                 "Startpunkt zu jedem Spot über OSRM routen und nimmt nur Spots, die höchstens so weit "
+                 "sind. Antwortet OSRM nicht, gilt eine Schätzung (Luftlinie mal Umwegfaktor) — der "
+                 "Report sagt es dann oben, und die Ziele tragen „(geschätzt)“."),
     "min_score": N_("Wie gut eine Stunde mindestens sein muss, damit sie als Session zählt. "
                     "Die Güte fasst Windstärke, Richtung zum Ufer, Böigkeit und Temperatur "
                     "zu einer Zahl zwischen 0 und 1 zusammen. 0,55 lässt auch mittelmäßige "
@@ -808,6 +834,35 @@ def pruef_offen() -> int:
     return n
 
 REITER_CSS = _web("reiter.css")
+
+# Der Katalog in kurz für die Trefferliste der Favoriten (seit 2.4.0): id, Name,
+# Region. Wie _PRUEF_ZAHL nur neu gelesen, wenn sich spots.yaml ändert — die
+# Startseite bräuchte sonst bei jedem Aufruf einen Katalogeinlesevorgang mehr.
+_FAV_KATALOG = {"stand": None, "liste": []}
+FAV_LOCK = threading.Lock()          # zwei schnelle Änderungen nacheinander, nicht ineinander
+
+
+def fav_katalog(streng: bool = False) -> list[dict]:
+    """[{id, name, region}] nach Namen sortiert. Ein kaputter Katalog kostet
+    die Trefferliste, nicht die Seite — mit `streng` kommt der Fehler."""
+    try:
+        st = SPOTS_FILE.stat()
+        stand = (str(SPOTS_FILE), st.st_mtime_ns, st.st_size)
+    except OSError:
+        stand = None
+    if stand is not None and _FAV_KATALOG["stand"] == stand:
+        return _FAV_KATALOG["liste"]
+    from .spots import load_spots
+    try:
+        spots = load_spots(str(SPOTS_FILE))
+    except Exception:                                     # noqa: BLE001
+        if streng:
+            raise
+        return []
+    liste = sorted(({"id": s["id"], "name": s["name"], "region": s.get("region") or s.get("country") or ""}
+                    for s in spots), key=lambda s: s["name"].lower())
+    _FAV_KATALOG.update(stand=stand, liste=liste)
+    return liste
 
 
 def version_auf_platte() -> str:
@@ -1134,7 +1189,8 @@ def katalog_page(spots: list, home: dict) -> str:
             "<div class='kliste'><table><thead><tr>"
             "<th data-k='name' class='sort auf'>" + T("Spot") + "</th><th data-k='country'>" + T("Land")
             + "</th><th data-k='water'>" + T("Gewässer") + "</th>"
-            "<th data-k='km'>km</th></tr></thead><tbody id='ktbody'></tbody></table></div>"
+            "<th data-k='km' title='" + html.escape(T("Luftlinie von Zuhause (config.yaml), nicht die Fahrstrecke"))
+            + "'>" + T("km Luftlinie") + "</th></tr></thead><tbody id='ktbody'></tbody></table></div>"
             "<div class='kmapsp'><div id='kmap'></div>"
             # Den Namen des Spots setzt katalog.js in das <b> am Satzanfang — als
             # Platzhalter im Satz, damit eine Übersetzung ihn umstellen kann,
@@ -1386,7 +1442,7 @@ def tagebuch_page(cfg, spots: list, heute: str | None = None) -> str:
             "spellcheck='false' role='combobox' aria-expanded='false' aria-controls='tspotliste' "
             "placeholder='" + html.escape(T("Name eintippen")) + "'>"
             "<input type='hidden' name='spot' id='tspotid'>"
-            "<div id='tspotliste' class='tspotliste' role='listbox' hidden></div></div>"
+            "<div id='tspotliste' class='spotliste' role='listbox' hidden></div></div>"
             "<div><label for='tdatum'>" + T("Datum") + "</label>"
             f"<input type='date' id='tdatum' name='datum' value='{html.escape(heute)}' max='{html.escape(heute)}'></div>"
             "<div><label for='tvon'>" + T("von") + "</label><input type='time' id='tvon' name='von'></div>"
@@ -1568,6 +1624,18 @@ def page(cfg, v: dict) -> str:
                 "var LEAFLET = " + i18n.json_im_skript({"css": LEAFLET_CSS, "cssSri": LEAFLET_CSS_SRI,
                                                         "js": LEAFLET_JS, "jsSri": LEAFLET_JS_SRI}) + ";")
 
+    # Favoriten (seit 2.4.0, gewünscht am 06.10.2026): gleich in der ersten
+    # Maske — Spot eintippen, aus der Trefferliste wählen, gesammelt als
+    # Plaketten (web/favoriten.js). Gemerkt in favoriten.json; gesucht wird
+    # mit dem, was im versteckten Feld steht. Nur IDs, die der Katalog kennt.
+    fav_liste = fav_katalog()
+    bekannt = {s["id"] for s in fav_liste}
+    fav_ids = [i for i in v.get("favoriten") or [] if i in bekannt]
+    fav_js = ("var FAVORITEN = " + i18n.json_im_skript({"ids": fav_ids, "zuerst": bool(v.get("fav_zuerst", True)),
+                                                        "max": fav_mod.MAX}) + ";\n"
+              "var FAV_SPOTS = " + i18n.json_im_skript(fav_liste) + ";")
+    ohne_fav = "" if fav_ids else " hidden"
+
     return seitenkopf("Wingfoilscout", CSS + REITER_CSS) + f"""<div class="wrap" id="wrap">
 {reiter("/")}
 <h1>Wingfoilscout</h1>
@@ -1594,6 +1662,24 @@ def page(cfg, v: dict) -> str:
         <button type="button" class="ghost mini" id="abjetzt" title="{html.escape(T('Feld leeren — die Suche beginnt jetzt'))}">{T('Jetzt')}</button>
       </div>
       <p class="klein">{T('Leer heißt jetzt. Die Tage zählen ab hier, die Vorhersage reicht bis {datum}.', datum=i18n.datum_jahr(letzter))}</p>
+    </div>
+
+    <div class="favoriten">
+      <label for="favsuche">{T('Favoriten')}</label>
+      <div class="favwahl">
+        <input type="text" id="favsuche" role="combobox" aria-autocomplete="list" aria-expanded="false"
+               aria-controls="favliste" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+               placeholder="{html.escape(T('Spotname eintippen'))}">
+        <div id="favliste" class="spotliste" role="listbox" aria-label="{html.escape(T('Passende Spots'))}" hidden></div>
+      </div>
+      <ul id="favchips" class="favchips" aria-label="{html.escape(T('Deine Favoriten'))}"{ohne_fav}></ul>
+      <input type="hidden" name="favoriten" id="favoriten" value="{html.escape(','.join(fav_ids))}">
+      <div class="favan" id="favan"{ohne_fav}>
+        <label class="favzuerst"><input type="checkbox" name="fav_zuerst" id="fav_zuerst"{" checked" if v.get("fav_zuerst", True) else ""}>
+          {T('Favoriten zuerst zeigen')}</label>
+        <p class="klein">{T('Immer gerechnet, auch außerhalb des Radius — im Ergebnis vor den besten drei.')}</p>
+      </div>
+      <p class="klein" id="favmsg" role="status" aria-live="polite"></p>
     </div>
 
     <div class="presets">{preset_buttons}</div>
@@ -1710,7 +1796,7 @@ def page(cfg, v: dict) -> str:
   <div id="frame"></div>
 </div>
 
-{skript(start_js + chr(10) + SUCHE_JS)}
+{skript(start_js + chr(10) + SUCHE_JS + chr(10) + fav_js + chr(10) + FAVORITEN_JS)}
 {seitenende()}</body></html>"""
 
 
@@ -2607,6 +2693,27 @@ class Handler(BaseHTTPRequestHandler):
                                     "Anlauf in der besten Richtung — sieht gut aus.",
                                     km=f"{eintrag['max_fetch_km']:.1f}"))
 
+    def _favoriten(self) -> None:
+        """Die Favoritenliste merken (seit 2.4.0): {"ids": [...], "zuerst": bool}
+        — nur IDs aus dem Katalog, höchstens zehn, in favoriten.json. Die
+        Startseite schickt jede Änderung gleich hierher."""
+        try:
+            daten = self._json()
+        except ValueError as exc:
+            self._antwort(400, error=str(exc))
+            return
+        ids, zuerst = daten.get("ids"), daten.get("zuerst", True)
+        if not isinstance(ids, list) or not all(isinstance(i, str) for i in ids) or not isinstance(zuerst, bool):
+            self._antwort(400, error=T("Erwartet werden Spot-IDs als Liste und „zuerst“ als ja oder nein."))
+            return
+        # Gegen den Katalog prüfen; ist er nicht lesbar, wird nichts geschrieben
+        # (KatalogFehler → do_POST antwortet mit dem Fehler) — sonst fiele die
+        # ganze Liste als „unbekannt“ weg.
+        bekannte = {s["id"] for s in fav_katalog(streng=True)}
+        with FAV_LOCK:
+            gespeichert = fav_mod.speichern(ids, zuerst, bekannte=bekannte)
+        self._antwort(200, ok=True, **gespeichert)
+
     def _tagebuch(self, path: str) -> None:
         """Session eintragen, löschen, neu vergleichen, Vorschlag übernehmen."""
         from . import tagebuch
@@ -2857,6 +2964,9 @@ class Handler(BaseHTTPRequestHandler):
         if path.startswith("/tagebuch/"):
             self._tagebuch(path)
             return
+        if path == "/favoriten":
+            self._favoriten()
+            return
         try:
             raw = self._form()
         except ValueError as exc:
@@ -2941,10 +3051,8 @@ class Handler(BaseHTTPRequestHandler):
             text = (raw.get("spots_text", [""])[0] or "")
             gestartet(start_ingest(self.cfg_path, text, "spot_geo" in raw))
         elif path == "/save":
-            # Der Startpunkt wird bewusst nicht gemerkt: er gilt für heute und
-            # hier, nicht für den nächsten Start. Leer heißt Zuhause. Ebenso der
-            # Startzeitpunkt (seit 2.3.0): leer heißt jetzt.
-            keep = {k: val for k, val in values.items() if k not in ("start", "start_name", "ab")}
+            # Startpunkt, Startzeitpunkt und Favoriten bleiben draußen (NICHT_GEMERKT).
+            keep = {k: val for k, val in values.items() if k not in NICHT_GEMERKT}
             DEFAULTS_FILE.write_text(json.dumps(keep, indent=1, ensure_ascii=False), encoding="utf-8")
             self._send(200, b'{"ok":true}', "application/json")
         else:
@@ -3010,7 +3118,8 @@ def port_klaeren(port: int) -> dict:
 def serve(port: int = 8765, open_browser: bool = True, config: str | None = None,
           lan: bool = False) -> None:
     # Was die Oberfläche schreibt, gehört nur dem Benutzer: report.html,
-    # cache/, tagebuch.json, modellguete.json, sprache.txt, ui_defaults.json —
+    # cache/, tagebuch.json, modellguete.json, sprache.txt, ui_defaults.json,
+    # favoriten.json (seit 2.4.0, ohnehin 0600 über spotedit.schreibe_atomar) —
     # mit der üblichen Maske 022 konnte bis 2.1.0 jeder Benutzer des Macs sie
     # lesen (A3). Gesetzt beim Start des Servers, nicht beim Import: wer das
     # Modul nur lädt (Tests, Werkzeuge), behält seine Maske; und danach gilt

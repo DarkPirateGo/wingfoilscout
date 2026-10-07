@@ -1,6 +1,6 @@
 """Wingfoilscout — findet Wingfoil-Sessions in Windmodellen und Spotwissen."""
 from __future__ import annotations
-__version__ = "2.3.0"
+__version__ = "2.4.0"
 
 # Der Projektordner und der Zwischenspeicher darin — absolut, damit es nicht
 # vom Arbeitsverzeichnis abhängt, wo Overpass-Auszüge und Warnfeeds landen.

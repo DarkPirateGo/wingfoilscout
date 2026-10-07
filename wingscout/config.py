@@ -69,6 +69,9 @@ class Config(dict):
 
 
 VORLAGE = "config.example.yaml"
+# Nur unter Windows gibt es ihn; dort braucht `os.open` ihn, sonst übersetzt die
+# C-Bibliothek die Zeilenenden ein zweites Mal (config.yaml, spotedit).
+BINAER = getattr(os, "O_BINARY", 0)
 
 
 def ensure_config(path: str | Path) -> Path:
@@ -87,9 +90,12 @@ def ensure_config(path: str | Path) -> Path:
         raise KonfigFehler(T("Weder {datei} noch {vorlage} gefunden in {ordner}",
                              datei=path.name, vorlage=VORLAGE, ordner=path.parent))
     # Nur für den Besitzer lesbar: hier stehen Heimatkoordinate und, wenn
-    # eingetragen, das Windguru-Passwort (Review 25.09., S13).
-    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
-    with os.fdopen(fd, "w", encoding="utf-8") as fh:
+    # eingetragen, das Windguru-Passwort (Review 25.09., S13). Binär und mit
+    # `newline="\n"`: unter Windows öffnet `os.open` sonst im Textmodus und
+    # macht aus jedem Zeilenende, das Python schon zu CR LF gemacht hat, noch
+    # einmal eines — doppelte Leerzeilen in der Datei (2.4.0, BINAER).
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | BINAER, 0o600)
+    with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as fh:
         fh.write(vorlage.read_text(encoding="utf-8"))
     hinweis = T("{datei} aus {vorlage} angelegt — Startpunkt und Quiver dort eintragen.",
                 datei=path.name, vorlage=VORLAGE)

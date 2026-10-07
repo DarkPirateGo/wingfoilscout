@@ -40,6 +40,7 @@ waechter = _modul("persoenliche_daten", ROOT / "tools" / "persoenliche_daten.py"
 VERBOTEN = (
     "config.yaml", "config Kopie.yaml", "config-alt.yaml", "config.example Kopie.yaml",
     "config.yaml.neu", "tagebuch.json", "tagebuch Kopie.json", "tagebuch.json.neu",
+    "favoriten.json", "favoriten Kopie.json", "favoriten-alt.json", "favoriten.json.neu",
     "modellguete.json", "modellguete.json.neu", "ui_defaults.json", "ui_defaults Kopie.json",
     "report.html", "report Kopie.html", "report.html.neu", "spots.yaml.neu", "sprache.txt",
     "cache/routes.json", "import/Gespeicherte Orte.csv", "import/takeout-2026-09-13.csv",
@@ -62,6 +63,7 @@ ERLAUBT = (
     "docs/bilder/en/search-light.png", "docs/bilder/vorschau.jpg",
     "docs/video/wingfoilscout-promo-en.mp4", "docs/video/promo-poster.jpg",
     "wingscout/lang/en.json", "wingscout/web/icon-512.png", "wingscout/web/karte.js",
+    "wingscout/favoriten.py", "wingscout/web/favoriten.js", "tests/test_favoriten.py",
     "tests/test_catalog.py", ".github/workflows/tests.yml", ".gitignore", ".gitattributes",
     "tools/veroeffentlichen.sh", "tools/persoenliche_daten.py", "Tests ausführen.command",
     "Auf GitHub veröffentlichen.command", "pyproject.toml", "requirements.txt", "CHANGELOG.md",

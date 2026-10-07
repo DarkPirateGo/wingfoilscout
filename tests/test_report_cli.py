@@ -554,6 +554,76 @@ class GanzerReport(unittest.TestCase):
         self.assertIn("\\u003cscript\\u003e", html)
 
 
+class Fahrstrecke(unittest.TestCase):
+    """Der Radius ist eine Fahrstrecke — seit 2.4.0 sagt der Report das auch
+    überall (gefragt am 07.10.2026, „zwei unterschiedliche Streckenangaben“):
+    „Nicht berücksichtigt“ zeigte die Luftlinie, der Grund daneben die
+    Strecke. Jetzt eine Zahl, die Fahrstrecke; geschätzt mit „≈“, und wo nicht
+    geroutet wurde, oben ein Hinweis."""
+
+    def bauen(self, geroutet: bool, demo: bool = False, cfg=None):
+        cfg = cfg or load_cfg()
+        keep, dropped = eligible(load_spots(SPOTS), cfg, date.today().month, 300, None, zuschlag=1.35)
+        keep = keep[:3]
+        for sp in keep:
+            if geroutet:
+                sp["drive_source"] = "Routing"
+        fcs = demo_build(keep, 2)
+        all_rows, sessions = {}, []
+        for sp in keep:
+            rows = score_hours(sp, fcs[sp["id"]], cfg)
+            all_rows[sp["id"]] = (sp, rows)
+            sessions.extend(build_sessions(sp, rows, cfg))
+        trips = rank_trips(sessions, cfg)
+        # Ein ausgeschlossener Spot mit gerouteter Strecke (wie nach refine_drives)
+        weit = next(s for s, g in dropped if "Radius" in g)
+        weit.update(drive_source="Routing", road_km=1026.4)
+        args = argparse.Namespace(days=2, radius=300, nights=0, _n_spots=3, _n_verified=0, _n_geo=0,
+                                  _alerts={}, _protected={}, _n_sessions=len(sessions), _n_trips=len(trips))
+        return report.render(trips, all_rows, dropped, cfg, args, demo=demo), dropped, weit
+
+    def test_nicht_beruecksichtigt_zeigt_die_fahrstrecke(self):
+        html, dropped, weit = self.bauen(geroutet=True)
+        teil = html.split("<h2>Nicht berücksichtigt</h2>")[1]
+        self.assertIn("<th>Fahrstrecke</th>", teil)
+        self.assertNotIn("<th>Entfernung</th>", teil)
+        self.assertIn(f"<td>{report._esc(weit['name'])}</td><td class='n'><span title='über OSRM geroutet'>1026 km</span>",
+                      teil)
+        geschaetzt = next(s for s, _ in dropped if s.get("drive_source") != "Routing")
+        self.assertIn(f"<span title='geschätzt: {geschaetzt['dist_km']:.0f} km Luftlinie × 1,22, nicht geroutet'>"
+                      f"≈&#8239;{geschaetzt['road_km']:.0f} km</span>", teil)
+        zellen = [int(z) for z in re.findall(r"<td class='n'><span title='[^']*'>(?:≈&#8239;)?(\d+) km</span>", teil)]
+        self.assertEqual(zellen, sorted(zellen), "nach Fahrstrecke sortiert")
+        self.assertIn(f"{len(dropped)} Spots, jeweils mit Grund", html)
+
+    def test_parameter_und_karte_sagen_fahrstrecke(self):
+        html, _, _ = self.bauen(geroutet=True)
+        self.assertIn("<b>Radius</b> 300 km Fahrstrecke", html)
+        self.assertIn("gestrichelter Kreis ≈ 246 km Luftlinie, nur zur Orientierung — die Suche nimmt Spots "
+                      "bis 300 km Fahrstrecke", html)
+        self.assertIn('"umweg": 1.22', html)
+        cfg = load_cfg()
+        cfg["drive"]["detour_factor"] = 1.5
+        anders, _, _ = self.bauen(geroutet=True, cfg=cfg)
+        self.assertIn("gestrichelter Kreis ≈ 200 km Luftlinie", anders, "Kreis nach dem Umwegfaktor der config")
+
+    def test_hinweis_wenn_nicht_geroutet(self):
+        html, _, _ = self.bauen(geroutet=False)
+        self.assertIn("<b>Fahrstrecke für 3 von 3 Spots nur geschätzt</b>", html)
+        self.assertIn("Luftlinie × 1,22", html)
+        for geroutet, demo in ((True, False), (False, True)):
+            with self.subTest(geroutet=geroutet, demo=demo):
+                html, _, _ = self.bauen(geroutet=geroutet, demo=demo)
+                self.assertNotIn("nur geschätzt</b>", html)
+
+    def test_radius_hat_eine_erklaerung(self):
+        from wingscout import webui as w
+        self.assertIn("Fahrstrecke, nicht als Luftlinie", w.ERKLAERUNG["radius"])
+        cfg = load_cfg()
+        seite = w.page(cfg, w.form_defaults(cfg))
+        self.assertIn('class="info"', seite.split('for="radius"')[1].split("</label>")[0])
+
+
 class Kommandozeile(unittest.TestCase):
     def test_stundenstempel(self):
         # `end` ist exklusiv wie bei einer Session (letzte Stunde plus eins):

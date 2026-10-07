@@ -13,8 +13,8 @@ speeds are in **knots**. The interface speaks English, German, French and
 Spanish.
 
 <p align="center">
-<picture><source media="(prefers-color-scheme: dark)" srcset="docs/bilder/en/search-dark.png"><img src="docs/bilder/en/search-light.png" width="250" alt="Search: starting point, start time and three presets"></picture>
-<picture><source media="(prefers-color-scheme: dark)" srcset="docs/bilder/en/destinations-dark.png"><img src="docs/bilder/en/destinations-light.png" width="250" alt="The best three destinations"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/bilder/en/search-dark.png"><img src="docs/bilder/en/search-light.png" width="250" alt="Search: starting point, start time, favourites and presets"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/bilder/en/destinations-dark.png"><img src="docs/bilder/en/destinations-light.png" width="250" alt="A favourite, then the best three destinations"></picture>
 <picture><source media="(prefers-color-scheme: dark)" srcset="docs/bilder/en/grid-dark.png"><img src="docs/bilder/en/grid-light.png" width="250" alt="Hourly grid: every spot, hour by hour"></picture>
 </p>
 <p align="center"><sub>Example view with made-up weather data ·
@@ -91,8 +91,8 @@ You choose the starting point in the interface. You enter your gear once in
 
 Every double-click file needs step 3 once, “Wingfoilscout fürs iPhone
 starten” included. New versions come only as a new ZIP this way: copy
-`config.yaml`, `tagebuch.json`, `modellguete.json`, `ui_defaults.json` and
-`sprache.txt` from the old folder into the new one. Spots you added yourself
+`config.yaml`, `tagebuch.json`, `modellguete.json`, `ui_defaults.json`,
+`favoriten.json` and `sprache.txt` from the old folder into the new one. Spots you added yourself
 stay in the old folder's `spots.yaml` — the Terminal way keeps them when
 updating.
 
@@ -152,8 +152,8 @@ refers to them without the `.command` extension.
 
 **Without a terminal:** double-click **“Wingfoilscout starten”** in the Finder
 (on Windows: `wingfoilscout.bat`). An interface opens in the browser. Up front
-there are just two questions — **Starting from?** and **Starting when?** —
-and below them three presets:
+there are just two questions — **Starting from?** and **Starting when?** —,
+your [favourites](#favourites), and below them three presets:
 
 | | Days | Nights | Radius |
 |---|---|---|---|
@@ -178,9 +178,10 @@ their values:
   missing next to it.
 - **Add spots** — see below.
 
-Three fields carry a question mark with a short explanation: **Minimum
-rating**, **Gustiness max.** and **Chop aversion**. Their names don't explain
-themselves, and in the report they later appear as a number.
+Four fields carry a question mark with a short explanation: **Radius** (a
+driving distance, not a straight line — see [Drive time](#drive-time-routed-not-estimated)),
+**Minimum rating**, **Gustiness max.** and **Chop aversion**. Their names
+don't explain themselves, and in the report they later appear as a number.
 
 **“Save as default”** stores your inputs as the new starting values (in
 `ui_defaults.json`; your commented `config.yaml` stays untouched).
@@ -261,6 +262,40 @@ converted to local time there, like every time in the report. **“Now”**
 clears the field. Like the starting point, the start time is **not** stored
 by “Save as default”. On the command line: `--ab "2026-10-10 09:00"` (or
 `10.10.2026 09:00`, or just the date).
+
+### Favourites
+
+Below the start time it says **Favourites**: your favourite spots, which every
+search looks at first. Type part of a name — “edersee”, “tarifa”; accents
+don't matter, “etang” finds “Étang de Leucate” — and pick the spot from the
+list that opens (arrow keys and Enter work too). It lands in your list as a
+small tag; its × takes it out again. Up to ten, in the order you add them.
+
+Once the list has an entry, the switch **“Show favourites first”** appears
+(on to begin with). With it on, every search also computes your favourites —
+**even outside the radius and despite the filters** (season, water types,
+seagrass, dogs …) — and the report starts with them: **Favourites → the best
+three → map**. Each favourite gets the same card as a destination of the
+search, with a ★ instead of the rank and a badge: **Rank 4** if it is also
+among the destinations of the search, or **outside the search**, with the
+reason as a tooltip (“2799 km — outside the 600 km radius”, “out of season”).
+A favourite without a session in the period gets a flat card that says why —
+“At most 8 kn (Sat 10 Oct 14:00) — your quiver starts at 10 kn”, or, where
+there would be wind, what rules those hours out, in the words of the hour
+grid (“water 9 °C below your limit of 12 °C”, “outside the tide window …”) —
+plus the links to Windy, the route and the map. Among the best three and the
+further destinations, a favourite carries a ★ before its name.
+
+The best three, the map and the hour grid stay the normal search: favourites
+outside it don't appear there and don't push anything out. They are fetched
+and computed in addition — one reason the list stops at ten.
+
+Every change is stored straight away, in `favoriten.json` in the
+Wingfoilscout folder — personal like the logbook, not versioned, and not part
+of “Save as default”. Switch “Show favourites first” off and the search runs
+without them; the list stays. On the command line, `--favoriten` alone uses
+the list from the interface, `--favoriten brouwersdam,silvaplana` the spot IDs
+given (the ID of a spot is in `spots.yaml`).
 
 ### Add spots
 
@@ -770,6 +805,7 @@ python3 run.py                                   # 3 days, 500 km, opens the rep
 python3 -m wingscout.cli --days 3 --radius 500   # spontaneous mode
 python3 -m wingscout.cli --days 7 --radius 1000  # long weekend
 python3 -m wingscout.cli --ab "2026-10-10 09:00" --days 2   # that weekend only
+python3 -m wingscout.cli --favoriten             # your favourites first (list from the interface)
 python3 -m wingscout.cli --demo                  # synthetic data, no network needed
 python3 -m wingscout.cli --days 2 --model icon_d2 --open
 ```
@@ -778,7 +814,7 @@ python3 -m wingscout.cli --days 2 --model icon_d2 --open
 |---|---|
 | `--days N` | forecast days, 1–16 |
 | `--ab TIME` | start time instead of now (`2026-10-10 09:00`, `10.10.2026 09:00` or just the date); the days count from it, at most 16 days ahead |
-| `--radius KM` | search radius in road kilometres (estimated from straight-line distance) |
+| `--radius KM` | search radius as driving distance in kilometres — routed via OSRM, estimated (straight line × detour factor) only where OSRM doesn't answer |
 | `--max-drive H` | upper limit for the one-way drive |
 | `--min-hours H` | minimum length for a block to count as a session |
 | `--model NAME` | force an Open-Meteo model, e.g. `icon_d2`, `icon_eu` |
@@ -787,6 +823,7 @@ python3 -m wingscout.cli --days 2 --model icon_d2 --open
 | `--nights N` | planned nights — requires N+1 usable days in a row |
 | `--demo` | made-up weather data, to check layout and logic |
 | `--open` | open the report in the browser afterwards |
+| `--favoriten [IDS]` | show favourites first: without a value the list from the interface (`favoriten.json`), otherwise spot IDs separated by commas — always computed, even outside the radius (see [Favourites](#favourites)) |
 | `--sprache de\|en\|fr\|es` | language of messages and report. Without it: the language chosen in the interface (`sprache.txt`), otherwise the system's (`LC_ALL`, `LC_MESSAGES`, `LANG`, then the macOS language settings), otherwise English. The environment variable `WINGSCOUT_SPRACHE` beats even `--sprache` |
 
 `python3 -m wingscout.webui` writes its terminal lines by the same rule, just
@@ -863,6 +900,18 @@ In the report, “(estimated)” follows the drive time if routing wasn't
 possible; the tooltip always says where the number comes from. Can be switched
 off via the checkbox under Data sources — then `drive.detour_factor` from the
 configuration applies again.
+
+**The radius is a driving distance.** A spot is in the search only if its
+routed driving distance is at most the radius — and the drive at most the
+“Max. drive” hours. A straight line appears only where it says so: the dashed
+circle on the map (radius ÷ detour factor, for orientation only) and the
+“km (straight line)” column of the Catalogue, measured from home. In “Not
+considered” the column shows the driving distance — routed, or with “≈” where
+it is only an estimate; up to 2.3.0 it showed the straight line next to a
+reason quoting the road distance (“682 km” beside “1026 km — outside the
+1000 km radius”). If OSRM gives no route for some spots of the search, the
+report says so at the top: for those the radius was checked against the
+estimate, and the real distance can be longer.
 
 ### Dog-friendly overnight spots
 
@@ -1031,8 +1080,9 @@ things:
 
 ### Layout of the report
 
-The best three destinations first (since 2.3.0 above the map), then the map,
-thermals, hourly grid, all further destinations, all sessions as a table, the
+Your [favourites](#favourites) first, if you have switched them on (since
+2.4.0), then the best three destinations (since 2.3.0 above the map), then
+the map, thermals, hourly grid, all further destinations, all sessions as a table, the
 excluded spots, and the weather logic with your current values.
 
 **Two views** (since 1.20.0), switchable at the top below the heading:

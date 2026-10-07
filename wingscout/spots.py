@@ -6,7 +6,7 @@ from pathlib import Path
 
 from .config import yaml_laden, yaml_meldung, YAML_FEHLER
 from .geo import haversine_km, drive_estimate_h
-from .i18n import T, TD, meldungswert
+from .i18n import T, TD, N_, meldungswert, vorlage
 
 QUALITY_ORDER = {"best": 3, "good": 2, "ok": 1, "bad": 0}
 
@@ -229,6 +229,11 @@ def textfelder_pruefen(spot_id: str, entry: dict) -> None:
             offen.extend((feld, x) for x in wert)
 
 
+# Wie eine Spot-ID aussehen darf — der Katalog prüft es beim Laden, die
+# Favoriten (favoriten.py) beim Merken und Suchen.
+ID_MUSTER = re.compile(r"[A-Za-z0-9_-]{1,80}")
+
+
 class Spot(dict):
     def __getattr__(self, item):
         try:
@@ -265,7 +270,7 @@ def load_spots(path: str | Path) -> list[Spot]:
                                       spot=meldungswert(entry.get("name", entry))))
         # Erst die Form, dann das Doppelte: eine ID wie `[a]` ist nicht
         # hashbar, und `in seen` warf bis 2.1.0 einen TypeError.
-        if not re.fullmatch(r"[A-Za-z0-9_-]{1,80}", str(entry["id"])):
+        if not ID_MUSTER.fullmatch(str(entry["id"])):
             raise KatalogFehler(T("Ungültige Spot-ID (nur Buchstaben, Ziffern, - und _): {id}",
                                   id=repr(entry["id"])))
         if entry["id"] in seen:
@@ -304,13 +309,42 @@ def load_spots(path: str | Path) -> list[Spot]:
     return spots
 
 
+# Die zwei Sätze, mit denen ein Spot wegen der Entfernung herausfällt: hier im
+# Vorfilter, in cli.refine_drives nach dem Routen und seit 2.4.0 für Favoriten
+# außerhalb der Suche.
+RADIUS_SATZ = N_("{km} km — außerhalb des Radius von {radius} km")
+FAHRT_SATZ = N_("{h} h Fahrt über der Obergrenze von {grenze} h")
+
+
+def entfernungsgrund(spot, radius_km: float | None, max_drive_h: float | None,
+                     zuschlag: float = 1.0):
+    """Warum `spot` zu weit weg ist — oder None, wenn er nah genug liegt.
+
+    Gemessen wird gegen die Grenzen mal `zuschlag` (der Vorfilter schätzt nur
+    und lässt Luft), genannt werden die Grenzen selbst: bis 2.3.0 stand im
+    Report „außerhalb des Radius von 338 km“, wenn 250 km gewählt waren."""
+    if radius_km is not None and spot["road_km"] > radius_km * zuschlag:
+        return TD(RADIUS_SATZ, km=f"{spot['road_km']:.0f}", radius=f"{radius_km:.0f}")
+    if max_drive_h is not None and spot["drive_h"] > max_drive_h * zuschlag:
+        return TD(FAHRT_SATZ, h=f"{spot['drive_h']:.1f}", grenze=f"{max_drive_h:.1f}")
+    return None
+
+
+def ist_entfernungsgrund(grund) -> bool:
+    """Ob `grund` einer der zwei Sätze oben ist (in jeder Sprache)."""
+    return vorlage(grund) in (RADIUS_SATZ, FAHRT_SATZ)
+
+
 def eligible(spots: list[Spot], cfg, month, radius_km: float | None = None,
-             max_drive_h: float | None = None) -> tuple[list[Spot], list[tuple[Spot, str]]]:
+             max_drive_h: float | None = None,
+             zuschlag: float = 1.0) -> tuple[list[Spot], list[tuple[Spot, str]]]:
     """Trennt fahrbare Spots von ausgeschlossenen (mit Begründung).
 
     `month` ist ein Monat oder eine Menge von Monaten — der Zeitraum einer
     Suche kann über den Monatswechsel reichen, und ein Spot mit Saison im
-    Oktober soll am 30. September nicht fehlen.
+    Oktober soll am 30. September nicht fehlen. `zuschlag` weitet Radius und
+    Fahrzeit fürs Aussortieren (cli.run_search: Schätzung vor dem Routen);
+    die Begründung nennt die Grenzen ohne ihn.
     """
     monate = {int(month)} if isinstance(month, int) else {int(m) for m in month}
     home = cfg["rider"]["home"]
@@ -364,15 +398,10 @@ def eligible(spots: list[Spot], cfg, month, radius_km: float | None = None,
         if not (monate & {int(m) for m in spot["season"]}):
             dropped.append((spot, TD("außerhalb der Saison")))
             continue
-        # Dieselben zwei Sätze wie in cli.refine_drives.
-        if radius_km is not None and spot["road_km"] > radius_km:
-            dropped.append((spot, TD("{km} km — außerhalb des Radius von {radius} km",
-                                    km=f"{spot['road_km']:.0f}", radius=f"{radius_km:.0f}")))
-            continue
         limit = max_drive_h if max_drive_h is not None else drive_cfg["max_hours"]
-        if spot["drive_h"] > limit:
-            dropped.append((spot, TD("{h} h Fahrt über der Obergrenze von {grenze} h",
-                                    h=f"{spot['drive_h']:.1f}", grenze=f"{limit:.1f}")))
+        zu_weit = entfernungsgrund(spot, radius_km, limit, zuschlag)
+        if zu_weit is not None:
+            dropped.append((spot, zu_weit))
             continue
         keep.append(spot)
     keep.sort(key=lambda s: s["drive_h"])

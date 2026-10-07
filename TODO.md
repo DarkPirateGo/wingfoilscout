@@ -1,9 +1,21 @@
 # TODO
 
-As of 4 October 2026, version 2.3.0 (856 tests), published the same day as
-the first commit of the recreated repository — release, Pages, About,
-ruleset and security settings set again; the old 2.1.0 commit is gone from
-GitHub. In it: **licence PolyForm Noncommercial 1.0.0** instead of MIT
+As of 7 October 2026, version 2.4.0 (901 tests). In it: **favourites** —
+typed into the first form with a list of matches, stored in `favoriten.json`
+(personal); with “Show favourites first” every search also computes them,
+even outside the radius and despite the filters, and the report begins
+Favourites → the best three → map (`wingscout/favoriten.py`,
+`web/favoriten.js`, `tests/test_favoriten.py`); the reason a spot is left out
+names the chosen radius instead of the prefilter's enlarged one; **the radius
+is shown as what it is, a driving distance** — “Not considered” shows the road
+distance instead of the straight line, a note appears when OSRM gave no
+route; **Windows**:
+no more double line breaks in written files, and `wingfoilscout.bat` tries
+`python` and then `py` instead of trusting the Microsoft Store placeholder —
+both untested on Windows itself. Before that, 2.3.0 (856 tests), published on
+4 October as the first commit of the recreated repository — release, Pages,
+About, ruleset and security settings set again; the old 2.1.0 commit is gone
+from GitHub. In it: **licence PolyForm Noncommercial 1.0.0** instead of MIT
 (`SECURITY.md`); **spot suggestions
 from the community** through a form on GitHub, opened from the app
 (`CONTRIBUTING.md`); **installation on a fresh Mac** rewritten — the
@@ -88,6 +100,17 @@ wasn't important enough to keep.
 
 ## Open — Philipp
 
+- **Try 2.4.0 once:** restart Wingfoilscout, add two favourites in the
+  search form — one near home, one far away (say Tarifa) —, search with
+  “Show favourites first”: the report should start with both, the far one
+  marked “outside the search”, and the best three and the map should look
+  as without favourites. Then switch it off and search again: no Favourites
+  section, the list stays.
+- **Windows:** if someone with Windows wants to try it — Python 3.9+ from
+  python.org, then double-click `wingfoilscout.bat`. Worth a look: does the
+  start file find Python (also when only the `py` launcher is installed), and
+  does `config.yaml` open in Notepad without blank lines between the lines?
+  Neither has been tried on Windows.
 - **Try 2.3.0 once:** restart Wingfoilscout, run one search, then switch the
   language — “Destinations” should follow without a new search (a report
   from before 2.3.0 exists in one language only). Then try “Starting when?”
@@ -284,6 +307,18 @@ wasn't important enough to keep.
   is not supported.
 - **Logbook, next steps:** editing a session (today: delete it and log it
   again); gusts in the comparison (the suggestions only use the mean wind).
+- **Favourites, next steps:** changing the order (today: take one out and add
+  it again — the report keeps the order of the list); a ★ in the Catalogue to
+  add a spot; the favourites outside the search on the map.
+- **Tests that write `cache/letzter_lauf.json` of the project** (found in the
+  review of 7 October): several tests run a demo search through `cli.main`
+  without a temporary `cache/` (among them `tests/test_report_cli.py`,
+  `tests/test_webui.py`, `tests/test_zeitraum.py`), and every search stores
+  its result for the Review tab there — so after a check run (and every
+  publish runs one) the Review tab's "last search" is a demo search until the
+  next real one. `tests/test_favoriten.py`, `tests/test_i18n.py` and
+  `tests/test_report_sprachen.py` already patch `wingscout.CACHE`; the others
+  should too.
 - **Better tide sources** (1.18.0 uses Open-Meteo's 8 km model, tide and wind
   surge combined, not an official tide table): for the German North Sea
   Pegelonline (BSH/WSV, measured and astronomical), for the Netherlands

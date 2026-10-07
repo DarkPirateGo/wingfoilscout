@@ -438,14 +438,26 @@ def score_hours(spot, fc: dict, cfg, marine: dict | None = None,
             row["tide_lage"] = lg["art"] if lg else None
 
         # Ein Veto zählt nur als „ja oder nein“; der Text steht im Raster.
+        # `veto_art` (seit 2.4.0) sagt dasselbe als Schlüssel — der Abschnitt
+        # „Favoriten“ erklärt damit in jeder Sprache, warum nichts geht.
         if jetzt is not None and t + timedelta(hours=1) <= jetzt:
-            row["veto"] = TD("vorbei")
+            row["veto"], row["veto_art"] = TD("vorbei"), "vorbei"
             row["score"] = 0.0
             rows.append(row)
             continue
 
         if ab is not None and t + timedelta(hours=1) <= ab:
-            row["veto"] = TD("vor dem gewählten Start")
+            row["veto"], row["veto_art"] = TD("vor dem gewählten Start"), "vor_start"
+            row["score"] = 0.0
+            rows.append(row)
+            continue
+
+        # Die Nacht vor dem Wasser (seit 2.4.0): nachts geht es nie, egal wie
+        # warm das Wasser ist — und „Favoriten“ im Report sucht die beste
+        # Stunde nur unter denen bei Tageslicht.
+        rise_set = sun.get(day)
+        if rise_set and not (rise_set[0] <= t <= rise_set[1]):
+            row["veto"], row["veto_art"] = TD("außerhalb der Tageslichtzeit"), "nacht"
             row["score"] = 0.0
             rows.append(row)
             continue
@@ -453,19 +465,14 @@ def score_hours(spot, fc: dict, cfg, marine: dict | None = None,
         if sst is not None and sst < cfg["weather"]["water_temp_min"]:
             row["veto"] = TD("Wasser {sst} °C unter deiner Grenze von {grenze} °C",
                             sst=f"{sst:.0f}", grenze=cfg["weather"]["water_temp_min"])
-            row["score"] = 0.0
-            rows.append(row)
-            continue
-
-        rise_set = sun.get(day)
-        if rise_set and not (rise_set[0] <= t <= rise_set[1]):
-            row["veto"] = TD("außerhalb der Tageslichtzeit")
+            row["veto_art"] = "wasser"
             row["score"] = 0.0
             rows.append(row)
             continue
 
         if fenster and gezeiten.im_fenster(t + timedelta(minutes=30), ereignisse, fenster) is False:
             row["veto"] = TD("außerhalb des Tidenfensters ({fenster})", fenster=gezeiten.fenster_text(fenster))
+            row["veto_art"] = "tide"
             row["score"] = 0.0
             rows.append(row)
             continue
@@ -473,6 +480,7 @@ def score_hours(spot, fc: dict, cfg, marine: dict | None = None,
         s_wind, wing = score_wind(wind, cfg)
         if wing is None:
             row["veto"] = TD("{kn} kn — kein passender Wing im Quiver", kn=f"{wind:.0f}")
+            row["veto_art"] = "quiver"
             row["score"] = 0.0
             rows.append(row)
             continue
@@ -513,6 +521,7 @@ def score_hours(spot, fc: dict, cfg, marine: dict | None = None,
                 row["dir_quality"], row["water"] = quality, wlabel
                 row["veto"] = TD("ablandig mit {km} km freiem Wasser in Lee (Grenze {grenze} km)",
                                 km=f"{down / 1000:.0f}", grenze=f"{veto_km:.0f}")
+                row["veto_art"] = "ablandig"
                 row["score"] = 0.0
                 rows.append(row)
                 continue
@@ -529,7 +538,7 @@ def score_hours(spot, fc: dict, cfg, marine: dict | None = None,
         s_weather, warns, veto = score_weather(row["temp"], row["rain"], row["cape"], row["code"], cfg)
         row["warn"].extend(warns)
         if veto:
-            row["veto"] = veto
+            row["veto"], row["veto_art"] = veto, "wetter"
             row["score"] = 0.0
             rows.append(row)
             continue

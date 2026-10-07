@@ -116,7 +116,9 @@ tspot.addEventListener('keydown', function (e) {
   if (!knoepfe.length) return;
   if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
     e.preventDefault();
-    markiert = (markiert + (e.key === 'ArrowDown' ? 1 : knoepfe.length - 1)) % knoepfe.length;
+    // Pfeil hoch ohne Auswahl: der letzte Treffer, nicht der vorletzte (2.4.0)
+    markiert = markiert < 0 ? (e.key === 'ArrowDown' ? 0 : knoepfe.length - 1)
+                            : (markiert + (e.key === 'ArrowDown' ? 1 : knoepfe.length - 1)) % knoepfe.length;
     [].forEach.call(knoepfe, function (b, i) { b.classList.toggle('an', i === markiert); });
   } else if (e.key === 'Enter') {
     e.preventDefault();

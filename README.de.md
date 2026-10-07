@@ -13,8 +13,8 @@ Rechner, ohne Konto und ohne Fremdpakete außer PyYAML. Alle Windangaben in
 Spanisch.
 
 <p align="center">
-<picture><source media="(prefers-color-scheme: dark)" srcset="docs/bilder/en/search-dark.png"><img src="docs/bilder/en/search-light.png" width="250" alt="Suche: Startpunkt, Startzeitpunkt und drei Voreinstellungen"></picture>
-<picture><source media="(prefers-color-scheme: dark)" srcset="docs/bilder/en/destinations-dark.png"><img src="docs/bilder/en/destinations-light.png" width="250" alt="Die besten drei Ziele"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/bilder/en/search-dark.png"><img src="docs/bilder/en/search-light.png" width="250" alt="Suche: Startpunkt, Startzeitpunkt, Favoriten und Voreinstellungen"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/bilder/en/destinations-dark.png"><img src="docs/bilder/en/destinations-light.png" width="250" alt="Ein Favorit, dann die besten drei Ziele"></picture>
 <picture><source media="(prefers-color-scheme: dark)" srcset="docs/bilder/en/grid-dark.png"><img src="docs/bilder/en/grid-light.png" width="250" alt="Stundenraster: alle Spots Stunde für Stunde"></picture>
 </p>
 <p align="center"><sub>Beispielansicht mit erfundenen Wetterdaten ·
@@ -95,8 +95,8 @@ Start aus `config.example.yaml` entsteht.
 
 Jede Doppelklick-Datei braucht Schritt 3 einmal, auch „Wingfoilscout fürs
 iPhone starten“. Neue Versionen gibt es auf diesem Weg nur als neues ZIP:
-`config.yaml`, `tagebuch.json`, `modellguete.json`, `ui_defaults.json` und
-`sprache.txt` aus dem alten Ordner in den neuen kopieren. Selbst
+`config.yaml`, `tagebuch.json`, `modellguete.json`, `ui_defaults.json`,
+`favoriten.json` und `sprache.txt` aus dem alten Ordner in den neuen kopieren. Selbst
 eingetragene Spots bleiben in der `spots.yaml` des alten Ordners — der Weg
 übers Terminal behält sie beim Aktualisieren.
 
@@ -156,8 +156,8 @@ deutsch; diese Anleitung nennt sie ohne die Endung `.command`.
 
 **Ohne Terminal:** Im Finder auf **„Wingfoilscout starten“** doppelklicken
 (unter Windows: `wingfoilscout.bat`). Es öffnet sich eine Oberfläche im
-Browser. Vorn stehen nur zwei Fragen — **Von wo aus?** und **Ab wann?** — und
-darunter drei Voreinstellungen:
+Browser. Vorn stehen nur zwei Fragen — **Von wo aus?** und **Ab wann?** —,
+deine [Favoriten](#favoriten) und darunter drei Voreinstellungen:
 
 | | Tage | Nächte | Radius |
 |---|---|---|---|
@@ -181,9 +181,10 @@ Alles Feinere liegt hinter drei Klappen, und die behalten ihre Werte:
   fehlenden Spots daneben.
 - **Spots hinzufügen** — siehe unten.
 
-Drei Felder tragen ein Fragezeichen mit Kurzerklärung: **Mindestgüte**,
-**Böigkeit max.** und **Kabbel-Aversion**. Deren Namen sagen aus sich heraus
-nichts, und im Report stehen sie später als Zahl da.
+Vier Felder tragen ein Fragezeichen mit Kurzerklärung: **Radius** (eine
+Fahrstrecke, keine Luftlinie — siehe [Fahrzeit](#fahrzeit-geroutet-statt-geschätzt)),
+**Mindestgüte**, **Böigkeit max.** und **Kabbel-Aversion**. Deren Namen sagen
+aus sich heraus nichts, und im Report stehen sie später als Zahl da.
 
 **„Als Standard merken“** speichert deine Eingaben als neue Startwerte (in
 `ui_defaults.json`; deine kommentierte `config.yaml` bleibt unangetastet).
@@ -262,6 +263,43 @@ in dessen Ortszeit umgerechnet, wie jede Uhrzeit im Report. **„Jetzt“** leer
 das Feld. Wie der Startpunkt wird der Startzeitpunkt **nicht** von „Als
 Standard merken“ gespeichert. Auf der Kommandozeile: `--ab "2026-10-10 09:00"`
 (oder `10.10.2026 09:00`, oder nur das Datum).
+
+### Favoriten
+
+Unter dem Startzeitpunkt steht **Favoriten**: deine Lieblingsspots, auf die
+jede Suche zuerst schaut. Tipp einen Teil des Namens ein — „edersee“,
+„tarifa“; Akzente sind egal, „etang“ findet „Étang de Leucate“ — und wähl den
+Spot aus der Liste, die aufgeht (Pfeiltasten und Enter gehen auch). Er landet
+als kleine Plakette in deiner Liste; ihr × nimmt ihn wieder heraus. Bis zu
+zehn, in der Reihenfolge, in der du sie hinzufügst.
+
+Sobald die Liste einen Eintrag hat, erscheint der Schalter **„Favoriten
+zuerst zeigen“** (anfangs an). Mit ihm rechnet jede Suche deine Favoriten mit
+— **auch außerhalb des Radius und trotz der Filter** (Saison, Gewässerarten,
+Seegras, Hunde …) —, und der Report beginnt mit ihnen: **Favoriten → die
+besten drei → Karte**. Jeder Favorit bekommt dieselbe Karte wie ein Ziel der
+Suche, mit einem ★ statt des Rangs und einer Plakette: **Platz 4**, wenn er
+auch unter den Zielen der Suche steht, oder **außerhalb der Suche**, mit dem
+Grund als Tooltip („2799 km — außerhalb des Radius von 600 km“, „außerhalb der
+Saison“). Ein Favorit ohne Session im Zeitraum bekommt eine flache Karte, die
+sagt, warum — „Höchstens 8 kn (Sa 10.10. 14 Uhr) — dein Quiver fängt bei
+10 kn an“ oder, wo Wind wäre, was diese Stunden ausschließt, in den Worten des
+Stundenrasters („Wasser 9 °C unter deiner Grenze von 12 °C“, „außerhalb des
+Tidenfensters …“) —, dazu die Absprünge zu Windy, Route und Karte. Unter den
+besten drei und den weiteren Zielen trägt ein Favorit einen ★ vor dem Namen.
+
+Die besten drei, die Karte und das Stundenraster bleiben die normale Suche:
+Favoriten außerhalb davon tauchen dort nicht auf und verdrängen nichts. Sie
+werden zusätzlich geholt und gerechnet — ein Grund, warum die Liste bei zehn
+endet.
+
+Jede Änderung wird sofort gemerkt, in `favoriten.json` im
+Wingfoilscout-Ordner — persönlich wie das Tagebuch, nicht versioniert und
+nicht Teil von „Als Standard merken“. Schaltest du „Favoriten zuerst zeigen“
+aus, läuft die Suche ohne sie; die Liste bleibt. Auf der Kommandozeile nimmt
+`--favoriten` allein die Liste aus der Oberfläche, `--favoriten
+brouwersdam,silvaplana` die angegebenen Spot-IDs (die ID eines Spots steht in
+`spots.yaml`).
 
 ### Spots hinzufügen
 
@@ -779,6 +817,7 @@ python3 run.py                                   # 3 Tage, 500 km, öffnet den R
 python3 -m wingscout.cli --days 3 --radius 500   # Spontan-Modus
 python3 -m wingscout.cli --days 7 --radius 1000  # langes Wochenende
 python3 -m wingscout.cli --ab "2026-10-10 09:00" --days 2   # nur dieses Wochenende
+python3 -m wingscout.cli --favoriten             # deine Favoriten zuerst (Liste aus der Oberfläche)
 python3 -m wingscout.cli --demo                  # synthetische Daten, ohne Netz
 python3 -m wingscout.cli --days 2 --model icon_d2 --open
 ```
@@ -787,7 +826,7 @@ python3 -m wingscout.cli --days 2 --model icon_d2 --open
 |---|---|
 | `--days N` | Vorhersagetage, 1–16 |
 | `--ab ZEIT` | Startzeitpunkt statt jetzt (`2026-10-10 09:00`, `10.10.2026 09:00` oder nur das Datum); die Tage zählen ab ihm, höchstens 16 Tage voraus |
-| `--radius KM` | Suchradius in Straßenkilometern (aus der Luftlinie geschätzt) |
+| `--radius KM` | Suchradius als Fahrstrecke in Kilometern — über OSRM geroutet, geschätzt (Luftlinie × Umwegfaktor) nur, wo OSRM nicht antwortet |
 | `--max-drive H` | Obergrenze für die einfache Fahrt |
 | `--min-hours H` | Mindestlänge, damit ein Block als Session zählt |
 | `--model NAME` | ein Open-Meteo-Modell erzwingen, z. B. `icon_d2`, `icon_eu` |
@@ -796,6 +835,7 @@ python3 -m wingscout.cli --days 2 --model icon_d2 --open
 | `--nights N` | geplante Übernachtungen — verlangt N+1 brauchbare Tage am Stück |
 | `--demo` | erfundene Wetterdaten, um Layout und Logik zu prüfen |
 | `--open` | den Report danach im Browser öffnen |
+| `--favoriten [IDS]` | Favoriten zuerst zeigen: ohne Wert die Liste aus der Oberfläche (`favoriten.json`), sonst Spot-IDs mit Komma getrennt — immer gerechnet, auch außerhalb des Radius (siehe [Favoriten](#favoriten)) |
 | `--sprache de\|en\|fr\|es` | Sprache von Meldungen und Report. Ohne die Option: die in der Oberfläche gewählte Sprache (`sprache.txt`), sonst die des Systems (`LC_ALL`, `LC_MESSAGES`, `LANG`, dann die macOS-Spracheinstellungen), sonst Englisch. Die Umgebungsvariable `WINGSCOUT_SPRACHE` schlägt sogar `--sprache` |
 
 `python3 -m wingscout.webui` schreibt seine Terminalzeilen nach derselben
@@ -874,6 +914,18 @@ Im Report steht „(geschätzt)“ hinter der Fahrzeit, wenn nicht geroutet werd
 konnte; der Tooltip sagt immer, woher die Zahl stammt. Abschaltbar über den
 Haken unter Datenquellen — dann gilt wieder `drive.detour_factor` aus der
 Konfiguration.
+
+**Der Radius ist eine Fahrstrecke.** In der Suche ist ein Spot nur, wenn
+seine geroutete Fahrstrecke höchstens so lang ist wie der Radius — und die
+Fahrt höchstens so lang wie „max. Fahrt“. Eine Luftlinie steht nur da, wo es
+dabeisteht: der gestrichelte Kreis auf der Karte (Radius ÷ Umwegfaktor, nur
+zur Orientierung) und die Spalte „km Luftlinie“ im Katalog, gemessen von
+Zuhause. Unter „Nicht berücksichtigt“ zeigt die Spalte die Fahrstrecke —
+geroutet, oder mit „≈“, wo sie nur geschätzt ist; bis 2.3.0 stand dort die
+Luftlinie neben einem Grund, der die Straßenstrecke nannte („682 km“ neben
+„1026 km — außerhalb des Radius von 1000 km“). Liefert OSRM für einige Spots
+der Suche keine Route, sagt der Report es oben: Für diese galt der Radius nach
+der Schätzung, und die echte Strecke kann länger sein.
 
 ### Stellplätze mit Hund
 
@@ -1048,7 +1100,8 @@ Nutzungsbedingungen. Wingfoilscout macht deshalb zwei Dinge:
 
 ### Aufbau des Reports
 
-Zuerst die besten drei Ziele (seit 2.3.0 vor der Karte), dann die Karte,
+Zuerst deine [Favoriten](#favoriten), wenn du sie eingeschaltet hast (seit
+2.4.0), dann die besten drei Ziele (seit 2.3.0 vor der Karte), dann die Karte,
 Thermik, Stundenraster, alle weiteren Ziele, alle Sessions als Tabelle, die
 aussortierten Spots und die Wetterlogik mit deinen aktuellen Werten.
 

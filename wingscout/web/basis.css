@@ -25,6 +25,33 @@ h1{font-size:2rem;margin:0 0 4px;letter-spacing:-.022em;font-weight:600}
 /* „Ab wann?“ (seit 2.3.0) — das zweite Feld der Karte, unter „Von wo aus?“ */
 .abwann{margin-top:16px}
 .klein{font-size:.84rem;color:var(--muted);margin:10px 0 0}
+/* Favoriten (seit 2.4.0) — das dritte Feld der Karte: eintippen, wählen,
+   als Plaketten gesammelt; „Favoriten zuerst zeigen“ erst mit einem Eintrag */
+.favoriten{margin-top:16px}
+.favoriten [hidden]{display:none!important}
+.favwahl{position:relative}
+.favchips{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.favchips li{display:inline-flex;align-items:center;gap:2px;max-width:100%;padding:3px 3px 3px 12px;
+border-radius:999px;background:var(--accent-soft);color:var(--accent);font-size:.9rem;font-weight:500}
+.favchips li span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.favchips button{position:relative;flex:none;width:32px;height:32px;min-height:0;padding:0;border:0;
+border-radius:50%;background:transparent;color:inherit;font:400 1.15rem/1 inherit}
+/* Tippfläche 44 px wie jeder Knopf am Handy, ohne die Plakette aufzublähen */
+.favchips button::after{content:"";position:absolute;inset:-6px}
+.favchips button:hover,.favchips button:focus-visible{background:var(--surface)}
+.favan{margin-top:12px}
+.favzuerst{display:flex;align-items:center;gap:8px;margin:0;font-size:.92rem;color:var(--ink);cursor:pointer}
+.favan .klein{margin-top:4px}
+#favmsg:empty{display:none}
+/* Trefferliste unter einem Eingabefeld — Favoriten und Tagebuch: eine eigene
+   statt <datalist>, die iOS Safari über das Feld legt (web/favoriten.js) */
+.spotliste{position:absolute;left:0;right:0;top:100%;z-index:40;margin-top:4px;
+background:var(--surface);border:1px solid var(--line);border-radius:10px;
+box-shadow:0 8px 24px rgba(20,48,60,.14);overflow:hidden;max-height:min(46vh,320px);overflow-y:auto}
+.spotliste button{display:block;width:100%;text-align:left;border:0;border-radius:0;background:none;
+color:var(--ink);font:inherit;font-size:.92rem;font-weight:400;padding:12px 14px;min-height:44px;cursor:pointer}
+.spotliste button + button{border-top:1px solid var(--line-soft)}
+.spotliste button:hover,.spotliste button.an{background:var(--accent-soft);color:var(--accent)}
 
 /* ── Voreinstellungen als große Schalter ───────────────────────────────── */
 .presets{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:22px 0 4px}

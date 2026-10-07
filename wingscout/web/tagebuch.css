@@ -54,15 +54,9 @@ details.erklaerung > summary{cursor:pointer;font-weight:600;font-size:.92rem;col
 .tsession button.stop,.tkarte button.ghost{background:transparent;border-color:var(--line)}
 .tsession button.stop.armed{background:var(--stop-soft);border-color:var(--stop)}
 
-/* Trefferliste der Spotauswahl (statt datalist, siehe tagebuch.js) */
+/* Trefferliste der Spotauswahl (statt datalist, siehe tagebuch.js) — die
+   Liste selbst ist seit 2.4.0 `.spotliste` in basis.css, wie bei den Favoriten */
 .tspotfeld{position:relative}
-.tspotliste{position:absolute;left:0;right:0;top:100%;z-index:40;margin-top:4px;
-background:var(--surface);border:1px solid var(--line);border-radius:10px;
-box-shadow:0 8px 24px rgba(20,48,60,.14);overflow:hidden;max-height:min(46vh,320px);overflow-y:auto}
-.tspotliste button{display:block;width:100%;text-align:left;border:0;border-radius:0;background:none;
-color:var(--ink);font:inherit;font-size:.92rem;font-weight:400;padding:12px 14px;min-height:44px;cursor:pointer}
-.tspotliste button + button{border-top:1px solid var(--line-soft)}
-.tspotliste button:hover,.tspotliste button.an{background:var(--accent-soft);color:var(--accent)}
 
 @media (max-width:420px){
   /* Auf schmalen Geräten (SE, 320 pt) muss die Beschriftung umbrechen dürfen. */

@@ -38,6 +38,7 @@ VERBOTEN = [
     (r"^config(?!\.example\.yaml$)[^/]*\.yaml$|(^|/)config\.yaml$",
      "persönliche Konfiguration oder eine Kopie davon"),
     (r"(^|/)tagebuch\.json$|^tagebuch[^/]*\.json$", "Logbuch"),
+    (r"(^|/)favoriten\.json$|^favoriten[^/]*\.json$", "eigene Favoriten"),
     (r"(^|/)modellguete\.json$|^modellguete[^/]*\.json$", "eigener Modellvergleich"),
     (r"(^|/)ui_defaults\.json$|^ui_defaults[^/]*\.json$", "gespeicherte Voreinstellungen"),
     (r"(^|/)sprache\.txt$", "eigene Sprachwahl"),

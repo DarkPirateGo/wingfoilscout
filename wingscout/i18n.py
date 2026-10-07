@@ -368,6 +368,15 @@ def uebersetzt(wert):
         return str(wert)
 
 
+def vorlage(wert) -> str | None:
+    """Die deutsche Vorlage eines Texts aus `TD()`/`TND()` (die Einzahl) —
+    sonst None. Für die seltene Frage, *welcher* Satz es war, ohne den
+    Wortlaut einer Sprache zu vergleichen (cli: ist ein Favorit wegen der
+    Entfernung draußen?)."""
+    rezept = getattr(wert, "neu", None) if isinstance(wert, Text) else None
+    return rezept.vorlage if isinstance(rezept, _Rezept) else None
+
+
 TD = td
 TND = tnd
 

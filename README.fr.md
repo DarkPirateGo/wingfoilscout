@@ -13,8 +13,8 @@ Toutes les vitesses de vent sont en **nœuds**. L’interface parle anglais,
 allemand, français et espagnol.
 
 <p align="center">
-<picture><source media="(prefers-color-scheme: dark)" srcset="docs/bilder/en/search-dark.png"><img src="docs/bilder/en/search-light.png" width="250" alt="Recherche : point de départ, heure de début et trois préréglages"></picture>
-<picture><source media="(prefers-color-scheme: dark)" srcset="docs/bilder/en/destinations-dark.png"><img src="docs/bilder/en/destinations-light.png" width="250" alt="Les trois meilleures destinations"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/bilder/en/search-dark.png"><img src="docs/bilder/en/search-light.png" width="250" alt="Recherche : point de départ, heure de début, favoris et préréglages"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/bilder/en/destinations-dark.png"><img src="docs/bilder/en/destinations-light.png" width="250" alt="Un favori, puis les trois meilleures destinations"></picture>
 <picture><source media="(prefers-color-scheme: dark)" srcset="docs/bilder/en/grid-dark.png"><img src="docs/bilder/en/grid-light.png" width="250" alt="Grille horaire : chaque spot, heure par heure"></picture>
 </p>
 <p align="center"><sub>Vue d’exemple avec des données météo inventées ·
@@ -98,8 +98,8 @@ partir de `config.example.yaml` au premier lancement.
 Chaque fichier à double-cliquer demande une fois l’étape 3, « Wingfoilscout
 fürs iPhone starten » compris. Par ce chemin, les nouvelles versions
 n’arrivent que sous forme de nouveau ZIP : copie `config.yaml`,
-`tagebuch.json`, `modellguete.json`, `ui_defaults.json` et `sprache.txt` de
-l’ancien dossier dans le nouveau. Les spots que tu as ajoutés toi-même
+`tagebuch.json`, `modellguete.json`, `ui_defaults.json`, `favoriten.json` et
+`sprache.txt` de l’ancien dossier dans le nouveau. Les spots que tu as ajoutés toi-même
 restent dans le `spots.yaml` de l’ancien dossier — le chemin par le Terminal
 les garde lors des mises à jour.
 
@@ -162,7 +162,8 @@ guide les désigne sans l’extension `.command`.
 **Sans terminal :** double-clique sur **« Wingfoilscout starten »** dans le
 Finder (sous Windows : `wingfoilscout.bat`). Une interface s’ouvre dans le
 navigateur. En haut, il n’y a que deux questions — **Au départ d’où ?** et
-**À partir de quand ?** — et en dessous trois préréglages :
+**À partir de quand ?** —, tes [favoris](#favoris) et en dessous trois
+préréglages :
 
 | | Jours | Nuits | Rayon |
 |---|---|---|---|
@@ -190,7 +191,9 @@ gardent leurs valeurs :
   encore.
 - **Ajouter des spots** — voir plus bas.
 
-Trois champs portent un point d’interrogation avec une courte explication :
+Quatre champs portent un point d’interrogation avec une courte explication :
+**Rayon** (une distance par la route, pas à vol d’oiseau — voir
+[Temps de trajet](#temps-de-trajet-calculé-par-itinéraire-pas-estimé)),
 **Note minimale**, **Taux de rafales max.** et **Aversion au clapot**. Leur
 nom ne parle pas de lui-même, et dans le rapport ils réapparaissent sous forme
 de nombre.
@@ -280,6 +283,44 @@ locale, comme toutes les heures du rapport. **« Maintenant »** vide le
 champ. Comme le point de départ, le début n’est **pas** mémorisé par
 « Enregistrer par défaut ». En ligne de commande : `--ab "2026-10-10 09:00"`
 (ou `10.10.2026 09:00`, ou seulement la date).
+
+### Favoris
+
+Sous le début de la recherche, il y a **Favoris** : tes spots préférés, que
+chaque recherche regarde en premier. Tape une partie du nom — « edersee »,
+« tarifa » ; les accents ne comptent pas, « etang » trouve « Étang de
+Leucate » — et choisis le spot dans la liste qui s’ouvre (les flèches et
+Entrée marchent aussi). Il arrive dans ta liste sous forme de petite
+étiquette ; son × le retire. Jusqu’à dix, dans l’ordre où tu les ajoutes.
+
+Dès que la liste a une entrée, l’interrupteur **« Afficher les favoris
+d’abord »** apparaît (activé au départ). Activé, chaque recherche calcule
+aussi tes favoris — **même hors du rayon et malgré les filtres** (saison,
+types d’eau, herbiers, chiens…) — et le rapport commence par eux :
+**Favoris → les trois meilleurs → carte**. Chaque favori a la même carte
+qu’une destination de la recherche, avec une ★ à la place du rang et une
+étiquette : **Rang 4** s’il figure aussi parmi les destinations de la
+recherche, ou **hors de la recherche**, avec la raison en info-bulle
+(« 2799 km — hors du rayon de 600 km », « hors saison »). Un favori sans
+session sur la période a une carte simple qui dit pourquoi — « Au plus 8 kn
+(sam. 10 oct. 14:00) — ton quiver commence à 10 kn » ou, là où il y aurait
+du vent, ce qui exclut ces heures, avec les mots de la grille horaire
+(« eau à 9 °C, sous ta limite de 12 °C », « hors de la fenêtre de marée… ») —,
+plus les liens vers Windy, l’itinéraire et la carte. Parmi les trois
+meilleurs et les autres destinations, un favori porte une ★ devant son nom.
+
+Les trois meilleurs, la carte et la grille horaire restent la recherche
+normale : les favoris hors de celle-ci n’y apparaissent pas et n’en évincent
+rien. Ils sont récupérés et calculés en plus — une des raisons pour
+lesquelles la liste s’arrête à dix.
+
+Chaque modification est enregistrée aussitôt, dans `favoriten.json` dans le
+dossier Wingfoilscout — personnel comme le carnet, non versionné, et hors de
+« Enregistrer par défaut ». Si tu désactives « Afficher les favoris
+d’abord », la recherche tourne sans eux ; la liste reste. En ligne de
+commande, `--favoriten` seul prend la liste de l’interface, `--favoriten
+brouwersdam,silvaplana` les identifiants de spots indiqués (l’identifiant
+d’un spot figure dans `spots.yaml`).
 
 ### Ajouter des spots
 
@@ -812,6 +853,7 @@ python3 run.py                                   # 3 jours, 500 km, ouvre le rap
 python3 -m wingscout.cli --days 3 --radius 500   # mode spontané
 python3 -m wingscout.cli --days 7 --radius 1000  # long week-end
 python3 -m wingscout.cli --ab "2026-10-10 09:00" --days 2   # ce week-end seulement
+python3 -m wingscout.cli --favoriten             # tes favoris d’abord (liste de l’interface)
 python3 -m wingscout.cli --demo                  # données synthétiques, sans réseau
 python3 -m wingscout.cli --days 2 --model icon_d2 --open
 ```
@@ -820,7 +862,7 @@ python3 -m wingscout.cli --days 2 --model icon_d2 --open
 |---|---|
 | `--days N` | jours de prévision, 1–16 |
 | `--ab HEURE` | début au lieu de maintenant (`2026-10-10 09:00`, `10.10.2026 09:00` ou seulement la date) ; les jours comptent à partir de là, 16 jours au plus |
-| `--radius KM` | rayon de recherche en kilomètres de route (estimés à partir de la distance à vol d’oiseau) |
+| `--radius KM` | rayon de recherche comme distance par la route, en kilomètres — itinéraire calculé par OSRM, estimé (vol d’oiseau × facteur de détour) seulement là où OSRM ne répond pas |
 | `--max-drive H` | limite haute pour le trajet aller |
 | `--min-hours H` | durée minimale pour qu’un bloc compte comme session |
 | `--model NAME` | forcer un modèle Open-Meteo, p. ex. `icon_d2`, `icon_eu` |
@@ -829,6 +871,7 @@ python3 -m wingscout.cli --days 2 --model icon_d2 --open
 | `--nights N` | nuits prévues — exige N+1 jours exploitables d’affilée |
 | `--demo` | données météo inventées, pour vérifier la mise en page et la logique |
 | `--open` | ouvrir ensuite le rapport dans le navigateur |
+| `--favoriten [IDS]` | afficher les favoris d’abord : sans valeur, la liste de l’interface (`favoriten.json`), sinon des identifiants de spots séparés par des virgules — toujours calculés, même hors du rayon (voir [Favoris](#favoris)) |
 | `--sprache de\|en\|fr\|es` | langue des messages et du rapport. Sans cette option : la langue choisie dans l’interface (`sprache.txt`), sinon celle du système (`LC_ALL`, `LC_MESSAGES`, `LANG`, puis les réglages de langue de macOS), sinon l’anglais. La variable d’environnement `WINGSCOUT_SPRACHE` l’emporte même sur `--sprache` |
 
 `python3 -m wingscout.webui` écrit ses lignes de terminal selon la même règle,
@@ -909,6 +952,20 @@ Dans le rapport, « (estimé) » suit le temps de trajet si le calcul
 d’itinéraire n’a pas été possible ; l’infobulle dit toujours d’où vient le
 chiffre. Désactivable via la case dans les Sources de données —
 `drive.detour_factor` de la configuration s’applique alors à nouveau.
+
+**Le rayon est une distance par la route.** Un spot n’entre dans la recherche
+que si sa distance par la route, calculée par itinéraire, est au plus égale au
+rayon — et le trajet au plus égal au « Trajet max. ». Une distance à vol
+d’oiseau n’apparaît que là où c’est écrit : le cercle en pointillés sur la
+carte (rayon ÷ facteur de détour, pour se repérer seulement) et la colonne
+« km à vol d’oiseau » du Catalogue, mesurée depuis le domicile. Sous « Non
+retenus », la colonne montre la distance par la route — calculée, ou avec
+« ≈ » quand elle n’est qu’estimée ; jusqu’à la 2.3.0, on y voyait la distance
+à vol d’oiseau à côté d’une raison qui citait la distance par la route
+(« 682 km » à côté de « 1026 km — hors du rayon de 1000 km »). Si OSRM ne
+fournit pas d’itinéraire pour certains spots de la recherche, le rapport le
+dit en haut : pour ceux-là, le rayon a été vérifié sur l’estimation, et la
+distance réelle peut être plus longue.
 
 ### Emplacements pour la nuit avec chien
 
@@ -1089,8 +1146,9 @@ interdisent d’aspirer les pages. Wingfoilscout fait donc deux choses :
 
 ### Structure du rapport
 
-D’abord les trois meilleures destinations (depuis la 2.3.0 avant la carte),
-puis la carte, les thermiques, la grille horaire, toutes les autres
+D’abord tes [favoris](#favoris), si tu les as activés (depuis la 2.4.0), puis
+les trois meilleures destinations (depuis la 2.3.0 avant la carte), puis la
+carte, les thermiques, la grille horaire, toutes les autres
 destinations, toutes les sessions en tableau, les spots écartés, et la
 logique météo avec tes valeurs actuelles.
 

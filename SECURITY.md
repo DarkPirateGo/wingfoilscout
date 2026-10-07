@@ -26,6 +26,23 @@ open. The review was done by hand, line by line; automated tools such as
 from this audit are pinned down as tests in `tests/test_security.py`, so that
 they don't silently disappear in the next rework.
 
+### Addendum 7 October 2026: favourites (2.4.0)
+
+2.4.0 adds one endpoint and one personal file; no new third-party service.
+`POST /favoriten` takes JSON (`{"ids": […], "zuerst": true}`) and passes the
+same checks as every POST — the access key in Wi-Fi mode, `Host`, `Origin`
+and the `Sec-Fetch` headers (`_zugang`, `_same_origin`). It stores only what
+looks like a catalogue ID and exists in the catalogue, at most ten; if the
+catalogue can't be read, it stores nothing. `favoriten.json` is written
+through `spotedit.schreibe_atomar` (0600 for a new file) and is listed in
+`.gitignore` and `tools/persoenliche_daten.py`. On the start page the list
+and the short catalogue reach the script as JSON through
+`i18n.json_im_skript`, and the script inserts names only escaped. `/run`
+cleans the list from the form again (`favoriten.bereinigen`); the search
+names unknown IDs in the log and leaves them out. Pinned down in
+`tests/test_favoriten.py`: a foreign origin gets 403, malformed input 400,
+and in neither case is anything written.
+
 ### Addendum 4 October 2026: a fresh repository with 2.3.0
 
 With 2.3.0 the licence changed from MIT to PolyForm Noncommercial 1.0.0

@@ -48,6 +48,11 @@ explains them as they come up.
                           language applies, dates — see "Languages (i18n)" below
       zeitraum.py         the period of a search (since 2.3.0): start time
                           ("Starting when?", --ab), days from it, 16-day limit
+      favoriten.py        favourites (since 2.4.0): the list in favoriten.json,
+                          cleaned to catalogue IDs, at most ten; cli computes
+                          them on top of the search (`favoriten_liste()`),
+                          report.py puts them first, web/favoriten.js is the
+                          field with its list of matches
       lang/               en.json, fr.json, es.json — the translations, keyed by
                           the German source text
       rueckblick.py       Review: recent destinations against the measurements of
@@ -84,6 +89,7 @@ explains them as they come up.
     pruefstand/           baseline of the benchmark (versioned)
     modellguete.json      memory of the model comparison (personal, not versioned)
     tagebuch.json         the session logbook (personal, not versioned)
+    favoriten.json        your favourites (personal, not versioned, since 2.4.0)
     sprache.txt           the language chosen in the switcher (personal, not
                           versioned)
     pyproject.toml        package metadata (Python ≥ 3.9, PyYAML) and the linter rules
@@ -367,7 +373,7 @@ leave anything out. `--schnell` still exists for manual use.
 
 These don't belong in the repository: `config.yaml` and copies of it,
 `cache/`, `report.html`, `ui_defaults.json`, `modellguete.json`,
-`tagebuch.json`, the app's `*.neu` files, exports (Takeout, GPX/KML/GeoJSON,
+`tagebuch.json`, `favoriten.json`, the app's `*.neu` files, exports (Takeout, GPX/KML/GeoJSON,
 ZIP), screenshots, editor backups, local Claude settings. They are listed in
 `.gitignore`, and `tools/persoenliche_daten.py` holds the same list as
 patterns: `tools/veroeffentlichen.sh` refuses them, and both the local check
@@ -467,7 +473,7 @@ name — no longer fits: the history starts anew with 2.3.0, and
 ones and stop halfway (if it did: `git rebase --abort`, then `git stash pop`).
 Rename the old folder, clone afresh and copy your personal files across from
 the old folder (`config.yaml`, `tagebuch.json`, `modellguete.json`,
-`ui_defaults.json`, `sprache.txt`; also `spots.yaml` and `geometry.json` if
+`ui_defaults.json`, `favoriten.json`, `sprache.txt`; also `spots.yaml` and `geometry.json` if
 you added spots of your own):
 
 ```bash
@@ -710,3 +716,11 @@ option on iOS: Safari puts the dropdown over the input field.
 
 In YAML, `no`, `yes`, `on` and `off` are booleans. Put text fields with these
 values in quotes — `dogs: "no"`.
+
+Write files through `spotedit.schreibe_atomar` (atomic, 0600 for new files,
+binary with `newline="\n"`). If you need `os.open` yourself, add
+`config.BINAER` to the flags and open with `newline="\n"`: on Windows,
+`os.open` without `O_BINARY` gives a text-mode descriptor, and the C library
+translates every line ending Python has already turned into CR LF a second
+time — double line breaks, the bug fixed in 2.4.0 (`tests/test_favoriten.py`,
+"ZeilenendenUnterWindows", simulates it).

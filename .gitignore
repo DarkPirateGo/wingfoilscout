@@ -25,6 +25,9 @@ modellguete.json
 # Session logbook — your sessions, personal like config.yaml (since 1.16.0)
 tagebuch.json
 /tagebuch*.json
+# Your favourite spots — personal like the logbook (since 2.4.0)
+favoriten.json
+/favoriten*.json
 # When saving, the app first writes <name>.neu and then renames it: a
 # half-written copy of config.yaml, tagebuch.json, spots.yaml …
 *.neu

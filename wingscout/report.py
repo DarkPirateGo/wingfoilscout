@@ -15,6 +15,7 @@ from . import i18n
 from .i18n import T, TN, N_                                       # noqa: F401
 from . import tide as gezeiten
 from .score import wetsuit as wetsuit_label
+from .config import quiver_range
 
 WATER_LABEL = {"flat": N_("flach"), "chop": N_("kabbelig"), "wave": N_("Welle")}
 QUAL_LABEL = {"best": N_("Top-Richtung"), "good": N_("gute Richtung"), "ok": N_("brauchbar"), "bad": N_("schlecht"),
@@ -650,6 +651,7 @@ def _map_block(trips, all_rows, dropped, cfg, args, nonce: str = "") -> str:
     payload = i18n.json_im_skript({
         "home": {"name": home["name"], "lat": home["lat"], "lon": home["lon"]},
         "radius_km": args.radius,
+        "umweg": _umweg(cfg),
         "stunden": stunden, "tage": tage,
         "markers": markers, "camps": camps,
     })
@@ -661,8 +663,12 @@ def _map_block(trips, all_rows, dropped, cfg, args, nonce: str = "") -> str:
     # dreifach angeführten f-Vorlage wäre kaum lesbar.
     legende = T("Punkt anklicken: Stundenband, Fahrt und Luftlinie zum Start · der Name\n"
                 "  im Popup führt zu Windy · überfahren zeigt den Namen")
-    kreis = T("gestrichelter Kreis = {strasse} km Straße (≈ {luft} km Luftlinie)",
-              strasse=f"{args.radius:.0f}", luft=f"{args.radius/1.22:.0f}")
+    # Der Kreis ist eine Luftlinie und nur Orientierung: gesucht wird nach
+    # der gerouteten Fahrstrecke (seit 2.4.0 so gesagt; bis dahin „= … km
+    # Straße“, als wäre der Kreis die Grenze).
+    kreis = T("gestrichelter Kreis ≈ {luft} km Luftlinie, nur zur Orientierung — die Suche nimmt Spots "
+              "bis {strasse} km Fahrstrecke",
+              strasse=f"{args.radius:.0f}", luft=f"{args.radius / _umweg(cfg):.0f}")
 
     return f"""<details class="zu-am-handy" id="kartebox" open><summary><h2>{T("Karte")}</h2></summary>
 <div id="map"><div class="nomap">{T("Karte lädt … (braucht kurz Internet für die Kacheln)")}</div></div>
@@ -889,29 +895,74 @@ def _kopf_pills(t: dict, args) -> str:
     return "".join(pills)
 
 
-def _trip_article(i: int, t: dict, cfg, args, home) -> str:
+def _fahrt(spot, drive_h: float) -> str:
+    """„3.4 h Fahrt“ mit der Herkunft als Tooltip — geroutet oder geschätzt.
+
+    Fertiges Markup: der Text darunter wird nicht mehr escaped. Alles darin
+    ist entweder eine Zahl aus der Berechnung oder ein fester Satz von hier —
+    nichts davon kommt aus Katalog, Netz oder Eingabe. Vorher stand das
+    <span> wörtlich im Report, weil es zweimal durch _esc lief."""
+    woher = (T("Luftlinie mal Umwegfaktor — nicht geroutet")
+             if spot.get("drive_source") != "Routing" else
+             T("{km} km Straße, über OSRM geroutet", km=f"{spot.get('road_km', 0):.0f}"))
+    # Mit und ohne „(geschätzt)“ als zwei ganze Texte statt eines angehängten Stücks
+    fahrt_text = (T("{h} h Fahrt", h=f"{drive_h:.1f}") if spot.get("drive_source") == "Routing" else
+                  T("{h} h Fahrt (geschätzt)", h=f"{drive_h:.1f}"))
+    return f"<span title='{_esc(woher)}'>{fahrt_text}</span>"
+
+
+def _umweg(cfg) -> float:
+    """Der Umwegfaktor der Schätzung (Straße zu Luftlinie) aus der config."""
+    try:
+        f = float((cfg.get("drive") or {}).get("detour_factor") or 1.22)
+    except (TypeError, ValueError):
+        return 1.22
+    return f if math.isfinite(f) and f > 0 else 1.22
+
+
+def _strecke(spot, cfg) -> str:
+    """Die Fahrstrecke eines Spots als Zelle: geroutet „1026 km“, sonst
+    „≈ 561 km“ mit der Luftlinie im Tooltip (seit 2.4.0)."""
+    km = spot.get("road_km", spot.get("dist_km", 0)) or 0
+    if spot.get("drive_source") == "Routing":
+        return f"<span title='{_esc(T('über OSRM geroutet'))}'>{km:.0f} km</span>"
+    titel = T("geschätzt: {luft} km Luftlinie × {faktor}, nicht geroutet",
+              luft=f"{spot.get('dist_km', 0):.0f}", faktor=i18n.zahl(_umweg(cfg), 2))
+    return f"<span title='{_esc(titel)}'>≈&#8239;{km:.0f} km</span>"
+
+
+def _trip_article(i: int, t: dict, cfg, args, home, favorit: dict | None = None) -> str:
     """Ein Ziel als Klappe (seit 1.20.0): zugeklappt die Antwort in zwei Zeilen
     — Name, Fahrt, beste Session, die entscheidenden Plaketten —, aufgeklappt
     alles, was bis 1.19.2 immer dastand: Kommentar, Warnungen im Wortlaut,
     Tide, jede Session, Stellplätze, Links, Katalognotiz.
 
-    Steht als eigene Funktion da, weil der Report die Ziele an zwei
+    Steht als eigene Funktion da, weil der Report die Ziele an mehreren
     Stellen zeigt: die besten drei ganz oben (seit 2.3.0 vor der Karte), alle
-    weiteren hinter einer Klappe unter dem Stundenraster.
+    weiteren hinter einer Klappe unter dem Stundenraster — und seit 2.4.0 die
+    Favoriten vor allem anderen. Dort steht statt des Rangs ein Stern
+    (`favorit` ist der Eintrag aus cli.favoriten_liste), daneben der Platz
+    unter den Zielen der Suche oder, dass der Spot außerhalb lag.
     """
     teile: list[str] = []
     spot = t["spot"]
-    woher = (T("Luftlinie mal Umwegfaktor — nicht geroutet")
-             if spot.get("drive_source") != "Routing" else
-             T("{km} km Straße, über OSRM geroutet", km=f"{spot.get('road_km', 0):.0f}"))
-    # Mit und ohne „(geschätzt)“ als zwei ganze Texte statt eines angehängten Stücks
-    fahrt_text = (T("{h} h Fahrt", h=f"{t['drive_h']:.1f}") if spot.get("drive_source") == "Routing" else
-                  T("{h} h Fahrt (geschätzt)", h=f"{t['drive_h']:.1f}"))
-    # Fertiges Markup: der Text darunter wird nicht mehr escaped. Alles darin
-    # ist entweder eine Zahl aus der Berechnung oder ein fester Satz von hier —
-    # nichts davon kommt aus Katalog, Netz oder Eingabe. Vorher stand das
-    # <span> wörtlich im Report, weil es zweimal durch _esc lief.
-    fahrt = f"<span title='{_esc(woher)}'>{fahrt_text}</span>"
+    if favorit is not None:
+        kennung = f"fav-{i}"
+        rang = f"<span class='rank fav' title='{_esc(T('Favorit'))}'>★</span>"
+        stern = ""
+        if favorit.get("rang"):
+            zusatz = (f"<span class='pill p-info' title='{_esc(T('Platz {n} unter den Zielen der Suche', n=favorit['rang']))}'>"
+                      f"{T('Platz {n}', n=favorit['rang'])}</span>")
+        elif favorit.get("grund"):
+            zusatz = (f"<span class='pill p-info' title='{_esc(favorit['grund'])}'>"
+                      f"{T('außerhalb der Suche')}</span>")
+        else:
+            zusatz = ""
+    else:
+        kennung, rang, zusatz = f"ziel-{i}", f"<span class='rank'>{i}</span>", ""
+        stern = (f"<span class='favstern' title='{_esc(T('Favorit'))}'>★</span>"
+                 if spot["id"] in (getattr(args, "_fav_ids", None) or ()) else "")
+    fahrt = _fahrt(spot, t["drive_h"])
     regel = (T("Regel erlaubt {h} h", h=f"{t['acceptable_drive_h']:.1f}") if t["drive_ok"] else
              T("deine Regel gibt nur {h} h her", h=f"{t['acceptable_drive_h']:.1f}"))
     pb = t.get("plan_b")
@@ -919,10 +970,10 @@ def _trip_article(i: int, t: dict, cfg, args, home) -> str:
                              h=f"{pb['hours']:.0f}")
                    if pb else "")
     tage = len(t["days"])
-    teile.append(f"<details class='trip' id='ziel-{i}'><summary>"
-                 f"<span class='rank'>{i}</span>"
-                 f"<span class='name'>{_esc(spot['name'])}</span>"
-                 f"<span class='pills'>{_rule_pills(spot)}{_kopf_pills(t, args)}</span>"
+    teile.append(f"<details class='trip' id='{kennung}'><summary>"
+                 f"{rang}"
+                 f"<span class='name'>{stern}{_esc(spot['name'])}</span>"
+                 f"<span class='pills'>{zusatz}{_rule_pills(spot)}{_kopf_pills(t, args)}</span>"
                  f"<span class='meta'>{fahrt} · "          # enthält bewusst Markup, siehe oben
                  f"{TN('{h} h Wasser an {n} Tag', '{h} h Wasser an {n} Tagen', tage, h=format(t['total_hours'], '.0f'))}</span>"
                  f"<span class='kern'>{_kern(t)}</span>"
@@ -931,6 +982,10 @@ def _trip_article(i: int, t: dict, cfg, args, home) -> str:
     # am Stück, Plan B.
     am_stueck = " · " + T("{n} am Stück", n=t['run_len']) if t.get('run_len', 0) > 1 else ""
     teile.append(f"<div class='metazeile'>{regel}{am_stueck}{plan_b_html}</div>")
+    if favorit is not None and favorit.get("grund") and not favorit.get("rang"):
+        teile.append("<div class='metazeile'>"
+                     + T("Nicht in der Suche: {grund} — als Favorit trotzdem gerechnet.", grund=_esc(favorit["grund"]))
+                     + "</div>")
     teile.append(f"<div class='kommentar'>{kommentar_kasten(spot['id'], spot.get('comment', ''))}</div>")
     flags = []
     for a in (getattr(args, '_alerts', {}) or {}).get(spot['id'], [])[:3]:
@@ -1019,6 +1074,82 @@ def _trip_article(i: int, t: dict, cfg, args, home) -> str:
     teile.append(f"</div><div class='links'>{_links(spot, home)}"
                  f"<span style='color:var(--muted)'>{_esc(spot.get('notes', ''))}</span></div>"
                  "</div></details>")
+    return "".join(teile)
+
+
+# ── Favoriten (seit 2.4.0) ──────────────────────────────────────────────────
+# Wann eine Stunde gar nicht zählen kann, egal wie der Wind ist: vorbei, vor dem
+# gewählten Start, nachts (`veto_art` aus score.score_hours).
+OHNE_CHANCE = ("vorbei", "vor_start", "nacht")
+
+
+def _warum_nichts(e: dict, cfg, args) -> str:
+    """Ein Satz, warum ein Favorit im Zeitraum keine Session hat — als Text,
+    escaped wird beim Einsetzen. Der Grund einer gesperrten Stunde ist ihr
+    eigener (`veto`, ein Text aus TD()), also in jeder Sprache des Reports."""
+    rows = e.get("rows")
+    if not rows:
+        return T("Keine Vorhersage für diesen Spot.")
+    nights = getattr(args, "nights", 0) or 0
+    if e.get("n_sessions") and nights:
+        return T("Sessions gibt es, aber keine {n} Tage am Stück.", n=nights + 1)
+    tag = [r for r in rows if r.get("veto_art") not in OHNE_CHANCE]
+    if not tag:
+        return T("Im Zeitraum keine Stunde bei Tageslicht.")
+    beste = max(tag, key=lambda r: r.get("wind") or 0)
+    lo, _hi = quiver_range(cfg)
+    kn, wann = f"{beste.get('wind') or 0:.0f}", _stunde(beste["t"])
+    if (beste.get("wind") or 0) < lo:
+        return T("Höchstens {kn} kn ({wann}) — dein Quiver fängt bei {lo} kn an.", kn=kn, wann=wann, lo=f"{lo:.0f}")
+    # Wo Wind wäre: der häufigste Grund, der die Stunden sperrt — in den Worten
+    # der stärksten so gesperrten Stunde („31 kn — kein passender Wing im
+    # Quiver“, „außerhalb des Tidenfensters (…)“, „Gewitter gemeldet“ …)
+    gesperrt = [r for r in tag if (r.get("wind") or 0) >= lo and r.get("veto")]
+    if gesperrt:
+        zahl: dict[str, int] = {}
+        for r in gesperrt:
+            zahl[r.get("veto_art") or ""] = zahl.get(r.get("veto_art") or "", 0) + 1
+        art = max(zahl, key=lambda k: zahl[k])
+        beleg = max((r for r in gesperrt if (r.get("veto_art") or "") == art), key=lambda r: r.get("wind") or 0)
+        # Wind und Uhrzeit dieser Stunde, nicht der windigsten überhaupt —
+        # sonst stünde der Grund einer Stunde neben den Zahlen einer anderen.
+        return T("Wind reicht zeitweise ({kn} kn, {wann}), aber: {grund}.",
+                 kn=f"{beleg.get('wind') or 0:.0f}", wann=_stunde(beleg["t"]),
+                 grund=str(i18n.uebersetzt(beleg["veto"])))
+    return T("Wind reicht zeitweise ({kn} kn, {wann}), aber nicht lange oder gut genug für eine Session.",
+             kn=kn, wann=wann)
+
+
+def _fav_leer(n: int, e: dict, cfg, args, home) -> str:
+    """Ein Favorit ohne Session: Stern, Name, Fahrt, warum nicht — und die
+    Absprünge (Windy, Route …), um selbst nachzusehen. Keine Klappe: es gibt
+    nichts aufzuklappen."""
+    spot = e["spot"]
+    zusatz = (f"<span class='pill p-info' title='{_esc(e['grund'])}'>{T('außerhalb der Suche')}</span>"
+              if e.get("grund") else "")
+    fahrt = _fahrt(spot, spot["drive_h"]) if spot.get("drive_h") is not None else ""
+    return (f"<div class='trip favleer' id='fav-{n}'><div class='kopf'>"
+            f"<span class='rank fav' title='{_esc(T('Favorit'))}'>★</span>"
+            f"<span class='name'>{_esc(spot['name'])}</span>"
+            f"<span class='pills'>{zusatz}{_rule_pills(spot)}</span>"
+            f"<span class='meta'>{fahrt}</span>"
+            f"<span class='kern'>{_esc(_warum_nichts(e, cfg, args))}</span>"
+            f"</div><div class='links'>{_links(spot, home)}</div></div>")
+
+
+def _favoriten_block(cfg, args, home) -> str:
+    """Der Abschnitt „Favoriten“ vor den besten drei (seit 2.4.0): je Favorit
+    in der Reihenfolge der Liste sein Ziel wie unter den besten drei — oder,
+    warum es im Zeitraum nichts wird."""
+    liste = getattr(args, "_favoriten", None) or []
+    if not liste:
+        return ""
+    teile = [f"<h2>{T('Favoriten')}</h2>",
+             "<p class='sub favhinweis'>"
+             + T("Immer gerechnet, auch außerhalb des Radius — in der Reihenfolge deiner Liste.") + "</p>"]
+    for n, e in enumerate(liste, 1):
+        teile.append(_trip_article(n, e["trip"], cfg, args, home, favorit=e) if e.get("trip")
+                     else _fav_leer(n, e, cfg, args, home))
     return "".join(teile)
 
 
@@ -1256,12 +1387,15 @@ def render(trips, all_rows, dropped, cfg, args, demo: bool = False) -> str:
     parts.append(f"<details class='zu-am-handy' open><summary>{T('Wonach gesucht wurde')}</summary>"
                  "<div class='params'>"
                  f"<span><b>{T('Start')}</b> {_esc(home_name)}</span>"
-                 f"<span><b>{T('Radius')}</b> {_ohne_null(args.radius)} km</span>"
+                 f"<span><b>{T('Radius')}</b> {T('{km} km Fahrstrecke', km=_ohne_null(args.radius))}</span>"
                  f"<span><b>{T('Zeitraum')}</b> {_zeitraum_text(args)}</span>"
                  f"<span><b>{T('Mindestsession')}</b> {cfg['session']['min_hours']:.0f} h</span>"
                  f"<span><b>{T('Quiver')}</b> {'/'.join(str(w['size']) for w in cfg['quiver']['wings'])}</span>"
                  f"<span><b>{T('Wind')}</b> {T('alle Angaben in Knoten')}</span>"
-                 f"<span><b>{T('Uhrzeiten')}</b> {T('Ortszeit am Spot')}</span></div></details>")
+                 f"<span><b>{T('Uhrzeiten')}</b> {T('Ortszeit am Spot')}</span>"
+                 + (f"<span><b>{T('Favoriten')}</b> {len(getattr(args, '_favoriten', None) or [])}</span>"
+                    if getattr(args, "_favoriten", None) else "")
+                 + "</div></details>")
 
     landesweit = getattr(args, "_alerts_landesweit", None) or {}
     if landesweit:
@@ -1277,6 +1411,17 @@ def render(trips, all_rows, dropped, cfg, args, demo: bool = False) -> str:
                          "<code>region</code> im Katalog zeigen sie nicht; wo eine Warnung gilt, "
                          "bei MeteoAlarm nachsehen.", liste=" · ".join(teile))
                      + "</div>")
+    # Der Radius ist eine Fahrstrecke (seit 2.4.0 ausdrücklich, gewünscht am
+    # 07.10.2026). Wo OSRM keine Route geliefert hat, gilt sie nur nach
+    # Schätzung — dann hier einmal, für wie viele Spots der Suche.
+    geschaetzt = sum(1 for spot, _ in all_rows.values() if spot.get("drive_source") != "Routing")
+    if geschaetzt and not demo:
+        parts.append("<div class='banner'>"
+                     + T("<b>Fahrstrecke für {n} von {gesamt} Spots nur geschätzt</b> — für sie kam keine Route "
+                         "von OSRM (oder „Fahrzeiten routen“ ist aus). Geschätzt wird Luftlinie × {faktor}; die "
+                         "echte Strecke kann länger sein als der Radius. Diese Ziele tragen „(geschätzt)“ an der "
+                         "Fahrzeit.", n=geschaetzt, gesamt=len(all_rows), faktor=i18n.zahl(_umweg(cfg), 2))
+                     + "</div>")
     if demo:
         parts.append("<div class='banner'>"
                      + T("<b>Demo-Lauf mit synthetischen Wetterdaten.</b> "
@@ -1291,6 +1436,9 @@ def render(trips, all_rows, dropped, cfg, args, demo: bool = False) -> str:
     # nichts hergeben. Bis 2.1 stand die Karte vor den besten drei — seit
     # 2.3.0 steht gleich oben, wo es am besten ist, und die Karte zeigt danach,
     # wo das liegt (gewünscht am 04.10.2026).
+    # Seit 2.4.0 davor, wenn gewünscht, die Favoriten: Favoriten → die besten
+    # drei → Karte (gewünscht am 06.10.2026).
+    parts.append(_favoriten_block(cfg, args, home))
     parts.append(f"<h2>{T('Die besten drei') if len(trips) > 3 else T('Beste Ziele')}</h2>")
     if not trips:
         parts.append("<p class='sub'>"
@@ -1406,13 +1554,17 @@ def render(trips, all_rows, dropped, cfg, args, demo: bool = False) -> str:
 
     # ── Ausgeschlossen ───────────────────────────────────────────────────────
     if dropped:
+        # Seit 2.4.0 die Fahrstrecke wie überall sonst — bis 2.3.0 stand hier
+        # die Luftlinie, im Grund daneben die Strecke: zwei Zahlen für einen
+        # Spot („682 km“ und „1026 km — außerhalb des Radius“, gemeldet am
+        # 07.10.2026). Geschätzt (nicht geroutet) mit „≈“ und Tooltip.
         zeilen = [f"<p class='wischen'>{T('Seitlich wischen.')}</p><div class='scroll'><table><thead><tr>"
-                  f"<th>{T('Spot')}</th><th>{T('Entfernung')}</th><th>{T('Grund')}</th></tr></thead><tbody>"]
-        for spot, reason in sorted(dropped, key=lambda x: x[0]["dist_km"]):
+                  f"<th>{T('Spot')}</th><th>{T('Fahrstrecke')}</th><th>{T('Grund')}</th></tr></thead><tbody>"]
+        for spot, reason in sorted(dropped, key=lambda x: x[0].get("road_km", x[0]["dist_km"])):
             zeilen.append(f"<tr><td>{_esc(spot['name'])}</td>"
-                          f"<td class='n'>{spot['dist_km']:.0f} km</td><td>{_esc(reason)}</td></tr>")
+                          f"<td class='n'>{_strecke(spot, cfg)}</td><td>{_esc(reason)}</td></tr>")
         zeilen.append("</tbody></table></div>")
-        parts.append(_abschnitt(T("Nicht berücksichtigt"), T("{n} Spots im Radius, mit Grund", n=len(dropped)),
+        parts.append(_abschnitt(T("Nicht berücksichtigt"), T("{n} Spots, jeweils mit Grund", n=len(dropped)),
                                 "".join(zeilen), "ausgeschlossen"))
 
     wx = cfg["weather"]

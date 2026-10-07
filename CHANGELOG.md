@@ -7,6 +7,134 @@ tell later which version a report was made with. From 2.1.0 on this file is
 written in English; the entries up to 2.0.0 below are in German, as they were
 written at the time.
 
+## 2.4.0 — 07.10.2026
+
+### Favourites
+
+- **Your favourite spots, straight in the first form** (requested on
+  6 October): below “Starting when?” there is a field **Favourites**. Type
+  part of a spot's name and pick it from the list that opens — accents don't
+  matter (“etang” finds “Étang de Leucate”), arrow keys and Enter work —; the
+  spot lands in your list as a tag whose × takes it out again. Up to ten, in
+  the order you add them. The list of matches is the logbook's own, not a
+  `<datalist>` (iOS Safari lays that over the field); Enter in the field
+  never starts the search.
+- **“Show favourites first”** appears once the list has an entry (on to begin
+  with). With it, every search also computes the favourites — **even outside
+  the radius and despite the filters** (season, water types, seagrass,
+  dogs …) — and the report begins with them: **Favourites → the best three →
+  map**. The best three, the map and the hour grid stay the normal search;
+  favourites outside it appear only in their own section and push nothing
+  out. Favourites outside the search get the ensemble probability and
+  overnight spots like the leading destinations; they are routed and
+  computed as copies, so “Not considered” and the map show them as the
+  search saw them. Only countries of the search bring an unassigned official
+  warning into the report header. If nothing is left in the search, only the
+  favourites are computed (and the log says so).
+- **Each favourite gets the card of a destination**, with a ★ instead of the
+  rank and a badge: “Rank n” when it is also among the destinations of the
+  search, or “outside the search” with the reason as a tooltip (repeated in
+  the opened card). A favourite without a session gets a flat card that says
+  why — no forecast; sessions, but not N days in a row; no daylight hour; at
+  most X kn, below your quiver; or, where there would be wind, the reason
+  that rules those hours out, in the words of the hour grid — plus the links
+  to Windy, the route and the map. Among the best three and the further
+  destinations a favourite carries a ★ before its name; “What was searched”
+  says how many favourites there were.
+- **Stored with every change**, one request at a time, the newest state
+  last (two quick clicks could otherwise arrive in the wrong order), through
+  `POST /favoriten`, in
+  `favoriten.json` in the Wingfoilscout folder — personal like the logbook:
+  in `.gitignore` and `tools/persoenliche_daten.py`, 0600 like `config.yaml`,
+  only IDs that are in the catalogue (same rule for IDs as the catalogue,
+  `spots.ID_MUSTER`), at most ten (`SECURITY.md`, addendum of
+  7 October). “Save as default” leaves the favourites out, like the starting
+  point and the start time.
+- **Command line:** `--favoriten` uses the list from the interface,
+  `--favoriten a,b` the given spot IDs; unknown IDs are named in the log and
+  skipped.
+- New: `wingscout/favoriten.py`, `wingscout/web/favoriten.js`,
+  `tests/test_favoriten.py` (40 tests: the list, the search and what it must
+  leave alone, the section — in all four languages, a search computed in
+  German equals character for character the report of a search in that
+  language —, the interface and its endpoint, the script in Chromium, and the
+  Windows line endings below). An independent review of the change found
+  three medium issues (overnight spots added to search destinations, a
+  favourite's routing changing the “Not considered” row, tests failing in
+  winter) and a handful of small ones; all fixed before release and pinned
+  down by tests.
+  The front of the search page now holds the favourites too;
+  `test_vordergrund_bleibt_schmal` allows the field, the hidden list and the
+  switch, with the reason written into the test.
+- `docs/`: the search and destinations screenshots and the example report
+  show a favourite.
+
+### The radius is a driving distance — and the report says so
+
+- **Asked on 7 October:** “I only want spots within the driving distance I
+  entered — a spot within 500 km is no use if the drive is 700 km”, after
+  seeing two different distances for one spot. The search already worked that
+  way: the prefilter estimates (straight line × detour factor, with a 35 %
+  margin), OSRM then routes every remaining spot, and only spots whose routed
+  driving distance is within the radius (and whose drive is within “max.
+  drive”) stay. Only where OSRM gives no route does the estimate decide.
+- **What showed two numbers:** “Not considered” listed the straight-line
+  distance in its column and the road distance in the reason beside it
+  (“682 km” next to “1026 km — outside the 1000 km radius”). The column now
+  shows the driving distance — routed, or with “≈” and a tooltip where only
+  estimated — and the list is sorted by it; its subtitle no longer says
+  “within the radius”.
+- **Said where it matters:** “What was searched” reads “Radius 1000 km by
+  road”; the radius field in the form has a “?” explaining it; the dashed
+  circle on the map is described as a straight-line orientation and is drawn
+  with the detour factor from the configuration instead of a fixed 1.22; the
+  Catalogue's distance column is headed “km (straight line)” with “from home”
+  in its tooltip.
+- **If OSRM gives no route** for some spots of the search (or routing is
+  switched off), a note at the top of the report says for how many the
+  driving distance is only estimated and that the real distance can be
+  longer than the radius.
+- `tests/test_report_cli.py` (class `Fahrstrecke`, 4 tests).
+
+### Smaller changes
+
+- **The reason a spot is left out names the radius you chose.** The
+  prefilter measures with a 35 % margin before routing, and its sentence named
+  the enlarged radius — “outside the 338 km radius” when 250 km was chosen.
+  Now it measures with the margin and names the limit itself
+  (`spots.entfernungsgrund`), in “Not considered” as well. For a favourite
+  outside the search the reason uses the routed kilometres.
+- **At night the hour grid says “outside daylight hours” first**, even when
+  the water is also below your limit: night is now checked before the water
+  temperature. Sessions and scores don't change — both block the hour.
+- Every blocked hour also carries the kind of block (`veto_art`), for the
+  favourites' “why not”.
+- The list of matches under a field is shared by the logbook and the
+  favourites (`.spotliste` in `basis.css`); arrow up with nothing selected
+  now picks the last match, not the second to last (logbook too).
+
+### Windows
+
+- **No more double line breaks in the files Wingfoilscout writes.**
+  `config.yaml` on the first start and everything written through
+  `spotedit.schreibe_atomar` — the report, the catalogue, the logbook,
+  `favoriten.json` and more — went through `os.open` without `O_BINARY`. On
+  Windows that gives a text-mode descriptor, and the C library turned every
+  line ending Python had already turned into CR LF into one more (found while
+  answering what a Windows user would have to try, 6 October). Now binary
+  and with `newline="\n"`. Simulated in the tests; **not tested on Windows
+  itself**.
+- **`wingfoilscout.bat` tries Python instead of only looking for it:**
+  `python` can be the Microsoft Store placeholder, which only points to the
+  Store — then the PyYAML install was the first thing to fail. It tries
+  `python`, then the `py` launcher from python.org, asks for 3.9 or newer
+  like the Mac start files, and says so in all four languages. **Not tested
+  on Windows either.**
+
+### Tests
+
+- 901 tests (2.3.0: 856).
+
 ## 2.3.0 — 04.10.2026
 
 ### Destinations follows the language switcher

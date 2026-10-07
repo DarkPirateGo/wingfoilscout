@@ -1294,10 +1294,13 @@ class Seiten(unittest.TestCase):
                     pruefe_seite(self, roh.decode("utf-8"), sprache, umschalter=False)
                     pruefe_seite(self, w.report_mit_reitern(roh).decode("utf-8"), sprache)
                     # Datum und Uhrzeit bleiben beisammen (am Handy brach die
-                    # Zeile dazwischen um), der Radius ohne „.0“ (2.1.0)
+                    # Zeile dazwischen um), der Radius ohne „.0“ (2.1.0) und
+                    # seit 2.4.0 als Fahrstrecke benannt
                     text = roh.decode("utf-8")
                     self.assertRegex(text, r"<p class='sub'>Wingfoilscout [^<]*<span class='nw'>[^<]+</span></p>")
-                    self.assertRegex(text, r"<span><b>[^<]+</b> 300 km</span>")
+                    with i18n.in_sprache(sprache):
+                        radius = i18n.T("{km} km Fahrstrecke", km="300")
+                    self.assertIn(f"</b> {radius}</span>", text)
                     self.assertNotIn("300.0 km", text)
 
     def test_startfeld_nennt_zuerst_den_heimatort(self):

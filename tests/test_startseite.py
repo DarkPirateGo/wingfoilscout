@@ -131,6 +131,23 @@ class NeuerName(unittest.TestCase):
                 self.assertIn("xcode-select -p", text)
                 self.assertLess(text.index("xcode-select -p"), text.index("sys.version_info >= (3, 9)"))
 
+    def test_windows_start_probiert_python_aus(self):
+        """Seit 2.4.0 wird `python` ausprobiert statt nur gesucht: unter
+        Windows kann es der Platzhalter des Microsoft Store sein, und dann
+        scheiterte erst die Installation von PyYAML. Danach der Starter `py`
+        von python.org, verlangt 3.9 wie auf dem Mac. Nur ASCII (cmd.exe),
+        keine Sprungmarken: die Datei hat LF-Zeilenenden."""
+        text = (ROOT / "wingfoilscout.bat").read_bytes().decode("ascii")
+        self.assertNotIn("where python", text)
+        for aufruf in ('python -c "import sys; sys.exit(sys.version_info < (3, 9))"',
+                       'py -3 -c "import sys; sys.exit(sys.version_info < (3, 9))"',
+                       "%PY% -m wingscout.webui"):
+            self.assertIn(aufruf, text)
+        befehle = [z.strip().lower() for z in text.splitlines()
+                   if z.strip() and not z.strip().lower().startswith("rem")]
+        self.assertEqual([z for z in befehle if z.startswith(":") or "goto" in z.split()], [])
+        self.assertEqual(sum(1 for z in befehle if z.startswith("echo ")), 4, "eine Zeile je Sprache")
+
 
 if __name__ == "__main__":
     unittest.main()

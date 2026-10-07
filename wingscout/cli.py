@@ -1,6 +1,7 @@
 """Wingfoilscout · Kommandozeile."""
 from __future__ import annotations
 import argparse
+import copy
 import os
 import sys
 import webbrowser
@@ -8,12 +9,12 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from .config import load_config, quiver_range, KonfigFehler
-from .spots import load_spots, eligible, KatalogFehler
+from .spots import load_spots, eligible, entfernungsgrund, ist_entfernungsgrund, KatalogFehler
 from .geo import parse_position
 from .score import score_hours, build_sessions, rank_trips
 from .tide import uebersicht as tide_uebersicht
 from . import report as report_mod
-from . import i18n, zeitraum
+from . import favoriten as fav_mod, i18n, zeitraum
 from .i18n import T, TD, TN, N_                                   # noqa: F401
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -62,6 +63,9 @@ def parse_args(argv=None):
     p.add_argument("--demo", action="store_true", help=T("Synthetische Daten statt echter Vorhersage"))
     p.add_argument("--open", action="store_true", help=T("Report danach im Browser öffnen"))
     p.add_argument("--quiet", action="store_true")
+    p.add_argument("--favoriten", nargs="?", const=fav_mod.GEMERKT, default=None, metavar="IDS",
+                   help=T("Favoriten zuerst zeigen: ohne Wert die in der Oberfläche gemerkten, sonst "
+                          "Spot-IDs mit Komma getrennt — immer gerechnet, auch außerhalb des Radius"))
     p.add_argument("--sprache", choices=sorted(i18n.SPRACHEN), default=None,
                    help=T("Sprache von Meldungen und Report: de, en, fr, es (sonst die in der Oberfläche "
                           "gewählte oder die des Systems)"))
@@ -243,30 +247,32 @@ def add_camping(trips, cfg, args, log, top: int = 8) -> None:
         log(T("Park4Night: {n} hundefreundliche Plätze an {ziele} Zielen", n=gefunden, ziele=len(data)))
 
 
+def fahrzeiten_routen(spots, cfg, args, log) -> None:
+    """Echte Fahrzeiten für `spots` holen — scheitert es, bleibt die Schätzung."""
+    if spots and not getattr(args, "no_routing", False) and not getattr(args, "demo", False):
+        try:
+            from .sources.routing import drive_times, apply_to
+            home = cfg["rider"]["home"]
+            times = drive_times(home, spots, ROOT / "cache" / "routes.json", log=log)
+            apply_to(spots, times)
+        except Exception as exc:                       # noqa: BLE001 — Zusatz, kein Muss
+            log(T("Fahrzeiten nicht routbar ({fehler}) — es bleibt bei der Schätzung", fehler=exc))
+
+
 def refine_drives(keep, cfg, args, limit_h: float, log):
     """Echte Fahrzeiten holen und den Vorfilter damit nachziehen.
 
     Rückgabe: (bleibende Spots, zusätzlich aussortierte mit Begründung).
     """
-    if keep and not getattr(args, "no_routing", False) and not getattr(args, "demo", False):
-        try:
-            from .sources.routing import drive_times, apply_to
-            home = cfg["rider"]["home"]
-            times = drive_times(home, keep, ROOT / "cache" / "routes.json", log=log)
-            apply_to(keep, times)
-        except Exception as exc:                       # noqa: BLE001 — Zusatz, kein Muss
-            log(T("Fahrzeiten nicht routbar ({fehler}) — es bleibt bei der Schätzung", fehler=exc))
+    fahrzeiten_routen(keep, cfg, args, log)
 
     # Dieselben zwei Sätze wie in spots.eligible — Anzeigetext für den Report,
     # als TD(): der Report setzt sie für jede seiner vier Sprachen neu.
     bleiben, raus = [], []
     for spot in keep:
-        if args.radius is not None and spot["road_km"] > args.radius:
-            raus.append((spot, TD("{km} km — außerhalb des Radius von {radius} km",
-                                  km=f"{spot['road_km']:.0f}", radius=f"{args.radius:.0f}")))
-        elif spot["drive_h"] > limit_h:
-            raus.append((spot, TD("{h} h Fahrt über der Obergrenze von {grenze} h",
-                                  h=f"{spot['drive_h']:.1f}", grenze=f"{limit_h:.1f}")))
+        zu_weit = entfernungsgrund(spot, args.radius, limit_h)
+        if zu_weit is not None:
+            raus.append((spot, zu_weit))
         else:
             bleiben.append(spot)
     bleiben.sort(key=lambda s: s["drive_h"])
@@ -291,6 +297,39 @@ def marine_fuer_bewertung(m: dict, args) -> tuple:
     return None, None
 
 
+def nur_laender_der_suche(landesweit: dict, keep) -> None:
+    """Landesweite Warnungen (ohne Gebietszuordnung) nur aus Ländern, in denen
+    ein Spot der Suche ohne `region` liegt — so, als wäre ohne die Favoriten
+    gefragt worden. Ein Favorit in Spanien bringt sonst einen Kopfhinweis
+    „ES: …“ in eine Suche um Hamburg (Review 07.10.2026)."""
+    laender = {(s.get("country") or "").upper() for s in keep if not s.get("region")}
+    for land in [land for land in landesweit if land not in laender]:
+        del landesweit[land]
+
+
+def favoriten_liste(fav_ids, spots_by_id, keep_ids, grund, trips, fav_trips, all_rows, fav_rows,
+                    alle_sessions, fav_spots=None) -> list[dict]:
+    """Je Favorit, in der Reihenfolge der Liste: der Spot, sein Ziel (oder
+    None), sein Platz unter den Zielen der Suche (oder None), warum er nicht
+    in der Suche war (oder None), seine Stunden und wie viele Sessions er hat
+    — alles, was der Abschnitt „Favoriten“ im Report braucht. `fav_spots`:
+    die gerechneten Kopien der Favoriten außerhalb der Suche (run_search)."""
+    fav_spots = fav_spots or {}
+    platz = {t["spot"]["id"]: (i, t) for i, t in enumerate(trips, 1)}
+    extra = {t["spot"]["id"]: t for t in fav_trips}
+    n_sessions: dict[str, int] = {}
+    for s in alle_sessions:
+        n_sessions[s["spot"]["id"]] = n_sessions.get(s["spot"]["id"], 0) + 1
+    liste = []
+    for sid in fav_ids:
+        rang, trip = platz.get(sid, (None, extra.get(sid)))
+        zeilen = (all_rows.get(sid) or fav_rows.get(sid) or (None, None))[1]
+        liste.append({"spot": fav_spots.get(sid) or spots_by_id[sid], "trip": trip, "rang": rang,
+                      "grund": None if sid in keep_ids else grund.get(sid),
+                      "rows": zeilen, "n_sessions": n_sessions.get(sid, 0)})
+    return liste
+
+
 def run_search(cfg, args, log) -> int:
     """Der eigentliche Durchlauf — von der Kommandozeile und von der Oberfläche genutzt."""
     args._n_geo = getattr(args, "_n_geo", 0)
@@ -298,6 +337,17 @@ def run_search(cfg, args, log) -> int:
     spots_all = load_spots(args.spots)
     args._n_spots = len(spots_all)
     args._n_verified = sum(1 for s in spots_all if s.get("verified"))
+    spots_by_id = {s["id"]: s for s in spots_all}
+
+    # Favoriten (seit 2.4.0): immer gerechnet, auch außerhalb des Radius und
+    # trotz der Filter — aber nur für ihren eigenen Abschnitt im Report. Die
+    # besten drei, Karte und Raster bleiben bei der normalen Suche.
+    fav_wunsch = fav_mod.aus_args(args)
+    fav_ids = [sid for sid in fav_wunsch if sid in spots_by_id]
+    for fehlt in (sid for sid in fav_wunsch if sid not in spots_by_id):
+        log(T("Favorit „{id}“ steht nicht im Katalog — übergangen", id=fehlt))
+    args._fav_ids = list(fav_ids)
+    args._favoriten = []
 
     lo, hi = quiver_range(cfg)
     log(T("Quiver deckt {lo}–{hi} kn ab · {n} Spots im Katalog", lo=f"{lo:.0f}", hi=f"{hi:.0f}", n=len(spots_all)))
@@ -334,30 +384,54 @@ def run_search(cfg, args, log) -> int:
     # sechzehn Tage soll Oktoberspots nach der Oktobersaison beurteilen; seit
     # 2.3.0 ab dem Startzeitpunkt.
     monate = fenster.monate()
-    keep, dropped = eligible(spots_all, cfg, monate,
-                             args.radius * margin, limit_h * margin)
+    keep, dropped = eligible(spots_all, cfg, monate, args.radius, limit_h, zuschlag=margin)
     keep, spaeter = refine_drives(keep, cfg, args, limit_h, log)
     dropped.extend(spaeter)
     log(T("{n} Spots im Radius von {r} km, {m} aussortiert", n=len(keep), r=f"{args.radius:.0f}", m=len(dropped)))
+    keep_ids = {s["id"] for s in keep}
+    grund = {s["id"]: r for s, r in dropped}
+    # Die Favoriten außerhalb der Suche als Kopien: Routen und Rechnen
+    # setzen Fahrstrecke und Tide am Spot — die Spots in `dropped` (Tabelle
+    # „Nicht berücksichtigt“, graue Punkte der Karte) bleiben, wie die Suche
+    # sie sah (Review 07.10.2026).
+    fav_extra = [copy.copy(spots_by_id[sid]) for sid in fav_ids if sid not in keep_ids]
+    if fav_extra:
+        fahrzeiten_routen(fav_extra, cfg, args, log)
+        # Nach dem Routen nennt der Grund die gerouteten Kilometer, wie die
+        # Karte des Favoriten. Liegt er geroutet doch in Reichweite, hatte nur
+        # die Schätzung des Vorfilters ihn aussortiert — dann das.
+        for s in fav_extra:
+            if ist_entfernungsgrund(grund.get(s["id"])):
+                grund[s["id"]] = (entfernungsgrund(s, args.radius, limit_h)
+                                  or TD("nach der Schätzung zu weit, geroutet in Reichweite — vom Vorfilter "
+                                        "aussortiert"))
+        log(T("Favoriten: {n}, davon {extra} außerhalb der Suche — werden zusätzlich gerechnet",
+              n=len(fav_ids), extra=len(fav_extra)))
+    elif fav_ids:
+        log(T("Favoriten: {n}, alle in der Suche", n=len(fav_ids)))
     if not keep:
-        log(T("Kein Spot übrig — Radius erhöhen oder Filter lockern."))
-        return 2
+        if not fav_ids:
+            log(T("Kein Spot übrig — Radius erhöhen oder Filter lockern."))
+            return 2
+        log(T("Kein Spot in der Suche übrig — gerechnet werden nur die Favoriten."))
+    # Was gerechnet wird: die Suche und die Favoriten außerhalb davon
+    rechnen = keep + fav_extra
 
     if args.demo:
         from .demo import build as demo_build
-        forecasts = demo_build(keep, fenster.abruf_tage)
+        forecasts = demo_build(rechnen, fenster.abruf_tage)
         log(T("DEMO-Modus: synthetische Wetterdaten, keine echte Vorhersage."))
     else:
         from .sources.openmeteo import fetch, ForecastError
         try:
-            forecasts = fetch(keep, fenster.abruf_tage, model=args.model,
+            forecasts = fetch(rechnen, fenster.abruf_tage, model=args.model,
                               models=None if args.model else cfg.get("wind", {}).get("models"),
                               log=log)
         except ForecastError as exc:
             log(T("FEHLER: {fehler}", fehler=exc))
             log(T("Tipp: --demo zeigt den Report mit synthetischen Daten."))
             return 1
-        fehlend = len(keep) - len(forecasts)
+        fehlend = len(rechnen) - len(forecasts)
         if fehlend > 0:
             log(T("Vorhersage für {n} Spots geladen ({tage} Tage) — {fehlend} ohne Daten",
                   n=len(forecasts), tage=args.days, fehlend=fehlend))
@@ -369,7 +443,7 @@ def run_search(cfg, args, log) -> int:
         if not getattr(args, "no_highres", False) and cfg.get("wind", {}).get("highres", True):
             from .sources.highres import hole as hole_fein
             try:
-                fein, stat = hole_fein([s for s in keep if s["id"] in forecasts],
+                fein, stat = hole_fein([s for s in rechnen if s["id"] in forecasts],
                                        fenster.abruf_tage, Path(args.geometry).parent / "cache",
                                        log=log)
             except Exception as exc:                          # noqa: BLE001
@@ -404,7 +478,7 @@ def run_search(cfg, args, log) -> int:
     marine = {}
     if not args.demo:
         from .sources.marine import fetch as fetch_marine
-        wollen = marine_ziele(keep, args)
+        wollen = marine_ziele(rechnen, args)
         if wollen:
             try:
                 marine = fetch_marine(wollen, fenster.abruf_tage)
@@ -424,7 +498,9 @@ def run_search(cfg, args, log) -> int:
     if not args.demo and not getattr(args, "no_alerts", False):
         try:
             from .sources.meteoalarm import alerts_for
-            alerts = alerts_for(keep, min_level=2, landesweit=landesweit)
+            alerts = alerts_for(rechnen, min_level=2, landesweit=landesweit)
+            if fav_extra:
+                nur_laender_der_suche(landesweit, keep)
             treffer = sum(len(v) for v in alerts.values())
             if landesweit:
                 log(T("Wetterwarnungen: {n} Treffer für {spots} Spots · ohne Gebietszuordnung: {laender}",
@@ -456,10 +532,13 @@ def run_search(cfg, args, log) -> int:
     _sonne.update(vorhersage=0, gerechnet=0, abweichung_min=0.0)
 
     all_rows, sessions = {}, []
+    # Die Favoriten außerhalb der Suche getrennt: sie gehören nicht ins
+    # Raster, nicht auf die Karte und nicht in die Reihenfolge der Ziele.
+    fav_rows, fav_sessions = {}, []
     # `jetzt` mit Zone: die Stundenstempel sind Ortszeit am Spot, und
     # score_hours rechnet den Zeitpunkt je Spot dorthin um.
     jetzt = None if args.demo else datetime.now(timezone.utc)
-    for spot in keep:
+    for spot in rechnen:
         fc = forecasts.get(spot["id"])
         if not fc:
             continue
@@ -485,8 +564,12 @@ def run_search(cfg, args, log) -> int:
             log("    " + T("Vorhersage für {name} nicht verwertbar ({art}: {fehler}) — Spot übersprungen",
                           name=spot["name"], art=type(exc).__name__, fehler=str(exc)[:120]))
             continue
-        all_rows[spot["id"]] = (spot, rows)
-        sessions.extend(neue)
+        if spot["id"] in keep_ids:
+            all_rows[spot["id"]] = (spot, rows)
+            sessions.extend(neue)
+        else:
+            fav_rows[spot["id"]] = (spot, rows)
+            fav_sessions.extend(neue)
     n_tide = sum(1 for spot in keep if (spot.get("_tide") or {}).get("aktiv"))
     if n_tide:
         mit_fenster = sum(1 for spot in keep if (spot.get("_tide") or {}).get("fenster"))
@@ -505,6 +588,21 @@ def run_search(cfg, args, log) -> int:
     add_ensemble(trips, cfg, args, log)
     add_camping(trips, cfg, args, log)
     nights = getattr(args, "nights", 0) or 0
+    if fav_ids:
+        fav_trips = rank_trips(fav_sessions, cfg, nights) if fav_sessions else []
+        if fav_trips:
+            add_ensemble(fav_trips, cfg, args, log, top=len(fav_trips))
+        args._favoriten = favoriten_liste(fav_ids, spots_by_id, keep_ids, grund, trips, fav_trips,
+                                          all_rows, fav_rows, sessions + fav_sessions,
+                                          {s["id"]: s for s in fav_extra})
+        # Stellplätze für die Favoriten außerhalb der Suche. Die Ziele der Suche
+        # behalten ihre wie ohne Favoriten (die vordersten acht): ihre Objekte
+        # hier zu ergänzen, hätte Karte und „Weitere Ziele“ verändert
+        # (Review 07.10.2026).
+        ohne = [e["trip"] for e in args._favoriten
+                if e["trip"] and e["rang"] is None and "camping" not in e["trip"]]
+        if ohne:
+            add_camping(ohne, cfg, args, log, top=len(ohne))
     if nights:
         log(T("{n} Sessions · {ziele} Ziele mit {tage} brauchbaren Tagen am Stück",
               n=len(sessions), ziele=len(trips), tage=nights + 1))
