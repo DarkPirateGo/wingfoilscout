@@ -562,6 +562,29 @@ class LiveServer(unittest.TestCase):
 
 
 class Shutdown(unittest.TestCase):
+    def test_standardport_8780(self):
+        """Seit 2.6.0 ist der Standard 8780 (bis 2.5.3: 8765, den auch andere
+        lokale Programme nehmen — wer zuerst startete, bekam ihn, und Symbole
+        auf dem iPhone zeigten dann aufs falsche Programm). Überall derselbe:
+        Server, Kommandozeile, Kasten fürs iPhone, Anleitung."""
+        import inspect
+        self.assertEqual(w.STANDARD_PORT, 8780)
+        self.assertEqual(inspect.signature(w.serve).parameters["port"].default, 8780)
+        self.assertEqual(inspect.signature(w.handy_kasten).parameters["port"].default, 8780)
+        wurzel = Path(w.__file__).resolve().parents[1]
+        self.assertIn('ap.add_argument("--port", type=int, default=STANDARD_PORT)',
+                      (wurzel / "wingscout" / "webui.py").read_text(encoding="utf-8"))
+        # Kein Rest des alten Standards dort, wo er gilt — die Geschichte
+        # (CHANGELOG, SECURITY, alte Docstrings) erzählt ihn weiter.
+        dateien = [*(wurzel / "wingscout").rglob("*.py"), *(wurzel / "wingscout" / "web").glob("*.js"),
+                   *wurzel.glob("*.command"), wurzel / "wingfoilscout.bat", *wurzel.glob("README*.md")]
+        for datei in dateien:
+            with self.subTest(datei.name):
+                self.assertNotIn("127.0.0.1:8765", datei.read_text(encoding="utf-8"))
+        for datei in wurzel.glob("README*.md"):
+            with self.subTest(datei.name):
+                self.assertIn("127.0.0.1:8780", datei.read_text(encoding="utf-8"))
+
     def test_belegter_port(self):
         """Ein anderes Programm auf 8765 ließ Wingfoilscout bis 1.18.3 mit „Address
         already in use“ sterben. Jetzt: fremder Server → nächster freier Port;
@@ -849,7 +872,7 @@ class ReportAlsReiter(unittest.TestCase):
         import time
         cfg = load_cfg()
         seite = w.page(cfg, w.form_defaults(cfg))
-        skript = re.split(r"<script[^>]*>", seite, 1)[1]
+        skript = re.split(r"<script[^>]*>", seite, maxsplit=1)[1]
         self.assertIn("function zeigeLauf(", skript)
         self.assertIn("function zeigeErgebnis(", skript)
         self.assertRegex(skript, r"fetch\('/status'\)[^\n]*\n\s*if \(j\.state === 'running'\) \{ zeigeLauf\(j\); poll\(\); \}")

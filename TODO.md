@@ -1,7 +1,14 @@
 # TODO
 
-As of 11 October 2026, version 2.5.3 (998 tests). In it: **a hint instead of
-a black screen on the iPhone** — with the certificate, a service worker
+As of 11 October 2026, version 2.6.0 (1001 tests). In it: **port 8780
+instead of 8765** — another local program uses 8765 as well; after the update,
+scan the QR code again on the iPhone and add the icon anew; and from a
+**second security review**: plain http refused from the start of sharing for
+the way with a certificate, and a QR code in the “Phone” tab only for the way
+sharing runs for (F-01); a label for the “Add spots” field (F-04);
+`maxsplit=` for Python 3.13 (F-05) (`SECURITY.md`, addendum of 11 October,
+2.6.0). Before that, 2.5.3 (998 tests), published on 11 October. In it: **a
+hint instead of a black screen on the iPhone** — with the certificate, a service worker
 stores the hint on the first visit and shows it when the Mac doesn't answer
 (`wingscout/web/sw.js`, `worker-src 'self'`; `SECURITY.md`, addendum of 11
 October, 2.5.3; not yet tried on an iPhone); and **the tests no longer write
@@ -137,6 +144,12 @@ wasn't important enough to keep.
 
 ## Open — Philipp
 
+- **After updating to 2.6.0 — the new port 8780.** Restart Wingfoilscout; it
+  now opens at `http://127.0.0.1:8780`. On the iPhone, delete the old
+  Wingfoilscout icon (it points at 8765). On the Mac, “Phone” tab → **Show QR
+  code**, scan it, then in Safari Share → “Add to Home Screen”. In the report,
+  pick “Simple” or “Detailed” once more if you had changed it. The 2.5.3 test
+  below (the hint) then works with the new icon.
 - **Try 2.5.3 once — the hint on the iPhone** (restart Wingfoilscout first).
   It needs the way with the certificate (https). The Home Screen app may keep
   its own storage, apart from Safari — so do it with the icon itself:
@@ -361,13 +374,19 @@ wasn't important enough to keep.
 
 ## Open — development
 
-- **From the security review of 11 October, left out for now** (reasons in
-  `SECURITY.md`, addendum of 11 October, 2.5.2): name constraints for the
-  certificate authority — first find out on an iPhone whether iOS enforces
-  them for a user-installed one, since every iPhone would need the new
-  profile; GitHub Actions pinned by commit SHA and `pip-audit` in CI; an
+- **From the two security reviews of 11 October, left out for now** (reasons
+  in `SECURITY.md`, addenda of 11 October, 2.5.2 and 2.6.0): name constraints
+  for the certificate authority — first find out on an iPhone whether iOS
+  enforces them for a user-installed one, since every iPhone would need the
+  new profile; GitHub Actions pinned by commit SHA and `pip-audit` in CI; an
   overall deadline for every request to a data service; the `cryptography`
   package instead of `zertifikat.py`.
+- **Installation on the Mac without touching the system's Python** (second
+  review, F-06): a virtual environment in the project folder instead of
+  `pip install --break-system-packages` as the last resort — in every
+  `.command` file that installs PyYAML and in `tools/app_start.sh`; to be
+  tried on a fresh Mac. A notarized app (instead of the Gatekeeper override
+  and the Dock app signed ad hoc) would need a paid Apple developer account.
 
 - **Stored texts of Review and Logbook** stay in the language they were
   computed in — the reasons a spot has no comparison ("no station within

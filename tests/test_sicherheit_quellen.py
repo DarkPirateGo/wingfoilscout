@@ -477,7 +477,7 @@ class Adressen(unittest.TestCase):
         gut = stationen.FR_DATEIEN + "H_29_latest-2025-2026.csv.gz"
         self.assertTrue(stationen.fr_url_gilt(gut, "29"))
         self.assertTrue(stationen.fr_url_gilt(stationen.FR_DATEIEN + "H_2A_latest-2025-2026.csv.gz", "2A"))
-        for boese in ("http://127.0.0.1:8765/beliebig?x=/H_29_latest-.csv.gz",
+        for boese in ("http://127.0.0.1:8780/beliebig?x=/H_29_latest-.csv.gz",
                       "file:///etc/hostname#/H_29_latest-.csv.gz",
                       "https://evil.example/H_29_latest-2025-2026.csv.gz",
                       stationen.FR_DATEIEN + "../../x/H_29_latest-2025-2026.csv.gz",
@@ -523,7 +523,7 @@ class Adressen(unittest.TestCase):
                 opener.open(url, timeout=2)
             self.assertIn("nur https://", str(cm.exception.reason))
         self.assertTrue(netz.erlaubt("https://api.open-meteo.com/v1/forecast"))
-        self.assertTrue(netz.erlaubt("http://127.0.0.1:8765/status"))
+        self.assertTrue(netz.erlaubt("http://127.0.0.1:8780/status"))
         self.assertFalse(netz.erlaubt("http://localhost.evil.example/"))
         self.assertFalse(netz.erlaubt("https:///ohne-host"))
 
@@ -532,15 +532,15 @@ class Adressen(unittest.TestCase):
         h = netz._NurHttps()
         fremd = urllib.request.Request("https://api.open-meteo.com/v1/forecast")
         lokal = urllib.request.Request("http://127.0.0.1:9/x")
-        for ziel in ("http://localhost.evil.example/x", "http://127.0.0.1.evil.example/x", "http://127.0.0.1:8765/x",
-                     "https://127.0.0.1:8765/x", "https://localhost/x", "ftp://evil.example/x",
+        for ziel in ("http://localhost.evil.example/x", "http://127.0.0.1.evil.example/x", "http://127.0.0.1:8780/x",
+                     "https://127.0.0.1:8780/x", "https://localhost/x", "ftp://evil.example/x",
                      "file:///etc/passwd", "http://[::1/x"):
             with self.subTest(ziel=ziel), self.assertRaises(urllib.error.HTTPError):
                 h.redirect_request(fremd, None, 302, "Found", {}, ziel)
         self.assertEqual(h.redirect_request(fremd, None, 302, "Found", {}, "https://example.org/y").full_url,
                          "https://example.org/y")
-        self.assertEqual(h.redirect_request(lokal, None, 302, "Found", {}, "http://localhost:8765/z").full_url,
-                         "http://localhost:8765/z")
+        self.assertEqual(h.redirect_request(lokal, None, 302, "Found", {}, "http://localhost:8780/z").full_url,
+                         "http://localhost:8780/z")
 
 
 # ── C9, C11: lies ────────────────────────────────────────────────────────────

@@ -553,9 +553,10 @@ While sharing is on, the tab says what arrives from the iPhone: connected
 missing), came without a valid key — or nothing yet, with the usual reasons.
 Once it has worked, the tab opens straight with **Show QR code** the next
 time; if it can no longer work (a new certificate, a new address), it shows
-the steps again. And from then on the Mac lets the iPhone in only encrypted
-(since 2.5.2): an old Home Screen icon with an `http://` address gets a page
-that says so — scan the QR code again and add the icon anew.
+the steps again. And the Mac lets the iPhone in only encrypted as soon as you
+share for this option (since 2.6.0; 2.5.2 did so only once it had worked): an
+old Home Screen icon with an `http://` address gets a page that says so — scan
+the QR code again and add the icon anew.
 
 **Without a certificate** — only if the profile can't be installed, on a
 company iPhone for example — is under **Not working?** (since 2.5.2; until
@@ -819,20 +820,26 @@ of all session hours lay between 20:00 and 7:00, and the longest continuous
 
 ### Running and quitting
 
-The interface runs only on your computer (127.0.0.1:8765) and can't be reached
+The interface runs only on your computer (127.0.0.1:8780) and can't be reached
 from outside — unless you share it with your phone in the “Phone” tab. To quit, use the **Quit** button at the top right of the tab
 bar, on every page (in a narrow window a small label at the top right) — press it
 twice, so that it isn't triggered by accident in the middle of a run. Only on
 the Mac itself: the iPhone doesn't show it (since 2.5.2), because there it
 quit Wingfoilscout on the Mac; on the iPhone you simply close Safari.
 
-If port 8765 is already taken by another program (a second local server, for
+If port 8780 is already taken by another program (a second local server, for
 example another interface that uses the same port), Wingfoilscout moves to the
 next free one and says so in the terminal — the address is then, for example,
-`127.0.0.1:8766`, including the one for the iPhone. If a Wingfoilscout
+`127.0.0.1:8781`, including the one for the iPhone. If a Wingfoilscout
 interface is already running there, no second one is started; the running one
 is opened in the browser instead. You can set the port explicitly with
-`python3 -m wingscout.webui --port 8790`.
+`python3 -m wingscout.webui --port 8800`.
+
+Until 2.5.3 the port was 8765; since 2.6.0 it is 8780, because other local
+programs use 8765 too, and whichever started first took it. After that
+update, scan the QR code in the “Phone” tab again on every iPhone and add the
+Home Screen icon anew (delete the old one); the report's view choice
+(Simple/Detailed) is reset once, because the browser keeps it per address.
 
 A search runs in the program, not in the browser window: you can switch to
 other tabs in the meantime — a dot then pulses on the “Search” tab, and when

@@ -160,7 +160,7 @@ class LaufenderServer(unittest.TestCase):
 # ── A1: fremde Seiten laden nichts ein ──────────────────────────────────────
 
 class FremdeSeiten(LaufenderServer):
-    """`<img src=http://127.0.0.1:8765/logo.png>` und `fetch(…, {mode: "no-cors"})`
+    """`<img src=http://127.0.0.1:8780/logo.png>` und `fetch(…, {mode: "no-cors"})`
     schicken keinen Origin-Header — bis 2.1.0 kamen sie durch: Erkennen, dass
     Wingfoilscout läuft, und Rechenzeit verbrennen (A1)."""
 

@@ -988,7 +988,7 @@ def _nackte_adresse(text: str, i: int) -> tuple[str, int] | None:
         else:
             break
     rumpf = re.sub(r"(?i)^https?://", "", adresse)
-    host = re.split(r"[/?#]", rumpf, 1)[0]
+    host = re.split(r"[/?#]", rumpf, maxsplit=1)[0]
     if "." not in host or not re.search(r"[A-Za-z0-9]", host.split(".")[-1]):
         return None
     return adresse, i + len(adresse)

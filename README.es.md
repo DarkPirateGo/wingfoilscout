@@ -571,10 +571,11 @@ siempre falta la confianza), llegó sin una clave válida — o todavía nada,
 con los motivos habituales. Cuando ha funcionado una vez, la pestaña se abre
 la próxima vez directamente con **Mostrar el código QR**; si ya no puede
 funcionar (certificado nuevo, dirección nueva), vuelve a mostrar los pasos. Y
-a partir de entonces el Mac solo deja entrar al iPhone con cifrado (desde la
-2.5.2): un icono antiguo de la pantalla de inicio con una dirección
-`http://` recibe una página que lo explica — vuelve a escanear el código QR
-y crea el icono de nuevo.
+el Mac solo deja entrar al iPhone con cifrado en cuanto se comparte para esta
+opción (desde la 2.6.0; la 2.5.2, solo después de que hubiera funcionado): un
+icono antiguo de la pantalla de inicio con una dirección `http://` recibe una
+página que lo explica — vuelve a escanear el código QR y crea el icono de
+nuevo.
 
 **Sin certificado** — solo si el perfil no se puede instalar, por ejemplo en
 un iPhone de empresa — está en **¿No funciona?** (desde la 2.5.2; hasta la
@@ -855,7 +856,7 @@ por ciento de todas las horas de sesión caía entre las 20:00 y las 7:00, y la
 
 ### Ejecutar y salir
 
-La interfaz solo funciona en tu ordenador (127.0.0.1:8765) y no es accesible
+La interfaz solo funciona en tu ordenador (127.0.0.1:8780) y no es accesible
 desde fuera — salvo que la compartas con el móvil en la pestaña «Móvil». Para salir, usa el botón **Salir**, arriba a la derecha de la
 barra de pestañas, en cada página (en una ventana estrecha, una pequeña etiqueta
 arriba a la derecha) — púlsalo dos veces, para que no se active sin querer en
@@ -863,13 +864,20 @@ mitad de una ejecución. Solo en el propio Mac: el iPhone no lo muestra (desde
 la 2.5.2), porque allí cerraba Wingfoilscout en el Mac; en el iPhone,
 simplemente cierra Safari.
 
-Si el puerto 8765 ya lo ocupa otro programa (un segundo servidor local, por
+Si el puerto 8780 ya lo ocupa otro programa (un segundo servidor local, por
 ejemplo otra interfaz que usa el mismo puerto), Wingfoilscout pasa al
 siguiente libre y lo dice en el terminal — la dirección es entonces, por
-ejemplo, `127.0.0.1:8766`, también la del iPhone. Si ahí ya hay una interfaz
+ejemplo, `127.0.0.1:8781`, también la del iPhone. Si ahí ya hay una interfaz
 de Wingfoilscout funcionando, no se inicia una segunda; en su lugar se abre en
 el navegador la que ya está en marcha. Puedes fijar el puerto con
-`python3 -m wingscout.webui --port 8790`.
+`python3 -m wingscout.webui --port 8800`.
+
+Hasta la 2.5.3 el puerto era 8765; desde la 2.6.0 es 8780, porque otros
+programas locales también usan 8765 y se lo quedaba el que arrancaba primero.
+Después de esta actualización, vuelve a escanear en cada iPhone el código QR
+de la pestaña «Móvil» y crea de nuevo el icono de la pantalla de inicio
+(borra el antiguo); la elección de vista del informe (Simple/Detallada) se
+restablece una vez, porque el navegador la guarda por dirección.
 
 Una búsqueda se ejecuta en el programa, no en la ventana del navegador:
 mientras tanto puedes cambiar a otras pestañas — entonces late un punto en la

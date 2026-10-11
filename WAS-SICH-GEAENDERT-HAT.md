@@ -5,6 +5,14 @@ Kurzfassung für jemanden, der das Programm benutzt: was der Report heute anders
 sagt als am ersten Tag, und warum. Die lange Fassung mit jeder Begründung steht
 in `CHANGELOG.md`, die Review vom 16.09. in `REVIEW.md`.
 
+> **Beim Update auf 2.6.0 (11.10.2026): neuer Port.** Wingfoilscout läuft jetzt
+> unter `http://127.0.0.1:8780` statt 8765 — 8765 nehmen auch andere lokale
+> Programme, und wer zuerst startete, bekam ihn. Nach dem Update am iPhone
+> einmal den QR-Code im Reiter „Handy“ neu scannen und das Symbol auf dem
+> Home-Bildschirm neu anlegen (das alte löschen). Die Ansichtswahl im Report,
+> „Einfach“ oder „Ausführlich“, wird einmal zurückgesetzt: Der Browser merkt
+> sie sich je Adresse.
+
 ## In einem Satz
 
 1.0.0 konnte schon alles, was Wingscout ausmacht — Spots im Umkreis, drei

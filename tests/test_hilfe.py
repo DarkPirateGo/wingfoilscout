@@ -811,13 +811,13 @@ class Server(unittest.TestCase):
         """Mit --lan: ein anderes Gerät ohne Schlüssel bekommt 401, mit dem
         Cookie die Seite — wie jede andere Seite."""
         class Attrappe:
-            server_address = ("0.0.0.0", 8765)
+            server_address = ("0.0.0.0", 8780)
 
         class Probe(w.Handler):
             def __init__(self, pfad, cookie=""):
                 self.client_address = ("192.168.178.9", 4711)
                 self.path = pfad
-                self.headers = {"Cookie": cookie, "Host": "192.168.178.25:8765"}
+                self.headers = {"Cookie": cookie, "Host": "192.168.178.25:8780"}
                 self.server = Attrappe()
                 self.antwort = None
 

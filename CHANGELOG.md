@@ -7,6 +7,65 @@ tell later which version a report was made with. From 2.1.0 on this file is
 written in English; the entries up to 2.0.0 below are in German, as they were
 written at the time.
 
+## 2.6.0 — 11.10.2026
+
+### New default port: 8780
+
+- **Requested on 11 October:** another local program uses 8765 as well, and
+  whichever started first took the port; the other moved to the next one.
+  Home Screen icons on the iPhone then pointed at the wrong program, and
+  switching on sharing in the other program failed. That program can't move
+  (it keeps everything in the browser, and that is tied to the port);
+  Wingfoilscout keeps its data in files and can.
+- **Wingfoilscout now uses 127.0.0.1:8780** (`webui.STANDARD_PORT`): the
+  server and with it the address in the QR code for the iPhone, the default
+  of `--port`, the README in four languages. If 8780 is taken, it still
+  moves to the next free one of the ten after it (`port_klaeren`,
+  unchanged).
+- **After the update:** on every iPhone, scan the QR code in the “Phone” tab
+  again and add the Home Screen icon anew — delete the old one, it points at
+  8765. The access key and the certificate stay valid; neither depends on
+  the port. The report's view choice “Simple/Detailed” is reset once: the
+  browser keeps it per address (`localStorage`). Also noted at the top of
+  `WAS-SICH-GEAENDERT-HAT.md`.
+
+### After a second security review
+
+- **A second review on 11 October**, of 2.5.1 — the full test suite run,
+  the main finding reproduced, its limits stated. Its seven points and what
+  became of them are in `SECURITY.md` (addendum of 11 October, 2.6.0).
+- **F-01, closed now:** while sharing for the way with a certificate, plain
+  http from the Wi-Fi is refused from the start. 2.5.2 refused it only once
+  https had worked; until then `/`, `/tagebuch` and `/katalog` went through
+  over http with a valid cookie (reproduced with the rule of 2.5.2 and
+  2.5.3). Sharing from “Set up without a certificate” still allows http.
+- **A QR code in the “Phone” tab always fits the way it is shown for.** If
+  sharing runs for another way, the card first shows “Show QR code”, which
+  switches it. Otherwise “Set up without a certificate”, opened while sharing
+  ran for the way with a certificate, would have shown an http code that the
+  Mac now refuses. The “Connect” card, once a phone is set up, passes its way
+  along too; only `--lan` still shares without one.
+- **F-04:** the text field “Add spots” on the start page has a label for
+  screen readers (`aria-label`, and `aria-describedby` for the hint above it).
+- **F-05:** `re.split(…, maxsplit=1)` instead of the positional argument
+  (`hilfe.py`, one test) — Python 3.13 warns about the old form, about ten
+  thousand times per test run in the review.
+- Left as they are, with reasons in `SECURITY.md`: the way without a
+  certificate as a fallback under “Not working?”, the own certificate code,
+  the supply chain. The installation on the Mac (`pip install
+  --break-system-packages` as the last resort, no notarized app) is in
+  `TODO.md`.
+
+### Tests
+
+- 1001 tests (2.5.3: 998): the default port everywhere, and no
+  `127.0.0.1:8765` left where it applies; http refused from the start of
+  sharing for the way with a certificate (`/`, `/tagebuch`, `/katalog`,
+  `/?k=`), no cookie set, https with `Secure`; from the way with a
+  certificate to the one without and back, with a QR code only for the way
+  sharing runs for. Test values with the port follow 8780 — except the QR
+  code samples, which were checked with OpenCV exactly as they are.
+
 ## 2.5.3 — 11.10.2026
 
 ### On the iPhone: a hint instead of a black screen

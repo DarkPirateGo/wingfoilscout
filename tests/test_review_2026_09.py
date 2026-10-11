@@ -289,10 +289,10 @@ class S13_Haertung(unittest.TestCase):
         # Zum eigenen Rechner nur, wenn die Anfrage schon dort war (seit 2.1.1,
         # Review 04.10.2026, C8) — ein fremder Dienst leitet nicht dorthin um.
         with self.assertRaises(urllib.error.HTTPError):
-            h.redirect_request(req, None, 302, "Found", {}, "http://127.0.0.1:8765/katalog")
-        lokal_req = urllib.request.Request("http://127.0.0.1:8765/x")
-        lokal = h.redirect_request(lokal_req, None, 302, "Found", {}, "http://127.0.0.1:8765/katalog")
-        self.assertEqual(lokal.full_url, "http://127.0.0.1:8765/katalog")
+            h.redirect_request(req, None, 302, "Found", {}, "http://127.0.0.1:8780/katalog")
+        lokal_req = urllib.request.Request("http://127.0.0.1:8780/x")
+        lokal = h.redirect_request(lokal_req, None, 302, "Found", {}, "http://127.0.0.1:8780/katalog")
+        self.assertEqual(lokal.full_url, "http://127.0.0.1:8780/katalog")
 
     def test_kaputte_konfiguration_ist_ein_konfigfehler(self):
         from wingscout.config import load_config, KonfigFehler

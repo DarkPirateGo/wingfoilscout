@@ -81,6 +81,9 @@ class QRCode(unittest.TestCase):
     # Feste Ergebnisse (SHA-256 über die Module, Zeile für Zeile). Beim Bau am
     # 10.10.2026 mit einem unabhängigen Leser geprüft: OpenCV 4.13
     # (cv2.QRCodeDetector) las jeden dieser Codes als genau diesen Text.
+    # Die Texte sind Proben, keine Startadressen — darum steht dort weiter
+    # der Port von damals (8765); mit einem anderen Text gälte die Prüfung
+    # mit OpenCV nicht mehr.
     FESTE = {
         "https://192.168.1.23:8765/?k=Ab3dEf6hIj9lMn0p":
             "d360507f125ff19bbd9e2b53dda0414384fb553fa31e6483a240b6249371e1d2",
@@ -394,21 +397,21 @@ class Startadressen(unittest.TestCase):
     META = {"ips": ["192.168.1.23"], "namen": ["Mein-Mac.local"], "abgelaufen": False}
 
     def test_https_ueber_die_adresse_im_zertifikat(self):
-        aus = handy.startadressen(["192.168.1.23"], 8765, "k" * 16, self.META)
-        self.assertEqual(aus["https"], "https://192.168.1.23:8765/?k=" + "k" * 16)
+        aus = handy.startadressen(["192.168.1.23"], 8780, "k" * 16, self.META)
+        self.assertEqual(aus["https"], "https://192.168.1.23:8780/?k=" + "k" * 16)
         self.assertEqual(aus["ueber"], "ip")
-        self.assertEqual(aus["http"], "http://192.168.1.23:8765/?k=" + "k" * 16)
+        self.assertEqual(aus["http"], "http://192.168.1.23:8780/?k=" + "k" * 16)
 
     def test_neue_adresse_dann_der_name(self):
-        aus = handy.startadressen(["192.168.1.99"], 8765, "k" * 16, self.META)
-        self.assertEqual(aus["https"], "https://Mein-Mac.local:8765/?k=" + "k" * 16)
+        aus = handy.startadressen(["192.168.1.99"], 8780, "k" * 16, self.META)
+        self.assertEqual(aus["https"], "https://Mein-Mac.local:8780/?k=" + "k" * 16)
         self.assertEqual(aus["ueber"], "name")
 
     def test_ohne_passendes_oder_abgelaufen_nur_http(self):
-        self.assertEqual(handy.startadressen(["192.168.1.99"], 8765, "k", dict(self.META, namen=[]))["https"], "")
-        self.assertEqual(handy.startadressen(["192.168.1.23"], 8765, "k", dict(self.META, abgelaufen=True))["https"], "")
-        self.assertEqual(handy.startadressen(["192.168.1.23"], 8765, "k", None)["https"], "")
-        self.assertEqual(handy.startadressen([], 8765, "k", None), {"https": "", "http": "", "ueber": ""})
+        self.assertEqual(handy.startadressen(["192.168.1.99"], 8780, "k", dict(self.META, namen=[]))["https"], "")
+        self.assertEqual(handy.startadressen(["192.168.1.23"], 8780, "k", dict(self.META, abgelaufen=True))["https"], "")
+        self.assertEqual(handy.startadressen(["192.168.1.23"], 8780, "k", None)["https"], "")
+        self.assertEqual(handy.startadressen([], 8780, "k", None), {"https": "", "http": "", "ueber": ""})
 
     def test_abgelaufen_steht_im_zertifikat(self):
         with tempfile.TemporaryDirectory() as d:
@@ -470,8 +473,8 @@ class Reiter(unittest.TestCase):
              "https": "", "http": "", "gemerkt": {}}
     META = {"ips": ["192.168.1.23"], "namen": [], "erstellt": "2026-10-10", "bis": "2029-01-07",
             "abgelaufen": False, "kennung": "a" * 16, "zeit": 1000.0}
-    HTTPS = "https://192.168.1.23:8765/?k=" + "k" * 16
-    HTTP = "http://192.168.1.23:8765/?k=" + "k" * 16
+    HTTPS = "https://192.168.1.23:8780/?k=" + "k" * 16
+    HTTP = "http://192.168.1.23:8780/?k=" + "k" * 16
 
     def test_zuerst_die_schritte_mit_zertifikat(self):
         """Wer den Reiter zum ersten Mal sieht, bekommt keinen QR-Code, der
@@ -503,13 +506,22 @@ class Reiter(unittest.TestCase):
         self.assertEqual(geladen.count("<li class='erledigt'>"), 2)            # Schritt 2: Profil geladen
 
     def test_sicher_freigegeben(self):
-        seite = w.handy_page(dict(self.STAND, aktiv=True, zertifikat=self.META, passt=True, https=self.HTTPS,
-                                  http=self.HTTP), "sicher")
+        an = dict(self.STAND, aktiv=True, zertifikat=self.META, passt=True, https=self.HTTPS, http=self.HTTP)
+        seite = w.handy_page(dict(an, weg="sicher"), "sicher")
         self.assertIn("<div class='hqr'><svg viewBox", seite)
         self.assertIn(self.HTTPS, seite)
         self.assertNotIn(self.HTTP, seite)
         self.assertIn("data-ansicht='sicher' data-art='https'", seite)
         self.assertIn("data-pfad='/handy/beenden'", seite)
+        # Läuft die Freigabe für den Weg ohne Zertifikat (oder ohne Weg, mit
+        # --lan): erst „QR-Code zeigen“, das sie umstellt — sonst nähme der Mac
+        # weiter http an (seit 2.6.0, zweite Sicherheitsprüfung F-01)
+        for weg in ("schnell", None):
+            with self.subTest(weg=weg):
+                seite = w.handy_page(dict(an, weg=weg), "sicher")
+                self.assertNotIn("class='hqr'", seite)
+                self.assertNotIn(self.HTTPS, seite)
+                self.assertIn("data-daten='{&quot;weg&quot;: &quot;sicher&quot;}'", seite)
 
     def test_schnell_mit_der_anleitung_fuer_safari(self):
         seite = w.handy_page(dict(self.STAND), "schnell")
@@ -520,17 +532,23 @@ class Reiter(unittest.TestCase):
         # Seit 2.5.2 ehrlich: bei WPA2 liest mit, wer das WLAN-Passwort kennt
         self.assertIn("WLAN-Passwort", seite)
         self.assertNotIn("vertretbar", seite)
-        seite = w.handy_page(dict(self.STAND, aktiv=True, zertifikat=self.META, passt=True, https=self.HTTPS,
-                                  http=self.HTTP), "schnell")
+        an = dict(self.STAND, aktiv=True, zertifikat=self.META, passt=True, https=self.HTTPS, http=self.HTTP)
+        seite = w.handy_page(dict(an, weg="schnell"), "schnell")
         self.assertIn(self.HTTP, seite)                     # unverschlüsselt — auch wenn ein Zertifikat da ist
         self.assertNotIn(self.HTTPS, seite)
         self.assertIn("class='hart offen'", seite)
         self.assertIn("data-ansicht='schnell' data-art='http'", seite)
+        # Freigegeben für den Weg mit Zertifikat: diesen http-Code nähme der
+        # Mac nicht an — erst „QR-Code zeigen“, das umstellt (seit 2.6.0)
+        seite = w.handy_page(dict(an, weg="sicher"), "schnell")
+        self.assertNotIn(self.HTTP, seite)
+        self.assertNotIn("class='hqr'", seite)
+        self.assertIn("data-daten='{&quot;weg&quot;: &quot;schnell&quot;}'", seite)
 
     def test_eingerichtet_gleich_der_qr_code(self):
         gemerkt = {"bewaehrt": "https", "kennung": "a" * 16, "zeit": 2000.0}
         aus = w.handy_page(dict(self.STAND, zertifikat=self.META, passt=True, gemerkt=gemerkt))
-        self.assertIn("data-pfad='/handy/freigeben'", aus)
+        self.assertIn("data-pfad='/handy/freigeben' data-daten='{&quot;weg&quot;: &quot;sicher&quot;}'", aus)
         self.assertNotIn("data-pfad='/handy/zertifikat'", aus)
         self.assertIn("href='/handy?weg=sicher'", aus)                         # weiteres iPhone
         self.assertNotIn("?weg=wahl", aus)
@@ -538,10 +556,15 @@ class Reiter(unittest.TestCase):
         http = w.handy_page(dict(self.STAND, gemerkt={"bewaehrt": "http", "zeit": 2000.0}))
         self.assertLess(http.index("href='/handy?weg=schnell'"), http.index("href='/handy?weg=sicher'"))
         self.assertIn("Verschlüsselt einrichten", http)
-        an = w.handy_page(dict(self.STAND, aktiv=True, zertifikat=self.META, passt=True, https=self.HTTPS,
-                               http=self.HTTP, gemerkt=gemerkt))
-        self.assertIn(self.HTTPS, an)
-        self.assertIn("data-ansicht='fertig' data-art='https'", an)
+        self.assertIn("data-pfad='/handy/freigeben' data-daten='{&quot;weg&quot;: &quot;schnell&quot;}'", http)
+        an = dict(self.STAND, aktiv=True, zertifikat=self.META, passt=True, https=self.HTTPS, http=self.HTTP,
+                  gemerkt=gemerkt)
+        seite = w.handy_page(dict(an, weg="sicher"))
+        self.assertIn(self.HTTPS, seite)
+        self.assertIn("data-ansicht='fertig' data-art='https'", seite)
+        seite = w.handy_page(dict(an, weg=None))                              # mit --lan gestartet: erst der Knopf
+        self.assertNotIn(self.HTTPS, seite)
+        self.assertIn("data-daten='{&quot;weg&quot;: &quot;sicher&quot;}'", seite)
 
     def test_zertifikat_passt_nicht_mehr(self):
         meta = dict(self.META, ips=["192.168.1.5"])
@@ -878,7 +901,8 @@ class NurNochVerschluesselt(WlanBasis):
     """Seit 2.5.2 (Sicherheitsprüfung vom 11.10.2026): Über https kommt der
     Schlüssel nur in ein Cookie mit `Secure`, das Safari nie über http schickt;
     und hat der Weg mit Zertifikat geklappt, nimmt der Mac im WLAN kein http
-    mehr an — außer aus „Ohne Zertifikat einrichten“ freigegeben."""
+    mehr an — außer aus „Ohne Zertifikat einrichten“ freigegeben. Seit 2.6.0
+    schon ab der Freigabe für den Weg mit Zertifikat (zweite Prüfung, F-01)."""
 
     def setUp(self):
         super().setUp()
@@ -901,8 +925,53 @@ class NurNochVerschluesselt(WlanBasis):
     def kopf(antwort: bytes) -> str:
         return antwort.split(b"\r\n\r\n", 1)[0].decode("latin-1")
 
-    def test_nach_https_kein_http_mehr(self):
+    def test_freigabe_fuer_den_sicheren_weg_gleich_kein_http(self):
+        """Zweite Sicherheitsprüfung, F-01 (gegen 2.5.1 nachgestellt, in 2.5.2
+        noch offen): Zertifikat, Freigabe für den sicheren Weg, noch keine
+        https-Verbindung — `/`, `/tagebuch` und `/katalog` gingen über http mit
+        gültigem Cookie durch. Jetzt 403, ohne Cookie; https geht."""
         self.assertEqual(self._http("POST", "/handy/freigeben", b'{"weg": "sicher"}')[0], 200)
+        self.assertTrue(w.nur_verschluesselt())
+        wert = handy.schluessel()
+        for pfad in ("/", "/tagebuch", "/katalog", f"/?k={wert}"):
+            with self.subTest(pfad):
+                antwort = self._von(pfad, f"{w.COOKIE}={wert}")
+                self.assertTrue(antwort.startswith(b"HTTP/1.0 403"), antwort[:60])
+                self.assertNotIn("set-cookie", self.kopf(antwort).lower())
+        kopf = self.kopf(self._https(f"/?k={wert}"))
+        self.assertTrue(kopf.startswith("HTTP/1.0 302"), kopf[:40])
+        self.assertIn(f"Set-Cookie: {w.COOKIE_HTTPS}={wert}; Path=/; Max-Age={w.KEKS_DAUER}; HttpOnly; SameSite=Lax; "
+                      "Secure", kopf)
+        for pfad in ("/", "/tagebuch", "/katalog"):
+            with self.subTest("https " + pfad):
+                self.assertTrue(self._https(pfad, f"{w.COOKIE_HTTPS}={wert}").startswith(b"HTTP/1.0 200"))
+
+    def test_vom_sicheren_weg_zum_weg_ohne_zertifikat(self):
+        """Das iPhone nimmt das Profil nicht an: „Klappt nicht?“ → „Ohne
+        Zertifikat einrichten“, während die Freigabe für den sicheren Weg läuft.
+        Dort stünde sonst ein http-Code, den der Mac seit 2.6.0 ablehnt — also
+        erst „QR-Code zeigen“, das die Freigabe umstellt."""
+        self.assertEqual(self._http("POST", "/handy/freigeben", b'{"weg": "sicher"}')[0], 200)
+        seite = self._http("GET", "/handy?weg=schnell")[2]
+        self.assertNotIn(b"class='hqr'", seite)
+        self.assertIn(b"data-daten='{&quot;weg&quot;: &quot;schnell&quot;}'", seite)
+        self.assertEqual(self._http("POST", "/handy/freigeben", b'{"weg": "schnell"}')[0], 200)
+        self.assertEqual(w.LAN["weg"], "schnell")
+        self.assertFalse(w.nur_verschluesselt())
+        self.assertIn(b"class='hqr'", self._http("GET", "/handy?weg=schnell")[2])
+        kopf = self.kopf(self._von(f"/?k={handy.schluessel()}"))
+        self.assertTrue(kopf.startswith("HTTP/1.0 302"), kopf[:40])
+        # und zurück: „Verschlüsselt einrichten“ stellt wieder um
+        self.assertNotIn(b"class='hqr'", self._http("GET", "/handy?weg=sicher")[2])
+        self.assertEqual(self._http("POST", "/handy/freigeben", b'{"weg": "sicher"}')[0], 200)
+        self.assertTrue(w.nur_verschluesselt())
+        self.assertIn(b"class='hqr'", self._http("GET", "/handy?weg=sicher")[2])
+
+    def test_nach_https_kein_http_mehr(self):
+        """Freigegeben ohne Weg (mit --lan gestartet; die Knöpfe im Reiter
+        geben seit 2.6.0 alle einen Weg mit): http, bis der Weg mit Zertifikat
+        einmal geklappt hat, danach nicht mehr."""
+        self.assertEqual(self._http("POST", "/handy/freigeben", b"{}")[0], 200)
         wert = handy.schluessel()
         alt = f"{w.COOKIE}={wert}"
         self.assertTrue(self._von("/manifest.webmanifest", alt).startswith(b"HTTP/1.0 200"))   # noch nicht erprobt
@@ -1099,7 +1168,7 @@ function neueWelt() {
   };
   return welt;
 }
-const seite = (pfad) => ({request: {mode: 'navigate', method: 'GET', url: 'https://mac.local:8765' + pfad}});
+const seite = (pfad) => ({request: {mode: 'navigate', method: 'GET', url: 'https://mac.local:8780' + pfad}});
 (async () => {
   let w = neueWelt();
   await w.ereignis('install');
@@ -1110,9 +1179,9 @@ const seite = (pfad) => ({request: {mode: 'navigate', method: 'GET', url: 'https
   w.netz = 'haengt';
   ergebnis.netzHaengt = (await w.ereignis('fetch', seite('/'))).text;
   w.netz = 'da';
-  ergebnis.daten = await w.ereignis('fetch', {request: {mode: 'cors', method: 'GET', url: 'https://mac.local:8765/status'}});
+  ergebnis.daten = await w.ereignis('fetch', {request: {mode: 'cors', method: 'GET', url: 'https://mac.local:8780/status'}});
   w.abrufe.length = 0;
-  await w.ereignis('fetch', {request: {mode: 'cors', method: 'POST', url: 'https://mac.local:8765/sprache'}});
+  await w.ereignis('fetch', {request: {mode: 'cors', method: 'POST', url: 'https://mac.local:8780/sprache'}});
   ergebnis.nachSprache = w.abrufe.slice();
   w.kaesten.set('wingfoilscout-hinweis-1.0.0', new Map()); w.kaesten.set('fremd', new Map());
   await w.ereignis('activate');
@@ -1141,11 +1210,11 @@ class ServiceWorkerInNode(unittest.TestCase):
         e = json.loads(aus.stdout)
         self.assertNotIn("fehler", e)
         self.assertEqual(e["abgelegt"], "vom Mac: /handy/hinweis")                 # beim Installieren abgelegt
-        self.assertEqual(e["netzDa"], "vom Mac: https://mac.local:8765/katalog")   # Antwort des Macs unverändert
+        self.assertEqual(e["netzDa"], "vom Mac: https://mac.local:8780/katalog")   # Antwort des Macs unverändert
         self.assertEqual(e["netzWeg"], "vom Mac: /handy/hinweis")                  # keine Verbindung: der Hinweis
         self.assertEqual(e["netzHaengt"], "vom Mac: /handy/hinweis")               # keine Antwort in der Frist
         self.assertIsNone(e["daten"])                                              # Daten: nicht angefasst
-        self.assertEqual(e["nachSprache"], ["https://mac.local:8765/sprache", "/handy/hinweis"])
+        self.assertEqual(e["nachSprache"], ["https://mac.local:8780/sprache", "/handy/hinweis"])
         self.assertEqual(e["kaesten"], ["fremd", "wingfoilscout-hinweis-9.9.9"])   # nur alte eigene weg
         self.assertEqual(e["ohneSchluessel"], "gescheitert")
         self.assertEqual(e["ohneAblage"], 0)                                       # wie ohne Service Worker

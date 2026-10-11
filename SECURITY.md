@@ -26,6 +26,56 @@ open. The review was done by hand, line by line; automated tools such as
 from this audit are pinned down as tests in `tests/test_security.py`, so that
 they don't silently disappear in the next rework.
 
+### Addendum 11 October 2026: a second review, and port 8780 (2.6.0)
+
+**The second review** was of 2.5.1, the same day: a reading of the code, the
+full test suite run (967 passed, 11 skipped), checks against the running
+server, the main finding reproduced, and its limits stated (no browser
+interaction, no devices). Its points and what became of them:
+
+- *F-01, medium — the secure option still accepts http sessions.* Reproduced:
+  certificate, sharing for the secure way, then http with a valid cookie —
+  `/`, `/tagebuch` and `/katalog` answered 200. 2.5.2 had closed half of it
+  (the cookie with `Secure`, http refused once https had worked); the window
+  before the first https connection stayed open — reproduced with the rule
+  of 2.5.2 and 2.5.3 as well. Since 2.6.0 sharing for the way with a
+  certificate refuses plain http from the start, before key or cookie are
+  checked (`nur_verschluesselt()` in `webui.py`), and a card in the "Phone"
+  tab shows its QR code only while sharing runs for its way — otherwise
+  "Show QR code" switches it first.
+- *F-02, medium — the quick option switches off a browser-wide Safari
+  warning.* Correct. Since 2.5.2 it is only a fallback under "Not working?",
+  with its cost stated; kept that way on purpose, since on an iPhone that
+  can't install profiles it is the only way.
+- *F-03, medium — own RSA and X.509 code.* Unchanged since 2.5.2: OpenSSL
+  checks every generated key in the tests, no defect is known, replacing it
+  stays deferred.
+- *F-04, low — a text field without a programmatic label.* Fixed.
+- *F-05, low — 10,039 warnings in the test run.* 10,037 of them came from
+  `re.split(…, 1)` with a positional `maxsplit`, deprecated since Python
+  3.13 — fixed. Another one, an unhandled thread exception, appears only
+  under pytest: one test raises `SystemExit` in a worker on purpose, and
+  Python's own thread hook ignores `SystemExit`; the project runs its tests
+  with unittest.
+- *F-06, low to medium — installation on the Mac.* Correct: a Gatekeeper
+  override for the `.command` files, the Dock app signed ad hoc, and as the
+  last resort `pip install --break-system-packages` (see "What deliberately
+  stays as it is"). A project-local virtual environment is in `TODO.md`; a
+  notarized app would need a paid Apple developer account.
+- *F-07, hardening — supply chain.* As in the 2.5.2 addendum: Dependabot
+  alerts on, a read-only workflow without secrets; pinning by commit SHA and
+  `pip-audit` deferred.
+
+**Port 8780.** Since 2.6.0 the default port is 8780 instead of 8765, which
+another local program uses as well and can't give up. Security doesn't change
+with it: the main server still binds 127.0.0.1 only, the servers on the
+Wi-Fi run only while sharing, and neither the access key nor the certificate
+depends on the port. True before the move as well: cookies are not separated
+by port (RFC 6265, section 8.5), so Safari on the iPhone also sends the
+Wingfoilscout cookie to another program serving on the same Mac address.
+Such a program runs on the Mac anyway, where it could read the key in
+`handy/zugang.json` just as well.
+
 ### Addendum 11 October 2026: a service worker for the hint on the iPhone (2.5.3)
 
 **What it is.** An iPhone that is set up, while the Mac isn't sharing, used

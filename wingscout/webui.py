@@ -4,7 +4,7 @@ Startet einen kleinen Server auf dem eigenen Rechner, zeigt ein Formular mit
 allen Parametern und den fertigen Report darunter. Nur Standardbibliothek —
 kein Flask, kein Node, nichts zu installieren.
 
-    python3 -m wingscout.webui            # öffnet http://127.0.0.1:8765
+    python3 -m wingscout.webui            # öffnet http://127.0.0.1:8780
 """
 from __future__ import annotations
 import argparse
@@ -221,7 +221,15 @@ GRASS = [("heavy", N_("nur starken Bewuchs")), ("some", N_("auch mäßigen Bewuc
 # „Ziele“ weiß, ob der Report jünger ist als die Seite, die ihn anzeigt.
 JOB = {"state": "idle", "log": [], "error": None, "summary": "", "kind": "run", "seit": None, "ende": None}
 SERVER = {"instance": None}
-PORT = {"nr": 8765}                  # für die Adresse, die dem iPhone angezeigt wird
+# Der Standardport (seit 2.6.0 — bis 2.5.3 war es 8765). 8765 nehmen auch
+# andere lokale Programme, und wer zuerst startete, bekam den Port: Der andere
+# wich aus, gespeicherte Symbole auf dem iPhone zeigten dann auf das falsche
+# Programm. Eines davon kann nicht wechseln — es speichert alles im Browser,
+# und das hängt am Port —; Wingfoilscout speichert in Dateien und kann.
+# Belegt trotzdem jemand 8780, weicht `port_klaeren` wie bisher auf die
+# nächsten zehn aus.
+STANDARD_PORT = 8780
+PORT = {"nr": STANDARD_PORT}         # für die Adresse, die dem iPhone angezeigt wird
 LOCK = threading.Lock()
 # Wie viele Anfragen der Prüfseite gerade in `spots.yaml`/`geometry.json`
 # schreiben — unter LOCK gezählt, damit kein Hintergrundlauf startet, während
@@ -306,16 +314,22 @@ def zugang_pruefen(ip: str, schluessel_in_url: str, cookie_kopf: str) -> str:
 def nur_verschluesselt() -> bool:
     """Nimmt der Mac im WLAN nur noch https an? (seit 2.5.2)
 
-    Ja, sobald der Weg mit Zertifikat geklappt hat — mit dem Zertifikat, das
-    gerade gilt. Sonst schickte ein altes Symbol oder Lesezeichen mit http://
-    den Schlüssel weiter unverschlüsselt durchs WLAN, Tag für Tag. Nein, solange
-    der sichere Weg noch nicht erprobt ist (ein neues Zertifikat, dessen Profil
-    noch fehlt), und wenn aus „Ohne Zertifikat einrichten“ freigegeben wurde."""
+    Ja, sobald für den Weg mit Zertifikat freigegeben ist (`weg` "sicher",
+    seit 2.6.0) — und sobald dieser Weg mit dem Zertifikat, das gerade gilt,
+    einmal geklappt hat, auch bei einer Freigabe ohne Weg. Sonst schickte ein
+    altes Symbol oder Lesezeichen mit http:// den Schlüssel weiter
+    unverschlüsselt durchs WLAN. In 2.5.2 galt nur das Zweite; die zweite
+    Sicherheitsprüfung vom 11.10.2026 (F-01) zeigte, dass bis zur ersten
+    https-Verbindung `/`, `/tagebuch` und `/katalog` über http durchgingen.
+    Nein, wenn aus „Ohne Zertifikat einrichten“ freigegeben wurde, und ohne
+    Zertifikat."""
     with LAN_LOCK:
         tls, weg, kennung = LAN["tls"], LAN["weg"], LAN["kennung"]
     with HANDY_MELDUNG_LOCK:
         bewaehrt, erprobt = HANDY_GEMERKT["bewaehrt"], HANDY_GEMERKT["kennung"]
-    return bool(tls and kennung and weg != "schnell" and bewaehrt == "https" and erprobt == kennung)
+    if not (tls and kennung) or weg == "schnell":
+        return False
+    return weg == "sicher" or (bewaehrt == "https" and erprobt == kennung)
 
 
 def _keks(name: str, wert: str, sicher: bool) -> str:
@@ -948,7 +962,7 @@ def version_auf_platte() -> str:
     return m.group(1) if m else __version__
 
 
-def handy_kasten(port: int = 8765) -> str:
+def handy_kasten(port: int = STANDARD_PORT) -> str:
     """Der Hinweis auf den Reiter „Handy“ unter „Datenquellen“ (seit 2.5.0; bis
     dahin stand hier die Adresse samt Schlüssel). Am Handy steht er nicht:
     wer ihn dort sähe, ist schon drauf."""
@@ -1095,13 +1109,14 @@ def handy_stand() -> dict:
     und seit 2.5.1, was sich gezeigt hat (handy.zustand)."""
     with LAN_LOCK:
         aktiv, adressen, tls, wert = LAN["aktiv"], list(LAN["adressen"]), LAN["tls"], LAN["schluessel"]
+        weg = LAN["weg"]
     if not aktiv:
         adressen = handy.adressen()     # ohne Freigabe zeigt die Seite keine Adresse — und braucht keinen Schlüssel
     meta = handy.zertifikat()
     urls = handy.startadressen(adressen, PORT["nr"], wert, meta)
     return {"aktiv": aktiv, "adressen": adressen, "zertifikat": meta, "passt": bool(urls["https"]),
             "https": urls["https"] if (tls or not aktiv) else "", "http": urls["http"],
-            "gemerkt": handy.zustand()}
+            "gemerkt": handy.zustand(), "weg": weg if aktiv else None}
 
 
 def handy_ansicht(stand: dict, weg: str = "") -> str:
@@ -1185,7 +1200,10 @@ def _handy_sicher(stand: dict) -> str:
                  bis=i18n.datum_jahr(date.fromisoformat(meta["bis"])) if meta.get("bis") else "?")
     datum = html.escape(meta["erstellt"]) if meta and meta.get("erstellt") else "…"
     geladen = ok and gemerkt.get("profil") == meta.get("kennung")
-    if aktiv and ok and stand["https"]:
+    # Der QR-Code steht gleich da nur bei der Freigabe für diesen Weg (seit
+    # 2.6.0, wie in den beiden anderen Karten): Läuft sie für einen anderen,
+    # stellt „QR-Code zeigen“ sie um — erst dann nimmt der Mac kein http mehr an.
+    if aktiv and ok and stand["https"] and stand.get("weg") == "sicher":
         zuletzt = _handy_qr(stand["https"], "https", "sicher")
     elif ok:
         zuletzt = ("<div class='hknoepfe'>" + _knopf("/handy/freigeben", T("QR-Code zeigen"), daten={"weg": "sicher"})
@@ -1234,7 +1252,10 @@ def _handy_schnell(stand: dict) -> str:
     Sätze dazu sind seit der Sicherheitsprüfung vom 11.10.2026 deutlicher
     (bis 2.5.1: „zu Hause mit WPA2/WPA3 vertretbar“ — bei WPA2 kann aber
     jeder mitlesen, der das WLAN-Passwort kennt)."""
-    if stand["aktiv"] and stand["http"]:
+    # Der QR-Code steht gleich da nur bei der Freigabe für diesen Weg (seit
+    # 2.6.0): Liefe sie für den mit Zertifikat, nähme der Mac diesen http-Code
+    # nicht an — „QR-Code zeigen“ stellt sie erst um.
+    if stand["aktiv"] and stand["http"] and stand.get("weg") == "schnell":
         zuletzt = _handy_qr(stand["http"], "http", "schnell")
     else:
         zuletzt = ("<div class='hknoepfe'>" + _knopf("/handy/freigeben", T("QR-Code zeigen"), daten={"weg": "schnell"})
@@ -1265,6 +1286,7 @@ def _handy_fertig(stand: dict) -> str:
     url = stand["https"] if art == "https" else stand["http"]
     if aktiv and not url:               # sollte nicht vorkommen — dann eben, was da ist
         url, art = (stand["https"], "https") if stand["https"] else (stand["http"], "http")
+    fuer = "sicher" if art == "https" else "schnell"      # seit 2.6.0 mit Weg, wie die beiden anderen Karten
     zustand = (f"<span class='hzustand an'>{T('freigegeben')}</span>" if aktiv else
                f"<span class='hzustand aus'>{T('nur auf diesem Mac')}</span>")
     tag = i18n.datum_jahr(datetime.fromtimestamp(gemerkt["zeit"]).date()) if gemerkt.get("zeit") else "?"
@@ -1272,7 +1294,7 @@ def _handy_fertig(stand: dict) -> str:
                     T("Eingerichtet: unverschlüsselt (hat am {datum} geklappt).", datum=tag))
     teile = ["<section class='hkarte'><h2>" + T("Verbinden") + zustand + "</h2>",
              f"<p class='hklein'>{eingerichtet}</p>"]
-    if aktiv and url:
+    if aktiv and url and stand.get("weg") == fuer:
         teile.append(_handy_qr(url, art, "fertig",
                                "<ol class='hschritte'>"
                                "<li>" + _wo("iphone") + T("Ins selbe WLAN wie dieser Mac.") + "</li>"
@@ -1282,7 +1304,8 @@ def _handy_fertig(stand: dict) -> str:
                                                           "Wingfoilscout wie eine App.") + "</li>"
                                "</ol>"))
     else:
-        teile.append("<div class='hknoepfe'>" + _knopf("/handy/freigeben", T("QR-Code zeigen")) + "</div>"
+        teile.append("<div class='hknoepfe'>" + _knopf("/handy/freigeben", T("QR-Code zeigen"), daten={"weg": fuer})
+                     + "</div>"
                      "<p class='hklein'>" + T("Nur im eigenen WLAN — nicht im Hotel, im Zug oder auf dem Campingplatz. "
                                               "Die Freigabe endet, wenn du Wingfoilscout beendest.") + "</p>")
     # Ohne Zertifikat eingerichtet: der empfohlene Weg bleibt einen Klick
@@ -2260,9 +2283,10 @@ def page(cfg, v: dict) -> str:
   <details id="spots">
     <summary>{T('Spots hinzufügen')}</summary>
     <div class="inhalt">
-      <p class="hint" style="margin:0 0 12px">{T('''Eine Zeile je Spot: Name und Koordinate in beliebiger
+      <p class="hint" id="spots_hinweis" style="margin:0 0 12px">{T('''Eine Zeile je Spot: Name und Koordinate in beliebiger
       Reihenfolge, Gewässerart optional als letztes Feld. Als Datei gehen GPX, KML, GeoJSON und CSV.''')}</p>
       <textarea id="spots_text" name="spots_text" rows="4" spellcheck="false"
+        aria-label="{html.escape(T('Spots hinzufügen'))}" aria-describedby="spots_hinweis"
         placeholder="Hardtsee; 49.17008, 8.61477&#10;https://www.google.com/maps/@51.7625,3.854,15z"></textarea>
       <div class="checks" style="margin-top:12px">
         <label><input type="checkbox" name="spot_geo" checked> {T('Ufergeometrie gleich mitrechnen')}</label>
@@ -2858,7 +2882,7 @@ class Handler(BaseHTTPRequestHandler):
         """Nur der eigene Browser-Tab darf etwas auslösen.
 
         Der Server hört nur auf 127.0.0.1 — aber jede Webseite, die im selben
-        Browser offen ist, kann an 127.0.0.1:8765 Anfragen schicken. Ohne diese
+        Browser offen ist, kann an 127.0.0.1:8780 Anfragen schicken. Ohne diese
         Prüfung könnte eine fremde Seite eine Suche starten, den Katalog
         beschreiben oder Wingfoilscout beenden. Browser senden bei Anfragen von
         fremden Seiten immer einen Origin-Header; stimmt er nicht, kommt 403.
@@ -2890,7 +2914,7 @@ class Handler(BaseHTTPRequestHandler):
         per `fetch` —, statt den Browser hierher zu schicken? (seit 2.1.0, A1)
 
         Bei solchen Anfragen setzt der Browser keinen Origin-Header: ein
-        `<img src="http://127.0.0.1:8765/logo.png">` oder ein
+        `<img src="http://127.0.0.1:8780/logo.png">` oder ein
         `fetch(…, {mode: "no-cors"})` von irgendeiner Webseite kam bis 2.1.0
         durch. Jede Seite im Browser konnte so feststellen, dass Wingfoilscout
         läuft (das Logo lädt), und den Rechner mit teuren Seiten beschäftigen
@@ -3744,7 +3768,8 @@ def port_belegt_von(port: int) -> str | None:
     """Wer auf dem Port antwortet: None (frei), „wingscout“ (eine laufende
     Wingfoilscout-Oberfläche — `/status` liefert ihren Stand) oder „fremd“ (ein
     anderes Programm). Ein zweites Programm auf demselben Port ist keine
-    Theorie: ein anderer lokaler Server, der ebenfalls 8765 nimmt, ließ
+    Theorie: ein anderer lokaler Server, der ebenfalls 8765 nahm (bis 2.5.3 der
+    Standard, seit 2.6.0 STANDARD_PORT), ließ
     Wingfoilscout bis 1.18.3 mit einem Traceback „Address already in use“ sterben
     (25.09.2026)."""
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -3796,7 +3821,7 @@ def port_klaeren(port: int) -> dict:
                          von=port, bis=port + 10)}
 
 
-def serve(port: int = 8765, open_browser: bool = True, config: str | None = None,
+def serve(port: int = STANDARD_PORT, open_browser: bool = True, config: str | None = None,
           lan: bool = False) -> None:
     # Was die Oberfläche schreibt, gehört nur dem Benutzer: report.html,
     # cache/, tagebuch.json, modellguete.json, sprache.txt, ui_defaults.json,
@@ -3870,7 +3895,7 @@ if __name__ == "__main__":
     # Wahl, sonst die des Systems (die Seiten wählen je Anfrage selbst).
     i18n.fuer_kommandozeile()
     ap = argparse.ArgumentParser(description=T("Wingfoilscout-Oberfläche im Browser."))
-    ap.add_argument("--port", type=int, default=8765)
+    ap.add_argument("--port", type=int, default=STANDARD_PORT)
     ap.add_argument("--config", default=str(ROOT / "config.yaml"))
     ap.add_argument("--no-open", action="store_true")
     ap.add_argument("--lan", action="store_true",

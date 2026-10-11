@@ -565,9 +565,10 @@ abgebrochen (meist fehlt das Vertrauen), ohne gültigen Schlüssel gekommen —
 oder noch nichts, mit den üblichen Gründen. Hat es einmal geklappt, öffnet
 der Reiter beim nächsten Mal gleich mit **QR-Code zeigen**; kann es nicht
 mehr klappen (neues Zertifikat, neue Adresse), zeigt er wieder die Schritte.
-Und von da an lässt der Mac das iPhone nur noch verschlüsselt herein (seit
-2.5.2): Ein altes Symbol auf dem Home-Bildschirm mit einer `http://`-Adresse
-bekommt eine Seite, die das sagt — den QR-Code neu scannen und das Symbol neu
+Und der Mac lässt das iPhone nur verschlüsselt herein, sobald für diesen Weg
+freigegeben ist (seit 2.6.0; 2.5.2 erst, nachdem es einmal geklappt hatte):
+Ein altes Symbol auf dem Home-Bildschirm mit einer `http://`-Adresse bekommt
+eine Seite, die das sagt — den QR-Code neu scannen und das Symbol neu
 anlegen.
 
 **Ohne Zertifikat** — nur, wenn sich das Profil nicht installieren lässt,
@@ -839,20 +840,27 @@ statt `sunrise`. Dreißig Prozent aller Sessionstunden lagen dadurch zwischen
 
 ### Betrieb und Beenden
 
-Die Oberfläche läuft nur auf deinem Rechner (127.0.0.1:8765) und ist von außen
+Die Oberfläche läuft nur auf deinem Rechner (127.0.0.1:8780) und ist von außen
 nicht erreichbar — außer du gibst sie im Reiter „Handy“ fürs Handy frei. Zum Beenden dient der Knopf **Beenden** oben rechts in der
 Reiterleiste, auf jeder Seite (im schmalen Fenster als kleine Marke oben rechts) —
 zweimal drücken, damit er nicht aus Versehen mitten in einem Lauf auslöst.
 Nur am Mac selbst: Das iPhone zeigt ihn nicht (seit 2.5.2), denn dort beendete
 er Wingfoilscout auf dem Mac; am iPhone schließt du einfach Safari.
 
-Ist Port 8765 schon von einem anderen Programm belegt (ein zweiter lokaler
+Ist Port 8780 schon von einem anderen Programm belegt (ein zweiter lokaler
 Server, etwa eine andere Oberfläche, die denselben Port nimmt), weicht
 Wingfoilscout auf den nächsten freien aus und sagt es im Terminal — dann
-lautet die Adresse zum Beispiel `127.0.0.1:8766`, auch die fürs iPhone. Läuft
+lautet die Adresse zum Beispiel `127.0.0.1:8781`, auch die fürs iPhone. Läuft
 dort schon eine Oberfläche von Wingfoilscout, wird keine zweite gestartet,
 sondern die laufende im Browser geöffnet. Fest wählen lässt sich der Port mit
-`python3 -m wingscout.webui --port 8790`.
+`python3 -m wingscout.webui --port 8800`.
+
+Bis 2.5.3 war der Port 8765; seit 2.6.0 ist es 8780, weil auch andere lokale
+Programme 8765 nehmen und ihn bekam, wer zuerst startete. Nach diesem Update
+am iPhone den QR-Code im Reiter „Handy“ einmal neu scannen und das Symbol auf
+dem Home-Bildschirm neu anlegen (das alte löschen); die Ansichtswahl im Report
+(Einfach/Ausführlich) wird einmal zurückgesetzt, weil der Browser sie sich je
+Adresse merkt.
 
 Eine Suche läuft im Programm, nicht im Browserfenster: Du kannst währenddessen
 auf andere Reiter gehen — am Reiter „Suche“ pulst dann ein Punkt, und ist der
