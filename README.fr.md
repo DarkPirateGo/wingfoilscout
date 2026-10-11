@@ -630,6 +630,13 @@ camping.
 **Sur l’écran d’accueil.** Dans Safari, « Partager » → « Sur l’écran d’accueil » : Wingfoilscout se lance alors comme une app, sans barre
 d’adresse, avec sa propre icône.
 
+**Quand le Mac ne répond pas.** Configurée avec le certificat, l’icône affiche
+une courte indication au lieu d’un écran noir quand Wingfoilscout ne répond
+pas — il n’est pas lancé, le Mac est en veille, un autre réseau Wi-Fi, ou le
+partage n’est pas encore lancé (après chaque démarrage : **Afficher le QR
+code** dans l’onglet « Mobile »). L’iPhone enregistre cette indication lors de
+la première visite (depuis la 2.5.3).
+
 **En route sans Mac.** Le rapport est un seul fichier HTML (`report.html` dans
 le dossier Wingfoilscout). Envoyé sur l’iPhone par AirDrop, il s’y ouvre sans
 réseau et sans le Mac — tout sauf la carte, qui charge ses tuiles depuis

@@ -82,6 +82,13 @@ FAVORITEN_JS = _web("favoriten.js")
 # lauf.js (der Punkt am Reiter, wenn etwas läuft, seit 1.18.3).
 MOBIL_JS_ROH = ("\n" + _web("mobil.js") + "\n" + _web("beenden.js") + "\n" + _web("lauf.js")
                 + "\n" + _web("sprache.js"))
+# Fürs iPhone (seit 2.5.3): ein Service Worker legt beim ersten Besuch über
+# https einen Hinweis ab und zeigt ihn, wenn der Mac nicht antwortet — statt
+# eines schwarzen Bildschirms (web/sw.js). Angemeldet wird er nur auf den
+# Seiten für andere Geräte (`mobil_js`).
+SW_ANMELDEN_JS = _web("sw-anmelden.js")
+SW_PFAD = "/sw.js"
+HINWEIS_PFAD = "/handy/hinweis"
 
 # ── Nonce je Antwort (Content-Security-Policy, seit 1.19.1) ──────────────────
 # Jede Antwort würfelt eine Nonce; jeder <script>-Block der Seite trägt sie,
@@ -119,8 +126,16 @@ def vom_handy() -> bool:
 
 
 def mobil_js() -> str:
-    """Am Ende jeder Seite: mobil.js, beenden.js, lauf.js — mit Nonce."""
-    return skript(MOBIL_JS_ROH)
+    """Am Ende jeder Seite: mobil.js, beenden.js, lauf.js — mit Nonce. Für ein
+    anderes Gerät dazu die Anmeldung des Service Workers (seit 2.5.3); am Mac
+    nicht: dort gibt es nichts zu überbrücken."""
+    return skript(MOBIL_JS_ROH + ("\n" + SW_ANMELDEN_JS if vom_handy() else ""))
+
+
+def sw_js() -> bytes:
+    """Der Service Worker (web/sw.js) mit der Versionsnummer davor — mit jeder
+    Version ändert sich die Datei, und das iPhone installiert ihn neu."""
+    return als_bytes("var VERSION = " + json.dumps(__version__) + ";\n" + _web("sw.js"))
 
 
 # Das Logo des Erstellers (seit 1.19.1): wie die Symbole eine PNG-Datei aus
@@ -1340,6 +1355,43 @@ def handy_nur_am_mac() -> str:
             + reiter("/handy") + "<h1>" + T("Wingfoilscout aufs Handy") + "</h1>"
             "<p class='sub'>" + T("Du bist schon drauf. Freigabe, QR-Code und Zertifikat stehen in diesem Reiter auf "
                                   "dem Mac.") + "</p>" + seitenende() + "</body></html>")
+
+
+def handy_hinweis_page() -> str:
+    """Was das iPhone zeigt, wenn der Mac nicht antwortet (seit 2.5.3).
+
+    Der Service Worker (web/sw.js) holt diese Seite beim ersten Besuch und legt
+    sie auf dem iPhone ab; gezeigt wird sie von dort, nicht vom Mac. Deshalb
+    steht alles in ihr selbst: kein Skript, kein Bild, kein Stil von außen —
+    ohne Verbindung käme nichts davon an. „Neu laden“ führt zur Startseite;
+    antwortet der Mac wieder, kommt die richtige."""
+    schritte = "".join("<li>" + T(s) + "</li>" for s in (
+        N_("Auf dem Mac läuft Wingfoilscout, und der Mac ist wach."),
+        N_("Mac und iPhone sind im selben WLAN."),
+        N_("Am Mac im Reiter „Handy“ auf „QR-Code zeigen“ drücken — nach jedem Start von Wingfoilscout einmal.")))
+    return (f"<!doctype html><html lang='{i18n.aktuell()}'><head><meta charset='utf-8'>"
+            "<meta name='viewport' content='width=device-width,initial-scale=1,viewport-fit=cover'>"
+            "<meta name='color-scheme' content='light dark'>"
+            f"<title>{html.escape(T('Wingfoilscout · Keine Verbindung'))}</title>"
+            "<style>"
+            "body{margin:0;font:17px/1.5 -apple-system,BlinkMacSystemFont,sans-serif;background:#F2F4F5;color:#14303C;"
+            "padding:calc(32px + env(safe-area-inset-top)) calc(24px + env(safe-area-inset-right)) "
+            "calc(32px + env(safe-area-inset-bottom)) calc(24px + env(safe-area-inset-left))}"
+            "main{max-width:34rem;margin:0 auto}"
+            "h1{font-size:1.35rem;line-height:1.25;margin:0 0 .75rem}"
+            "ol{padding-left:1.4rem;margin:1rem 0 1.5rem}li{margin:.5rem 0}"
+            ".knopf{display:inline-block;background:#AE1F68;color:#fff;text-decoration:none;font-weight:600;"
+            "padding:.75rem 1.4rem;border-radius:10px}"
+            ".klein{font-size:.85rem;opacity:.7;margin-top:2rem}"
+            "@media (prefers-color-scheme:dark){body{background:#0E1B21;color:#E3ECEF}}"
+            "</style></head><body><main>"
+            "<h1>" + T("Wingfoilscout antwortet nicht") + "</h1>"
+            "<p>" + T("Das iPhone erreicht Wingfoilscout auf dem Mac gerade nicht. So geht es wieder:") + "</p>"
+            "<ol>" + schritte + "</ol>"
+            "<a class='knopf' href='/'>" + T("Neu laden") + "</a>"
+            "<p class='klein'>" + T("Diese Seite hat das iPhone beim letzten Besuch gespeichert — sie kommt nicht "
+                                    "vom Mac.") + "</p>"
+            "</main></body></html>")
 
 
 def neustart_hinweis() -> str:
@@ -3534,6 +3586,12 @@ class Handler(BaseHTTPRequestHandler):
                 handy.merken(profil=meta["kennung"])        # Schritt 2 im Reiter: erledigt
             self._send(200, inhalt, "application/x-apple-aspen-config",
                        kopf={"Content-Disposition": f'attachment; filename="{handy.PROFIL}"'})
+        elif path == SW_PFAD:
+            # Der Service Worker fürs iPhone (seit 2.5.3) — wie jede Antwort nur
+            # mit dem Schlüssel; die Anmeldung schickt das Cookie mit
+            self._send(200, sw_js(), "text/javascript; charset=utf-8")
+        elif path == HINWEIS_PFAD:
+            self._send(200, als_bytes(handy_hinweis_page()))
         elif path == "/manifest.webmanifest":
             self._send(200, als_bytes(MANIFEST), "application/manifest+json; charset=utf-8")
         elif path in BILD_DATEIEN:

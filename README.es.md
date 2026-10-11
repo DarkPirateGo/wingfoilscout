@@ -609,6 +609,13 @@ camping.
 inicio»: Wingfoilscout arranca entonces como una app, sin barra de direcciones
 y con su propio icono.
 
+**Cuando el Mac no responde.** Configurado con el certificado, el icono
+muestra un breve aviso en lugar de una pantalla negra cuando Wingfoilscout no
+responde — no está abierto, el Mac duerme, otra red wifi, o aún no se ha
+activado el compartir (después de cada inicio: **Mostrar el código QR** en la
+pestaña «Móvil»). El iPhone guarda este aviso en la primera visita (desde la
+2.5.3).
+
 **De viaje sin Mac.** El informe es un único archivo HTML (`report.html`, en
 la carpeta de Wingfoilscout). Si lo mandas al iPhone por AirDrop, se puede
 abrir allí sin red y sin el Mac — todo menos el mapa, que descarga sus teselas

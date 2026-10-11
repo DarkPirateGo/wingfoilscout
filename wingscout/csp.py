@@ -15,6 +15,12 @@ bleibt stumm — auch als `file://` auf dem iPhone. Liefert der Server die
 Datei aus, nimmt er die Nonce aus ihrem Kopf, damit Kopfzeile und Datei
 dasselbe sagen.
 
+Seit 2.5.3 dazu `worker-src 'self'`: der Service Worker fürs iPhone
+(web/sw.js). Ohne die Zeile fiele `worker-src` auf `script-src` zurück, das
+nur Nonces kennt — die Anmeldung scheiterte. Anmelden lässt sich so nur eine
+Datei dieses Servers, die als JavaScript ausgeliefert wird, und das ist allein
+/sw.js; die JSON-Wege lehnt der Browser als Service Worker ab.
+
 Was die Richtlinie zulässt, ist genau das, was die Seiten brauchen: Styles
 inline (Rasterzellen und Popups tragen `style=`), Leaflet-Stil und -Skript
 von cdnjs, Kacheln von OpenStreetMap, Marker-Bilder von cdnjs, Anfragen nur
@@ -47,6 +53,7 @@ def richtlinie(nonce: str, kopfzeile: bool = True) -> str:
         f"style-src 'self' 'unsafe-inline' {CDNJS}",
         f"img-src 'self' data: {KACHELN} {CDNJS}",
         "connect-src 'self'",
+        "worker-src 'self'",
         "font-src 'self'",
         "object-src 'none'",
         "base-uri 'none'",

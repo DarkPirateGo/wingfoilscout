@@ -26,6 +26,41 @@ open. The review was done by hand, line by line; automated tools such as
 from this audit are pinned down as tests in `tests/test_security.py`, so that
 they don't silently disappear in the next rework.
 
+### Addendum 11 October 2026: a service worker for the hint on the iPhone (2.5.3)
+
+**What it is.** An iPhone that is set up, while the Mac isn't sharing, used
+to open a black screen from its Home Screen icon. Since 2.5.3 the pages for
+other devices register a service worker (`wingscout/web/sw.js`), which keeps
+one page on the iPhone — the hint “Wingfoilscout isn't responding” with three
+steps — and shows it when a page doesn't arrive.
+
+**What it can do, and what it deliberately doesn't.** A service worker sees
+every request of its origin, so this one is kept small: page loads go to the
+Mac unchanged, and only if no answer comes (the connection fails, or nothing
+within 10 seconds) does it show the stored hint; every answer of the Mac —
+“No access” and “Encrypted only” included — arrives as it is. It stores
+nothing but the hint, which contains no data: no starting point, no
+catalogue, no search. Data requests, images and forms pass it untouched; it
+only watches `POST /sprache` to fetch the hint again in the new language.
+
+**Where it runs.** Only on pages for other devices (`webui.mobil_js`), only
+in a secure context — over https with the Mac's certificate; over http the
+iPhone has no service workers, and on the Mac the script isn't sent. `/sw.js`
+and `/handy/hinweis` need the access key like every other address.
+
+**The policy.** The Content Security Policy gains `worker-src 'self'`.
+Without it `worker-src` falls back to `script-src`, which allows only
+nonces, and the registration is refused (checked in Chromium). `'self'`
+allows registering only a file of this server that is served as JavaScript —
+that is `/sw.js` alone; the JSON addresses are rejected as service workers by
+the browser. `script-src` is unchanged: scripts in pages still need the nonce.
+
+**Not yet tried on an iPhone.** Whether iOS runs a service worker in a Home
+Screen web app whose https rests on a certificate authority the user
+installed is unknown here; Chromium (with 127.0.0.1 as a secure context)
+shows the flow working. If iOS refuses, nothing changes for the worse: the
+registration fails silently, and the icon behaves as before.
+
 ### Addendum 11 October 2026: an external review, https only, quitting only on the Mac (2.5.2)
 
 **The review.** On 11 October the public code was reviewed from outside,

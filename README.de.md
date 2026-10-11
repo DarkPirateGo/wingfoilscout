@@ -603,6 +603,13 @@ Campingplatz.
 Wingfoilscout startet dann wie eine App, ohne Adressleiste, mit eigenem
 Symbol.
 
+**Wenn der Mac nicht antwortet.** Mit Zertifikat eingerichtet, zeigt das
+Symbol statt eines schwarzen Bildschirms einen kurzen Hinweis, wenn
+Wingfoilscout nicht antwortet — es läuft nicht, der Mac schläft, ein anderes
+WLAN, oder die Freigabe ist noch nicht gestartet (nach jedem Start: **QR-Code
+zeigen** im Reiter „Handy“). Den Hinweis legt das iPhone beim ersten Besuch ab
+(seit 2.5.3).
+
 **Unterwegs ohne Mac.** Der Report ist eine einzige HTML-Datei
 (`report.html` im Wingfoilscout-Ordner). Per AirDrop aufs iPhone geschickt,
 lässt er sich dort ohne Netz und ohne Mac öffnen — alles außer der Karte, die

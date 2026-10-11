@@ -7,6 +7,75 @@ tell later which version a report was made with. From 2.1.0 on this file is
 written in English; the entries up to 2.0.0 below are in German, as they were
 written at the time.
 
+## 2.5.3 — 11.10.2026
+
+### On the iPhone: a hint instead of a black screen
+
+- **Requested on 11 October:** an iPhone that is set up, while the Mac isn't
+  sharing (no “Show QR code” since Wingfoilscout started), opened a black
+  screen from its Home Screen icon. Wanted instead: what to do.
+- **The hint has to be on the iPhone already** — without sharing nothing
+  reaches the Mac, so the Mac can't send it. A service worker
+  (`wingscout/web/sw.js`) stores it on the first visit (`GET /handy/hinweis`)
+  and shows it when a page doesn't arrive: “Wingfoilscout isn't responding”,
+  then three steps — Wingfoilscout running and the Mac awake, the same Wi-Fi,
+  “Show QR code” in the “Phone” tab after every start — and **Reload**, which
+  leads to the start page. Everything is in the page itself (no script, no
+  image, no stylesheet from outside), in the language of the interface;
+  after the language switcher the service worker fetches it again.
+- **It does as little as possible:** page loads go to the Mac unchanged; only
+  if the connection fails, or nothing arrives within 10 seconds, does the
+  hint appear. Every answer of the Mac — “No access” and “Encrypted only”
+  included — arrives as it is. It stores nothing but the hint; data,
+  images and forms pass it untouched. A new version replaces it (the version
+  number is part of the file, `webui.sw_js()`).
+- **Only with the certificate:** service workers exist only in a secure
+  context, so over https; on the way without a certificate the icon behaves
+  as before. Registered only on the pages for other devices
+  (`web/sw-anmelden.js` in `webui.mobil_js`), never on the Mac.
+- **The Content Security Policy gains `worker-src 'self'`** — without it the
+  registration falls back to `script-src` and is refused (checked in
+  Chromium). `script-src` is unchanged. `SECURITY.md`, addendum of 11
+  October (2.5.3).
+- README (four languages): “When the Mac doesn't answer”.
+- **Not tried on an iPhone before the release.** Whether iOS runs a service
+  worker in a Home Screen web app whose https rests on a self-installed
+  certificate authority is unknown here; if not, the registration fails
+  silently and nothing changes. Checked in Chromium with a stand-in iPhone
+  (127.0.0.1 counts as a secure context there): with the Mac gone the hint
+  came within 0.03 s at the old address, with the Mac back **Reload**
+  opened the start page.
+
+### The tests no longer write into the project's `cache/`
+
+- **Found in the review of 7 October:** every demo search of a test through
+  `cli.main` stored `cache/letzter_lauf.json` in the project folder, so after
+  every check run — every publish runs one — the Review tab's “last
+  search” was a demo search. Found now as well: the benchmark test that
+  starts `tools/pruefstand.py` as a process of its own wrote
+  `cache/pruefstand/letzter_lauf.json`.
+- **`tests/__init__.py` points `wingscout.CACHE` to a temporary folder** for
+  the whole run, before any module of wingscout takes it over
+  (`rueckblick.LETZTER_LAUF`, `pruefstand.LETZTER_LAUF`, the defaults in
+  `sources/`) — instead of patching test after test, so a new test can't
+  forget it. The process test passes the folder on itself. The drive-time
+  cache of a search (`routes.json`) now also goes through `CACHE` instead of
+  a path of its own — the same place outside the tests.
+- `tests/test_testumgebung.py` watches over it: the folder lies outside the
+  project, the modules took it over, and a demo search leaves
+  `cache/letzter_lauf.json` of the project as it was.
+
+### Tests
+
+- 998 tests (2.5.2: 986): the hint page on its own and in four languages,
+  `worker-src 'self'` in the policy, the registration only for other
+  devices, `/sw.js` and `/handy/hinweis` only with the key, and the service
+  worker itself in Node — the Mac answers, the connection fails, no answer
+  within the deadline, data requests untouched, the hint fetched again after
+  the language switch, old caches removed, no installation without the key
+  (`tests/test_handy.py`; skipped without Node); the test run outside the
+  project's `cache/` (`tests/test_testumgebung.py`).
+
 ## 2.5.2 — 11.10.2026
 
 ### “Quit” only on the Mac

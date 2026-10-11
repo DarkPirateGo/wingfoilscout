@@ -6,11 +6,33 @@ tatsächlich Rijkswaterstaat an, weil eine neue Abfrage nicht untergeschoben
 war, und fiel nur zufällig auf (die Prüfumgebung hatte kein Netz). Jetzt
 scheitert jeder Aufruf nach draußen laut, bevor er rausgeht; nur der lokale
 Testserver (127.0.0.1) ist erreichbar.
+
+Und seit 2.5.3 schreibt kein Test mehr in `cache/` des Projekts: jede
+Demo-Suche über `cli.main` legte dort `letzter_lauf.json` ab (und der Test des
+Prüfstands `cache/pruefstand/letzter_lauf.json`), und nach jedem Prüflauf —
+also nach jedem Veröffentlichen — zeigte der Reiter Rückblick als „letzte
+Suche“ eine Demo-Suche (Review 07.10.2026). Statt jeden Test einzeln
+umzulegen, zeigt `wingscout.CACHE` für den ganzen Lauf auf ein temporäres
+Verzeichnis — gesetzt, bevor ein Modul von wingscout es beim Laden in eigene
+Namen übernimmt (`rueckblick.LETZTER_LAUF`, `pruefstand.LETZTER_LAUF`, die
+Vorgaben in `sources/`). `tests/test_testumgebung.py` hält das fest.
 """
 from __future__ import annotations
+import atexit
 import os
+import shutil
+import tempfile
 import urllib.parse
 import urllib.request
+from pathlib import Path
+
+import wingscout
+
+# Vor jedem anderen Import aus wingscout: die Module übernehmen CACHE beim Laden.
+CACHE_IM_TEST = Path(tempfile.mkdtemp(prefix="wingfoilscout-test-")) / "cache"
+CACHE_DES_PROJEKTS = wingscout.CACHE
+wingscout.CACHE = CACHE_IM_TEST
+atexit.register(shutil.rmtree, CACHE_IM_TEST.parent, True)
 
 # Kein Netz im Prüflauf: der Ortsname für neue Spots (Nominatim) bleibt aus.
 # Die Tests, die ihn brauchen, schieben die Antwort unter.

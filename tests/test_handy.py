@@ -969,5 +969,187 @@ class Zugang(unittest.TestCase):
             self.assertEqual(w.zugang_pruefen("192.168.1.5", "", f"{w.COOKIE_HTTPS}=falsch"), "abweisen")
 
 
+
+# ── Hinweis statt schwarzem Bildschirm (seit 2.5.3) ───────────────────────────
+# Gemeldet am 11.10.2026: Ist das iPhone eingerichtet, gibt der Mac aber nicht
+# frei, öffnet das Symbol auf dem Home-Bildschirm einen schwarzen Bildschirm.
+# Ein Service Worker (web/sw.js) legt beim ersten Besuch über https einen
+# Hinweis ab und zeigt ihn, wenn keine Antwort kommt.
+
+class HinweisSeite(unittest.TestCase):
+    def test_richtlinie_laesst_nur_eigene_worker_zu(self):
+        from wingscout import csp
+        self.assertIn("worker-src 'self'", csp.richtlinie("n" * 22))
+        self.assertIn("worker-src 'self'", csp.meta("n" * 22))
+        # Skripte bleiben bei der Nonce: worker-src öffnet script-src nicht
+        self.assertIn("script-src 'nonce-" + "n" * 22 + "'", csp.richtlinie("n" * 22))
+
+    def test_anmeldung_nur_auf_seiten_fuer_andere_geraete(self):
+        self.assertNotIn("serviceWorker", w.mobil_js())
+        w._ANFRAGE.von_aussen = True
+        try:
+            self.assertIn("navigator.serviceWorker.register('/sw.js')", w.mobil_js())
+            self.assertIn("window.isSecureContext", w.mobil_js())      # nur über https
+        finally:
+            w._ANFRAGE.von_aussen = False
+        self.assertNotIn("serviceWorker", w.mobil_js())
+
+    def test_hinweis_steht_fuer_sich(self):
+        """Der Hinweis wird ohne Verbindung gezeigt — alles muss in ihm stehen."""
+        seite = w.handy_hinweis_page()
+        self.assertIn("Wingfoilscout antwortet nicht", seite)
+        self.assertIn("„QR-Code zeigen“", seite)
+        self.assertIn("<a class='knopf' href='/'>Neu laden</a>", seite)
+        self.assertIn("viewport-fit=cover", seite)
+        self.assertNotIn("<script", seite)
+        self.assertNotRegex(seite, r"(src|href)=['\"](?!/['\"])")       # nichts nachzuladen, nur der Link „/“
+        self.assertNotIn("<link", seite)
+
+    def test_hinweis_in_jeder_sprache(self):
+        from wingscout import i18n
+        for sprache, satz in (("en", "Wingfoilscout isn’t responding"), ("fr", "Wingfoilscout ne répond pas"),
+                              ("es", "Wingfoilscout no responde")):
+            with self.subTest(sprache), mock.patch.dict(os.environ, {"WINGSCOUT_SPRACHE": sprache}):
+                i18n.fuer_anfrage(None)
+                try:
+                    seite = w.handy_hinweis_page()
+                finally:
+                    os.environ["WINGSCOUT_SPRACHE"] = "de"
+                    i18n.fuer_anfrage(None)
+                self.assertIn(f"<html lang='{sprache}'>", seite)
+                self.assertIn(satz, seite)
+
+    def test_sw_traegt_die_version(self):
+        from wingscout import __version__
+        roh = w.sw_js().decode("utf-8")
+        self.assertTrue(roh.startswith(f"var VERSION = {json.dumps(__version__)};\n"))
+        self.assertIn(f"var HINWEIS = '{w.HINWEIS_PFAD}';", roh)
+
+
+class HinweisAmServer(ServerBasis):
+    def test_sw_und_hinweis_werden_ausgeliefert(self):
+        status, kopf, roh = self._http("GET", w.SW_PFAD)
+        self.assertEqual(status, 200)
+        self.assertEqual(kopf["Content-Type"], "text/javascript; charset=utf-8")
+        self.assertEqual(kopf["X-Content-Type-Options"], "nosniff")
+        self.assertEqual(roh, w.sw_js())
+        status, kopf, roh = self._http("GET", w.HINWEIS_PFAD)
+        self.assertEqual(status, 200)
+        self.assertIn("worker-src 'self'", kopf["Content-Security-Policy"])
+        self.assertIn(b"Wingfoilscout antwortet nicht", roh)
+
+    def test_anmeldung_nur_vom_handy(self):
+        self.assertNotIn(b"serviceWorker", self._http("GET", "/")[2])
+        Probeserver.aussen = True
+        self.addCleanup(setattr, Probeserver, "aussen", False)
+        for pfad in ("/", "/handy", w.HILFE_PFAD):
+            with self.subTest(pfad):
+                self.assertIn(b"navigator.serviceWorker.register('/sw.js')", self._http("GET", pfad)[2])
+
+
+class HinweisImWlan(WlanBasis):
+    def test_auch_der_service_worker_nur_mit_schluessel(self):
+        self.assertEqual(self._http("POST", "/handy/freigeben", b"{}")[0], 200)
+        schluessel = handy.schluessel()
+        for pfad in (w.SW_PFAD, w.HINWEIS_PFAD):
+            with self.subTest(pfad):
+                self.assertTrue(self._von(pfad).startswith(b"HTTP/1.0 401"))
+                mit = self._von(pfad, f"{w.COOKIE}={schluessel}")
+                self.assertTrue(mit.startswith(b"HTTP/1.0 200"), mit[:60])
+
+
+# Der Service Worker selbst, in Node mit nachgebauter Umgebung: Netz, Cache und
+# Uhr spielt das Skript unten. Ohne Node übersprungen (wie `node --check` in
+# tools/check.sh).
+SW_PROBE = r"""
+const fs = require('fs');
+const quelle = fs.readFileSync(process.argv[2], 'utf8').replace('var FRIST_MS = 10000;', 'var FRIST_MS = 50;');
+const ergebnis = {};
+function neueWelt() {
+  const kaesten = new Map(), handler = {}, abrufe = [];
+  const welt = {
+    netz: 'da', abrufe,
+    caches: {
+      open: async (n) => { if (!kaesten.has(n)) kaesten.set(n, new Map()); const k = kaesten.get(n);
+        return {put: async (u, a) => { k.set(u, a); }, match: async (u) => k.get(u)}; },
+      keys: async () => [...kaesten.keys()],
+      delete: async (n) => kaesten.delete(n),
+    },
+    kaesten,
+  };
+  welt.fetch = (anfrage, opt) => {
+    const url = typeof anfrage === 'string' ? anfrage : anfrage.url;
+    abrufe.push(url);
+    if (welt.netz === 'weg') return Promise.reject(new TypeError('Load failed'));
+    if (welt.netz === 'haengt') return new Promise(() => {});
+    if (welt.netz === '401') return Promise.resolve({ok: false, status: 401, text: 'Kein Zugang'});
+    return Promise.resolve({ok: true, status: 200, text: 'vom Mac: ' + url});
+  };
+  const self = {addEventListener: (art, f) => { handler[art] = f; }, skipWaiting: async () => {},
+                clients: {claim: async () => {}}};
+  const Response = {error: () => ({ok: false, status: 0, text: 'Fehler'})};
+  new Function('self', 'caches', 'fetch', 'Response', 'VERSION', quelle)(self, welt.caches, welt.fetch, Response, '9.9.9');
+  welt.ereignis = async (art, daten) => {
+    const warten = []; let antwort = null;
+    const e = Object.assign({waitUntil: (p) => warten.push(p), respondWith: (p) => { antwort = p; }}, daten || {});
+    handler[art](e);
+    const a = antwort ? await antwort : null;
+    await Promise.all(warten);
+    return a;
+  };
+  return welt;
+}
+const seite = (pfad) => ({request: {mode: 'navigate', method: 'GET', url: 'https://mac.local:8765' + pfad}});
+(async () => {
+  let w = neueWelt();
+  await w.ereignis('install');
+  ergebnis.abgelegt = (await (await w.caches.open('wingfoilscout-hinweis-9.9.9')).match('/handy/hinweis')).text;
+  ergebnis.netzDa = (await w.ereignis('fetch', seite('/katalog'))).text;
+  w.netz = 'weg';
+  ergebnis.netzWeg = (await w.ereignis('fetch', seite('/katalog'))).text;
+  w.netz = 'haengt';
+  ergebnis.netzHaengt = (await w.ereignis('fetch', seite('/'))).text;
+  w.netz = 'da';
+  ergebnis.daten = await w.ereignis('fetch', {request: {mode: 'cors', method: 'GET', url: 'https://mac.local:8765/status'}});
+  w.abrufe.length = 0;
+  await w.ereignis('fetch', {request: {mode: 'cors', method: 'POST', url: 'https://mac.local:8765/sprache'}});
+  ergebnis.nachSprache = w.abrufe.slice();
+  w.kaesten.set('wingfoilscout-hinweis-1.0.0', new Map()); w.kaesten.set('fremd', new Map());
+  await w.ereignis('activate');
+  ergebnis.kaesten = [...w.kaesten.keys()].sort();
+  // Ohne Schlüssel (401) wird nichts abgelegt, und die Installation scheitert
+  w = neueWelt(); w.netz = '401';
+  try { await w.ereignis('install'); ergebnis.ohneSchluessel = 'installiert'; }
+  catch (f) { ergebnis.ohneSchluessel = 'gescheitert'; }
+  w.netz = 'weg';
+  ergebnis.ohneAblage = (await w.ereignis('fetch', seite('/'))).status;
+  console.log(JSON.stringify(ergebnis));
+})().catch((f) => { console.log(JSON.stringify({fehler: String(f)})); });
+"""
+
+
+class ServiceWorkerInNode(unittest.TestCase):
+    def test_ablauf(self):
+        if not shutil.which("node"):
+            self.skipTest("Node fehlt")
+        with tempfile.TemporaryDirectory() as d:
+            probe = Path(d) / "probe.js"
+            probe.write_text(SW_PROBE, encoding="utf-8")
+            aus = subprocess.run(["node", str(probe), str(w.WEB / "sw.js")], capture_output=True, text=True,
+                                 timeout=60)
+        self.assertEqual(aus.returncode, 0, aus.stderr)
+        e = json.loads(aus.stdout)
+        self.assertNotIn("fehler", e)
+        self.assertEqual(e["abgelegt"], "vom Mac: /handy/hinweis")                 # beim Installieren abgelegt
+        self.assertEqual(e["netzDa"], "vom Mac: https://mac.local:8765/katalog")   # Antwort des Macs unverändert
+        self.assertEqual(e["netzWeg"], "vom Mac: /handy/hinweis")                  # keine Verbindung: der Hinweis
+        self.assertEqual(e["netzHaengt"], "vom Mac: /handy/hinweis")               # keine Antwort in der Frist
+        self.assertIsNone(e["daten"])                                              # Daten: nicht angefasst
+        self.assertEqual(e["nachSprache"], ["https://mac.local:8765/sprache", "/handy/hinweis"])
+        self.assertEqual(e["kaesten"], ["fremd", "wingfoilscout-hinweis-9.9.9"])   # nur alte eigene weg
+        self.assertEqual(e["ohneSchluessel"], "gescheitert")
+        self.assertEqual(e["ohneAblage"], 0)                                       # wie ohne Service Worker
+
+
 if __name__ == "__main__":
     unittest.main()

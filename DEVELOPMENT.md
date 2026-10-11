@@ -55,9 +55,11 @@ explains them as they come up.
                           in the tab bar), lauf.js (the dot on the tab while
                           something is running), sprache.js (the language
                           switcher), hilfe.css (the Help pages), handy.css and
-                          handy.js (the Phone tab), the home-screen icons
-                          (icon-*.png) and the creator's logo (logo.png, in tab
-                          bar, footer and report)
+                          handy.js (the Phone tab), sw.js (the service worker
+                          for the iPhone: the hint when the Mac doesn't answer,
+                          since 2.5.3) and sw-anmelden.js (its registration),
+                          the home-screen icons (icon-*.png) and the creator's
+                          logo (logo.png, in tab bar, footer and report)
       i18n.py             UI languages (since 2.1.0): T(), TN(), N_(), TD(), which
                           language applies, dates — see "Languages (i18n)" below
       zeitraum.py         the period of a search (since 2.3.0): start time
@@ -352,6 +354,18 @@ captured in the browser. The shoreline geometry is tested on a synthetic
 lake, the server on a real server process on a free port.
 `tests/test_catalog.py` checks the catalogue's form: unique IDs, value
 ranges, `dogs`/`access` as text and not as booleans.
+
+Nor do they get the project's `cache/` (since 2.5.3): `tests/__init__.py`
+points `wingscout.CACHE` to a temporary folder for the whole run, before any
+module of wingscout takes it over at import. Until then every demo search of
+a test stored `cache/letzter_lauf.json` in the project, and after every check
+run the Review tab showed a demo search as the last one. Code that needs the
+cache folder therefore takes `CACHE` from `wingscout` — at runtime (`from .
+import CACHE` inside the function) or in a module-level name derived from it
+— never `ROOT / "cache"`. A test that starts a program as a process of its
+own has to pass the folder on itself (`test_werkzeug_laeuft_ohne_netz_durch`
+in `tests/test_pruefstand.py` shows how); `tests/test_testumgebung.py`
+watches over the rest.
 
 What a test should find: regressions. On its first run the synthetic lake
 immediately exposed a bug (moving a point into the water took the nearest
@@ -752,6 +766,14 @@ grid child, set `min-width: 0` — otherwise the child grows with its widest
 content and stretches the whole page instead of scrolling sideways (exactly
 what had happened in the Review and Catalogue tabs). `<datalist>` is not an
 option on iOS: Safari puts the dropdown over the input field.
+
+The service worker for the iPhone (since 2.5.3, `wingscout/web/sw.js`) only
+steps in when a page load gets no answer, and stores nothing but the hint
+page. Keep it that way: a stored page with data would outlive “New key” and
+be shown without asking the Mac. The hint page itself must load nothing
+(no script, image or stylesheet from the server) — it is shown when there is
+no server. Its texts go through `T()` like any other; the service worker
+fetches it again after `POST /sprache`.
 
 In YAML, `no`, `yes`, `on` and `off` are booleans. Put text fields with these
 values in quotes — `dogs: "no"`.

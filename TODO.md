@@ -1,6 +1,13 @@
 # TODO
 
-As of 11 October 2026, version 2.5.2 (986 tests). In it: **“Quit” only on
+As of 11 October 2026, version 2.5.3 (998 tests). In it: **a hint instead of
+a black screen on the iPhone** — with the certificate, a service worker
+stores the hint on the first visit and shows it when the Mac doesn't answer
+(`wingscout/web/sw.js`, `worker-src 'self'`; `SECURITY.md`, addendum of 11
+October, 2.5.3; not yet tried on an iPhone); and **the tests no longer write
+into the project's `cache/`** — the Review tab keeps your last real search
+after a publish (`tests/__init__.py`, `tests/test_testumgebung.py`). Before
+that, 2.5.2 (986 tests), published on 11 October. In it: **“Quit” only on
 the Mac** — on the iPhone the button quit Wingfoilscout on the Mac, the whole
 program, and the iPhone couldn't get back in; now the iPhone doesn't show it,
 `POST /shutdown` answers 403 to other devices, and the “Phone” tab on the Mac
@@ -130,6 +137,24 @@ wasn't important enough to keep.
 
 ## Open — Philipp
 
+- **Try 2.5.3 once — the hint on the iPhone** (restart Wingfoilscout first).
+  It needs the way with the certificate (https). The Home Screen app may keep
+  its own storage, apart from Safari — so do it with the icon itself:
+  1. On the Mac, “Phone” tab → **Show QR code**. On the iPhone, open
+     Wingfoilscout **from the Home Screen icon** and switch between two tabs
+     once (that stores the hint).
+  2. On the Mac, **Stop sharing** (or quit Wingfoilscout).
+  3. On the iPhone, close the app (swipe it away) and open the icon again:
+     instead of the black screen it should say “Wingfoilscout antwortet
+     nicht” with three steps. Possibly only after up to 10 seconds, if the
+     iPhone waits for an answer instead of getting a refusal.
+  4. On the Mac, **Show QR code** again; on the iPhone, **Neu laden** — the
+     start page.
+
+  If it stays black, iOS doesn't run the service worker for a Home Screen
+  app with a self-installed certificate — tell me, then there is nothing
+  more to get out of this way. Also after a publish: the Review tab should
+  keep your last real search instead of a demo search.
 - **Try 2.5.2 once** (restart Wingfoilscout first — the bar at the top says
   so); it includes what 2.5.0 and 2.5.1 brought:
   - **Phone tab:** the flow works on the iPhone (reported on 11 October,
@@ -336,20 +361,6 @@ wasn't important enough to keep.
 
 ## Open — development
 
-- **iPhone: a black screen instead of a hint** (requested on 11 October). An
-  iPhone that is set up, but the Mac isn't sharing (no “Show QR code” since
-  Wingfoilscout started): the Home Screen icon opens a black screen.
-  Wanted: a short instruction instead — “On the Mac, in the ‘Phone’ tab,
-  press ‘Show QR code’” (plus: Wingfoilscout running, Mac awake, same Wi-Fi).
-  The catch: without sharing nothing reaches the Mac, so the Mac can't send
-  that page. The page has to be on the iPhone already — a small service
-  worker that stores it on the first visit and shows it when the Mac doesn't
-  answer. Only over https (service workers need a secure context; with the
-  trusted certificate that's given), not on the way without a certificate;
-  the CSP would need `worker-src 'self'`. Whether iOS runs it in a Home
-  Screen app with a self-installed certificate authority: to be tried on a
-  device first. Not an option without asking: sharing that starts by itself —
-  it deliberately never does (`SECURITY.md`, addendum of 10 October).
 - **From the security review of 11 October, left out for now** (reasons in
   `SECURITY.md`, addendum of 11 October, 2.5.2): name constraints for the
   certificate authority — first find out on an iPhone whether iOS enforces
@@ -377,24 +388,18 @@ wasn't important enough to keep.
   (`pip install -r requirements.txt ruff`) — needs a token with the
   `workflow` scope, or SSH, so not touched so far.
 - **iPhone, next steps:** the QR code came with 2.5.0 (`wingscout/qr.py`,
-  no new dependency). A service worker would show the
-  most recently loaded interface offline; without it, the report is the
-  offline version on the go. Dynamic Type (text size from the iOS settings)
-  is not supported.
+  no new dependency), the service worker with the hint with 2.5.3. It could
+  also keep the most recently loaded pages for offline use — deliberately
+  not so far: they carry the starting point and the catalogue, and would
+  outlive “New key”. On the go, the report is the offline version. Dynamic
+  Type (text size from the iOS settings) is not supported. Not an option
+  without asking: sharing that starts by itself — it deliberately never does
+  (`SECURITY.md`, addendum of 10 October).
 - **Logbook, next steps:** editing a session (today: delete it and log it
   again); gusts in the comparison (the suggestions only use the mean wind).
 - **Favourites, next steps:** changing the order (today: take one out and add
   it again — the report keeps the order of the list); a ★ in the Catalogue to
   add a spot; the favourites outside the search on the map.
-- **Tests that write `cache/letzter_lauf.json` of the project** (found in the
-  review of 7 October): several tests run a demo search through `cli.main`
-  without a temporary `cache/` (among them `tests/test_report_cli.py`,
-  `tests/test_webui.py`, `tests/test_zeitraum.py`), and every search stores
-  its result for the Review tab there — so after a check run (and every
-  publish runs one) the Review tab's "last search" is a demo search until the
-  next real one. `tests/test_favoriten.py`, `tests/test_i18n.py` and
-  `tests/test_report_sprachen.py` already patch `wingscout.CACHE`; the others
-  should too.
 - **Better tide sources** (1.18.0 uses Open-Meteo's 8 km model, tide and wind
   surge combined, not an official tide table): for the German North Sea
   Pegelonline (BSH/WSV, measured and astronomical), for the Netherlands

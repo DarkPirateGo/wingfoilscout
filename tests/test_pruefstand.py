@@ -926,8 +926,18 @@ class Bericht(unittest.TestCase):
         """`--nur land --ohne-netz`: der Teil ohne Netz muss grün sein und 0 zurückgeben."""
         import subprocess
         import sys
-        p = subprocess.run([sys.executable, str(ROOT / "tools" / "pruefstand.py"), "--nur", "land",
-                            "--ohne-netz"], capture_output=True, text=True, timeout=120)
+        # Ein eigener Prozess erbt das umgelegte CACHE aus tests/__init__.py
+        # nicht — bis 2.5.2 schrieb dieser Test deshalb
+        # cache/pruefstand/letzter_lauf.json des Projekts. Jetzt legt der
+        # Aufruf CACHE selbst um, bevor er das Werkzeug startet.
+        import tests
+        start = ("import runpy, sys, wingscout; from pathlib import Path; "
+                 "wingscout.CACHE = Path(sys.argv.pop(1)); sys.argv = sys.argv[1:]; "
+                 "runpy.run_path(sys.argv[0], run_name='__main__')")
+        p = subprocess.run([sys.executable, "-c", start, str(tests.CACHE_IM_TEST),
+                            str(ROOT / "tools" / "pruefstand.py"), "--nur", "land", "--ohne-netz"],
+                           cwd=str(ROOT), capture_output=True, text=True, timeout=120)
+        self.assertTrue((tests.CACHE_IM_TEST / "pruefstand" / "letzter_lauf.json").exists())
         self.assertIn("ohne Netz · Geometrie: kein Wasser", p.stdout)
         self.assertIn("0 Fehler", p.stdout)
         self.assertEqual(p.returncode, 0, p.stdout + p.stderr)

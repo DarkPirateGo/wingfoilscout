@@ -251,9 +251,10 @@ def fahrzeiten_routen(spots, cfg, args, log) -> None:
     """Echte Fahrzeiten für `spots` holen — scheitert es, bleibt die Schätzung."""
     if spots and not getattr(args, "no_routing", False) and not getattr(args, "demo", False):
         try:
+            from . import CACHE                    # zur Laufzeit: die Tests legen CACHE um
             from .sources.routing import drive_times, apply_to
             home = cfg["rider"]["home"]
-            times = drive_times(home, spots, ROOT / "cache" / "routes.json", log=log)
+            times = drive_times(home, spots, CACHE / "routes.json", log=log)
             apply_to(spots, times)
         except Exception as exc:                       # noqa: BLE001 — Zusatz, kein Muss
             log(T("Fahrzeiten nicht routbar ({fehler}) — es bleibt bei der Schätzung", fehler=exc))

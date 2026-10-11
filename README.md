@@ -587,6 +587,12 @@ Share only on your own Wi-Fi — not in a hotel, on a train or at a campsite.
 Wingfoilscout then starts like an app, without an address bar, with its own
 icon.
 
+**When the Mac doesn’t answer.** Set up with the certificate, the icon shows a
+short hint instead of a black screen when Wingfoilscout doesn’t answer — not
+running, the Mac asleep, another Wi-Fi, or sharing not started yet (after
+every start: **Show QR code** in the “Phone” tab). The iPhone saves this hint
+on its first visit (since 2.5.3).
+
 **On the road without a Mac.** The report is a single HTML file
 (`report.html` in the Wingfoilscout folder). Sent to the iPhone via AirDrop,
 it can be opened there without a network and without the Mac — everything
