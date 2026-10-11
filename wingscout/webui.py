@@ -11,8 +11,8 @@ import argparse
 import contextlib
 import copy
 import hmac
-import secrets
 import socket
+import ssl
 import sys
 import html
 import json
@@ -39,6 +39,8 @@ from .spots import KatalogFehler
 from .geo import parse_position
 from .cli import run_search
 from . import favoriten as fav_mod
+from . import handy
+from . import qr
 from . import instagram
 from . import zeitraum
 from .report import KOMMENTAR_CSS, KOMMENTAR_JS, kommentar_kasten, fassung as report_fassung
@@ -210,33 +212,27 @@ PRUEFEN_AKTIV = {"n": 0}
 # dann ein Zugangsschlüssel: Er steht in der Startadresse, wandert einmal ins
 # Cookie und gilt, bis Wingfoilscout beendet wird. Ohne ihn kommt vom Netz her
 # niemand an Katalog, Tagebuch oder den Beenden-Knopf.
-LAN = {"aktiv": False, "schluessel": "", "adressen": ()}
+LAN = {"aktiv": False, "schluessel": "", "adressen": (), "namen": (), "server": [], "tls": False}
+# Seit 2.5.0 (handy.py): Der Schlüssel bleibt über Neustarts gleich, bis im
+# Reiter „Handy“ ein neuer erzeugt wird — und die Freigabe lässt sich dort
+# ein- und ausschalten, ohne Neustart: ein eigener Server je Adresse im WLAN,
+# neben dem auf 127.0.0.1. Mit Zertifikat spricht er https (und weiter http,
+# am ersten Byte erkannt), sonst http.
+LAN_LOCK = threading.Lock()
+HANDY_ZERT_LOCK = threading.Lock()       # zwei Klicks auf „Zertifikat erzeugen“ nacheinander
 COOKIE = "wingscout_schluessel"
 
 
 def eigene_adressen() -> list:
-    """Die IPv4-Adressen dieses Rechners im lokalen Netz.
+    """Die IPv4-Adressen dieses Rechners im lokalen Netz — seit 2.5.0 die, über
+    die er ins Netz geht, zuerst (handy.adressen).
 
     Der UDP-„Verbindungsaufbau“ zu einer Testadresse schickt kein einziges
     Paket; er fragt nur das Betriebssystem, über welche eigene Adresse es
     dorthin ginge. Das ist der verlässlichste Weg, die Adresse im WLAN zu
     erfahren — `gethostname()` liefert auf dem Mac oft nur 127.0.0.1.
     """
-    aus = set()
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    try:
-        s.connect(("192.0.2.1", 9))            # TEST-NET-1, nie erreichbar
-        aus.add(s.getsockname()[0])
-    except OSError:
-        pass
-    finally:
-        s.close()
-    try:
-        for eintrag in socket.getaddrinfo(socket.gethostname(), None, socket.AF_INET):
-            aus.add(eintrag[4][0])
-    except OSError:
-        pass
-    return sorted(a for a in aus if not a.startswith("127."))
+    return handy.adressen()
 
 
 def zugang_pruefen(ip: str, schluessel_in_url: str, cookie_kopf: str) -> str:
@@ -775,7 +771,10 @@ REITER = [("/", N_("Suche"), "lupe", True),
           ("/katalog", N_("Katalog"), "liste", False),
           ("/pruefen", N_("Koordinaten prüfen"), "nadel", False),
           ("/rueckblick", N_("Rückblick"), "kurve", True),
-          ("/tagebuch", N_("Tagebuch"), "buch", True)]
+          ("/tagebuch", N_("Tagebuch"), "buch", True),
+          # Seit 2.5.0 (gewünscht am 10.10.2026): wie das Handy drankommt —
+          # nur am Mac, am Handy ist man dann schon drauf
+          ("/handy", N_("Handy"), "handy", False)]
 
 # Strichzeichnungen für die Tab-Leiste am Handy, 24×24, in der Textfarbe.
 SYMBOLE = {
@@ -786,6 +785,7 @@ SYMBOLE = {
     "nadel": "<path d='M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z'/><circle cx='12' cy='10' r='2.4'/>",
     "kurve": "<path d='M3 20V4'/><path d='M3 20h18'/><path d='m6 15 4-4 3.5 3L20 7'/>",
     "buch": "<path d='M5 5.5A2 2 0 0 1 7 3.5h11v15H7a2 2 0 0 0-2 2z'/><path d='M9 8h6M9 11.5h6'/>",
+    "handy": "<rect x='6.5' y='2.5' width='11' height='19' rx='2.4'/><path d='M10.5 18.5h3'/>",
 }
 
 
@@ -879,28 +879,231 @@ def version_auf_platte() -> str:
 
 
 def handy_kasten(port: int = 8765) -> str:
-    """Die Adresse fürs iPhone — nur, wenn Wingfoilscout im WLAN erreichbar ist.
-
-    Am Handy steht der Kasten nicht: wer ihn dort sähe, ist schon drauf.
-    """
-    if not LAN["aktiv"] or not LAN["adressen"]:
-        return ("<div class='gruppe nurgross'><h4>" + T("Auf dem iPhone") + "</h4>"
-                "<p class='hint' style='margin:0'>"
-                + T("Wingfoilscout hört nur auf diesem Mac. Für das iPhone im "
-                    "selben WLAN im Terminal <code>python3 -m wingscout.webui --lan</code> starten (oder "
-                    "„Wingfoilscout fürs iPhone starten“ doppelklicken) — dann steht dort die Adresse samt "
-                    "Zugangsschlüssel.")
-                + "</p></div>")
-    zeilen = "".join(
-        f"<div style='font:13px/1.8 ui-monospace,Menlo,monospace;word-break:break-all'>"
-        f"http://{html.escape(a)}:{port}/?k={html.escape(LAN['schluessel'])}</div>"
-        for a in LAN["adressen"])
+    """Der Hinweis auf den Reiter „Handy“ unter „Datenquellen“ (seit 2.5.0; bis
+    dahin stand hier die Adresse samt Schlüssel). Am Handy steht er nicht:
+    wer ihn dort sähe, ist schon drauf."""
+    text = (T("Fürs Handy freigegeben — den QR-Code zeigt der Reiter „Handy“.") if LAN["aktiv"] else
+            T("Wingfoilscout auch auf dem iPhone: im Reiter „Handy“ freigeben und den QR-Code scannen."))
     return ("<div class='gruppe nurgross'><h4>" + T("Auf dem iPhone") + "</h4>"
-            + zeilen +
-            "<p class='hint' style='margin:6px 0 0'>"
-            + T("Im selben WLAN in Safari eintippen, dann "
-                "„Teilen“ → „Zum Home-Bildschirm“. Der Schlüssel gilt, bis Wingfoilscout beendet wird.")
-            + "</p></div>")
+            "<p class='hint' style='margin:0'>" + text + " <a href='/handy'>" + T("Zum Reiter „Handy“") + "</a></p></div>")
+
+
+# ── Reiter „Handy“ (seit 2.5.0) ──────────────────────────────────────────────
+
+HANDY_CSS = _web("handy.css")
+HANDY_JS = _web("handy.js")
+
+
+def freigeben(port: int | None = None) -> None:
+    """Fürs Handy freigeben, ohne Neustart: ein Server je Adresse im WLAN,
+    neben dem auf 127.0.0.1, mit dem bleibenden Schlüssel — und mit https,
+    wenn ein Zertifikat da ist (handy.py). Bis 2.4.0 ging das nur mit
+    `--lan` beim Start, und der Server hörte dann auf allen Adressen."""
+    with LAN_LOCK:
+        if LAN["aktiv"]:
+            return
+        port = port or PORT["nr"]
+        adressen = handy.adressen()
+        if not adressen:
+            raise handy.HandyFehler(T("Keine Adresse im WLAN gefunden — ist der Mac im WLAN?"))
+        tls = handy.tls_kontext()
+        meta = handy.zertifikat()
+        server: list = []
+        for adresse in adressen:
+            try:
+                s = BegrenzterServer((adresse, port), Handler)
+            except OSError as exc:
+                for alt in server:
+                    alt.server_close()
+                raise handy.HandyFehler(T("{adresse} lässt sich nicht öffnen ({fehler}).",
+                                          adresse=f"{adresse}:{port}", fehler=exc.strerror or exc)) from exc
+            s.tls = tls
+            server.append(s)
+        for s in server:
+            threading.Thread(target=s.serve_forever, kwargs={"poll_interval": 0.5}, daemon=True).start()
+        LAN.update(aktiv=True, schluessel=handy.schluessel(), adressen=tuple(adressen),
+                   namen=tuple((meta or {}).get("namen") or ()), server=server, tls=tls is not None)
+
+
+def freigabe_beenden() -> None:
+    """Die Server im WLAN zu — Wingfoilscout hört wieder nur auf diesem Mac."""
+    with LAN_LOCK:
+        server = list(LAN["server"])
+        LAN.update(aktiv=False, server=[], adressen=(), namen=(), tls=False)
+    for s in server:
+        try:
+            s.shutdown()
+            s.server_close()
+        except OSError:
+            pass
+
+
+def tls_aktualisieren() -> None:
+    """Nach einem neuen Zertifikat: laufende Server im WLAN sprechen ab der
+    nächsten Verbindung mit ihm (der Handler liest `server.tls` je Verbindung)."""
+    tls, meta = handy.tls_kontext(), handy.zertifikat()
+    with LAN_LOCK:
+        for s in LAN["server"]:
+            s.tls = tls
+        if LAN["aktiv"]:
+            LAN.update(tls=tls is not None, namen=tuple((meta or {}).get("namen") or ()))
+
+
+def handy_stand() -> dict:
+    """Was der Reiter zeigt: Freigabe, Adressen, Zertifikat, die Startadressen."""
+    with LAN_LOCK:
+        aktiv, adressen, tls, wert = LAN["aktiv"], list(LAN["adressen"]), LAN["tls"], LAN["schluessel"]
+    if not aktiv:
+        adressen = handy.adressen()     # ohne Freigabe zeigt die Seite keine Adresse — und braucht keinen Schlüssel
+    meta = handy.zertifikat()
+    urls = handy.startadressen(adressen, PORT["nr"], wert, meta)
+    return {"aktiv": aktiv, "adressen": adressen, "zertifikat": meta, "passt": bool(urls["https"]),
+            "https": urls["https"] if (tls or not aktiv) else "", "http": urls["http"]}
+
+
+def _wo(art: str) -> str:
+    return (f"<span class='hwo {'mac' if art == 'mac' else 'iphone'}'>"
+            f"{'Mac' if art == 'mac' else 'iPhone'}</span>")
+
+
+def _knopf(pfad: str, text: str, ghost: bool = False, zweimal: bool = False) -> str:
+    klasse = " class='ghost'" if ghost else ""
+    zweites = " data-zweimal" if zweimal else ""
+    return f"<button type='button' data-pfad='{pfad}'{klasse}{zweites}>{html.escape(text)}</button>"
+
+
+def handy_page(stand: dict) -> str:
+    """Der Reiter „Handy“ (seit 2.5.0, gewünscht am 10.10.2026: „wie man das
+    Handy verbindet — das muss schnell ersichtlich sein“). Oben das, was
+    jedes Mal nötig ist (freigeben, Code scannen), darunter das Einrichten:
+    Weg 1 mit Zertifikat, Weg 2 ohne, und „Klappt nicht?“."""
+    meta, aktiv = stand["zertifikat"], stand["aktiv"]
+    teile = [seitenkopf(T("Wingfoilscout · Handy"), CSS + REITER_CSS + HANDY_CSS),
+             "<div class='wrap'>", reiter("/handy"),
+             "<h1>" + T("Wingfoilscout aufs Handy") + "</h1>",
+             "<p class='sub'>" + T("Im selben WLAN zeigt dein iPhone Wingfoilscout — gerechnet wird auf diesem Mac. "
+                                   "Einmal einrichten, danach jedes Mal: freigeben, Code scannen, fertig.") + "</p>"]
+
+    # ── Verbinden — jedes Mal ───────────────────────────────────────────────
+    zustand = (f"<span class='hzustand an'>{T('freigegeben')}</span>" if aktiv else
+               f"<span class='hzustand aus'>{T('nur auf diesem Mac')}</span>")
+    teile.append("<section class='hkarte'><h2>" + T("Verbinden") + zustand + "</h2>")
+    if not aktiv:
+        teile.append("<p>" + T("Wingfoilscout ist gerade nur auf diesem Mac erreichbar. Gib es fürs Handy frei — "
+                               "dann erscheint hier der QR-Code.") + "</p>"
+                     + "<div class='hknoepfe'>" + _knopf("/handy/freigeben", T("Fürs Handy freigeben")) + "</div>"
+                     + "<p class='hklein'>" + T("Nur im eigenen WLAN — nicht im Hotel, im Zug oder auf dem Campingplatz. "
+                                                "Die Freigabe endet, wenn du Wingfoilscout beendest.") + "</p>")
+    else:
+        url = stand["https"] or stand["http"]
+        art = (f"<span class='hart zu'>{T('verschlüsselt')}</span>" if stand["https"] else
+               f"<span class='hart offen'>{T('unverschlüsselt')}</span>")
+        teile.append("<div class='hverbinden'>"
+                     f"<div class='hqr'>{qr.svg(url, titel=html.escape(T('QR-Code für das iPhone')))}</div>"
+                     "<div><ol class='hschritte'>"
+                     "<li>" + _wo("iphone") + T("Ins selbe WLAN wie dieser Mac.") + "</li>"
+                     "<li>" + _wo("iphone") + T("Kamera öffnen, auf den Code richten und den Link antippen.") + "</li>"
+                     "<li>" + _wo("iphone") + T("In Safari: Teilen → „Zum Home-Bildschirm“ — dann startet Wingfoilscout "
+                                               "wie eine App.") + "</li>"
+                     "</ol>"
+                     f"<p class='hadresse'>{art}{html.escape(url)}</p>"
+                     "<div class='hknoepfe'>" + _knopf("/handy/beenden", T("Freigabe beenden"), ghost=True) + "</div>"
+                     "</div></div>")
+        if not stand["https"]:
+            teile.append("<p class='hwarn'>" + T("Ohne Zertifikat öffnet Safari diese Adresse nur, wenn auf dem iPhone "
+                                                 "die Warnung vor nicht sicheren Verbindungen aus ist — sonst kommt "
+                                                 "„Safari kann die Seite nicht öffnen … HTTPS-Only“. Besser: einmal "
+                                                 "Weg 1 unten einrichten.") + "</p>")
+    teile.append("<p class='hmeldung' id='hmeldung' role='status'></p></section>")
+
+    # ── Weg 1: mit Zertifikat ───────────────────────────────────────────────
+    if not meta:
+        lage = T("Noch kein Zertifikat.")
+    elif meta.get("abgelaufen"):
+        lage = T("Das Zertifikat ist abgelaufen — neu erzeugen und das neue Profil aufs iPhone schicken.")
+    elif not stand["passt"]:
+        lage = T("Das Zertifikat passt nicht zur jetzigen Adresse dieses Macs ({adresse}) — neu erzeugen und das "
+                 "neue Profil aufs iPhone schicken.", adresse=html.escape(", ".join(stand["adressen"]) or "?"))
+    else:
+        lage = T("Zertifikat vom {erstellt}, gültig bis {bis}.",
+                 erstellt=i18n.datum_jahr(date.fromisoformat(meta["erstellt"])) if meta.get("erstellt") else "?",
+                 bis=i18n.datum_jahr(date.fromisoformat(meta["bis"])) if meta.get("bis") else "?")
+    datum = html.escape(meta["erstellt"]) if meta and meta.get("erstellt") else "…"
+    teile.append(
+        "<section class='hkarte'><h2>" + T("Einmal einrichten — Weg 1: mit Zertifikat")
+        + f"<span class='hempfohlen'>{T('empfohlen')}</span></h2>"
+        "<p>" + T("Dann öffnet Safari Wingfoilscout verschlüsselt (https) und ohne Warnung — auch wenn auf dem iPhone "
+                  "die Warnung vor nicht sicheren Verbindungen an ist. Das dauert zwei Minuten, einmal.") + "</p>"
+        f"<p class='hklein'>{lage}</p>"
+        "<ol class='hschritte'>"
+        "<li>" + _wo("mac") + T("Zertifikat für diesen Mac erzeugen:")
+        + "<div class='hknoepfe'>" + _knopf("/handy/zertifikat", T("Neu erzeugen") if meta else T("Zertifikat erzeugen"),
+                                            ghost=bool(meta and stand["passt"])) + "</div>"
+        + "</li>"
+        "<li>" + _wo("mac") + T("Das Profil laden — der Browser legt es in den Ordner „Downloads“. Dort Rechtsklick "
+                                "auf „Wingfoilscout-iPhone.mobileconfig“ → Teilen → AirDrop → dein iPhone.")
+        + ("<div class='hknoepfe'><a class='hknopf' href='/handy/profil' download>" + T("Profil laden") + "</a></div>"
+           if meta else "")
+        + "<p class='hklein'>" + T("Ohne AirDrop: die Datei per Mail an dich selbst schicken und auf dem iPhone den "
+                                   "Anhang antippen. Bietet der Mac an, das Profil bei sich zu installieren: nicht "
+                                   "nötig — es gehört aufs iPhone.") + "</p></li>"
+        "<li>" + _wo("iphone") + T("Installieren: Einstellungen öffnen → ganz oben <span class='hpfad'>„Profil "
+                                   "geladen“</span> → Installieren → Code eingeben → Installieren → Fertig.") + "</li>"
+        "<li>" + _wo("iphone") + T("Vertrauen einschalten: Einstellungen → Allgemein → Info → ganz unten "
+                                   "<span class='hpfad'>„Zertifikatsvertrauenseinstellungen“</span> → „Wingfoilscout "
+                                   "{datum}“ einschalten → Fortfahren.", datum=datum) + "</li>"
+        "<li>" + T("Fertig: oben „Fürs Handy freigeben“ und den Code scannen.") + "</li>"
+        "</ol>"
+        "<p class='hklein'>" + T("Sicher: Den Schlüssel, mit dem Wingfoilscout das Zertifikat ausgestellt hat, gibt es "
+                                 "schon nicht mehr — niemand kann damit weitere Zertifikate ausstellen, denen dein iPhone "
+                                 "vertraut. Entfernen geht jederzeit: Einstellungen → Allgemein → VPN und "
+                                 "Geräteverwaltung → „Wingfoilscout im Heimnetz“ → Profil entfernen.") + "</p>"
+        "</section>")
+
+    # ── Weg 2: ohne Zertifikat ──────────────────────────────────────────────
+    teile.append(
+        "<section class='hkarte'><h2>" + T("Weg 2: ohne Zertifikat") + "</h2>"
+        "<p>" + T("Safari kann vor unverschlüsselten Seiten warnen: Einstellungen → Apps → Safari, der Schalter für die "
+                  "Warnung vor nicht sicheren Verbindungen (englisch „Not Secure Connection Warning“; auf Deutsch "
+                  "kann er je nach iOS-Version etwas anders heißen). Ist er an, öffnet Safari Wingfoilscout ohne "
+                  "Zertifikat gar nicht: „Safari kann die Seite nicht öffnen … HTTPS-Only“. Schaltest du ihn aus, "
+                  "geht es — über http, unverschlüsselt.") + "</p>"
+        "<p>" + T("Was das kostet: Safari warnt dann bei keiner unverschlüsselten Seite mehr, nicht nur bei "
+                  "Wingfoilscout. Und was dein iPhone und Wingfoilscout austauschen, samt Zugangsschlüssel, geht "
+                  "unverschlüsselt durchs WLAN — zu Hause mit WPA2/WPA3 vertretbar, in fremden WLANs nicht. "
+                  "Deshalb ist Weg 1 besser.") + "</p>"
+        + (f"<p class='hadresse'><span class='hart offen'>{T('unverschlüsselt')}</span>{html.escape(stand['http'])}</p>"
+           if aktiv and stand["https"] and stand["http"] else "")
+        + "</section>")
+
+    # ── Klappt nicht? ───────────────────────────────────────────────────────
+    teile.append(
+        "<section class='hkarte'><h2>" + T("Klappt nicht?") + "</h2><ul class='hprobleme'>"
+        "<li>" + T("<b>„Safari kann die Seite nicht öffnen … HTTPS-Only“:</b> Safari will https — Weg 1 einrichten "
+                   "oder Weg 2.") + "</li>"
+        "<li>" + T("<b>„Diese Verbindung ist nicht privat“:</b> In Weg 1 fehlt Schritt 4 (Vertrauen einschalten) — "
+                   "oder das Zertifikat ist neu erzeugt und das neue Profil noch nicht auf dem iPhone.") + "</li>"
+        "<li>" + T("<b>„Kein Zugang“:</b> den Code hier neu scannen. Nach „Neuer Schlüssel“ geht das alte Symbol auf "
+                   "dem Home-Bildschirm nicht mehr — löschen und neu hinzufügen.") + "</li>"
+        "<li>" + T("<b>Die Seite lädt nicht:</b> Ist das iPhone im selben WLAN? Ist der Mac wach und Wingfoilscout "
+                   "offen? Ist die Freigabe an? Beim ersten Freigeben fragt macOS womöglich, ob Python eingehende "
+                   "Verbindungen annehmen darf — „Erlauben“.") + "</li>"
+        "</ul>"
+        "<p class='hklein'>" + T("Der Zugangsschlüssel bleibt gleich, auch nach einem Neustart — so geht das Symbol auf "
+                                 "dem Home-Bildschirm weiter. Ein neuer sperrt alle bisher verbundenen Geräte aus.")
+        + "</p><div class='hknoepfe'>" + _knopf("/handy/schluessel", T("Neuer Schlüssel"), ghost=True, zweimal=True)
+        + "</div></section>")
+    teile.append(skript("\n" + HANDY_JS + "\n"))
+    teile.append(seitenende() + "</body></html>")
+    return "".join(teile)
+
+
+def handy_nur_am_mac() -> str:
+    """Wer den Reiter vom Handy aus öffnet, ist schon drauf."""
+    return (seitenkopf(T("Wingfoilscout · Handy"), CSS + REITER_CSS + HANDY_CSS) + "<div class='wrap'>"
+            + reiter("/handy") + "<h1>" + T("Wingfoilscout aufs Handy") + "</h1>"
+            "<p class='sub'>" + T("Du bist schon drauf. Freigabe, QR-Code und Zertifikat stehen in diesem Reiter auf "
+                                  "dem Mac.") + "</p>" + seitenende() + "</body></html>")
 
 
 def neustart_hinweis() -> str:
@@ -2064,6 +2267,9 @@ class BegrenzterServer(ThreadingHTTPServer):
     """
     MAX_VERBINDUNGEN = 64
     MAX_VON_AUSSEN = 24
+    # Der TLS-Kontext der Server fürs WLAN, wenn ein Zertifikat da ist (seit
+    # 2.5.0, handy.py) — dann spricht der Server https und weiter http.
+    tls: ssl.SSLContext | None = None
 
     def __init__(self, *args, **kwargs):
         self._offen_lock = threading.Lock()
@@ -2105,8 +2311,9 @@ class BegrenzterServer(ThreadingHTTPServer):
 
     def handle_error(self, request, client_address):
         # Gegenstelle weg oder zu langsam: kein Traceback im Terminal — bei
-        # einer Flut halb offener Verbindungen wären es Hunderte
-        if isinstance(sys.exc_info()[1], ABGERISSEN):
+        # einer Flut halb offener Verbindungen wären es Hunderte. Ebenso ein
+        # TLS-Handshake, der scheitert (ein Gerät ohne das Profil, ein Scanner)
+        if isinstance(sys.exc_info()[1], ABGERISSEN + (ssl.SSLError,)):
             return
         super().handle_error(request, client_address)
 
@@ -2147,15 +2354,50 @@ class Handler(BaseHTTPRequestHandler):
         frei. Der Mac selbst hat keine Frist. Eine Anfrage je Verbindung
         (HTTP/1.0): eine Seite ist in ein, zwei Sekunden gebaut, die Suche
         läuft im Hintergrund. Nur die Arbeit an Katalog und Koordinaten wartet
-        auf Overpass und Nominatim — die hält die Frist an (`_frist_angehalten`)."""
-        super().setup()
+        auf Overpass und Nominatim — die hält die Frist an (`_frist_angehalten`).
+
+        Seit 2.5.0 kann ein Server fürs WLAN https sprechen (handy.py): Ist
+        das erste Byte ein TLS-Handshake (0x16), wird die Verbindung
+        verschlüsselt, sonst bleibt sie http — so geht beides auf demselben
+        Anschluss. Der Handshake läuft schon unter der Frist."""
         self._frist_sperre = threading.Lock()
         self._frist = None                # der laufende Timer, wenn einer läuft
         self._frist_ende = False          # finish() war da: nichts mehr schließen
         self.frist_abgelaufen = False
+        self._roh = self.request          # die Verbindung, wie der Server sie angenommen hat
         von_aussen = getattr(self.server, "von_aussen", BegrenzterServer.von_aussen)
         if von_aussen(self.client_address):
             self._frist_starten()
+        tls = getattr(self.server, "tls", None)
+        if tls is not None:
+            self.request.settimeout(self.timeout)
+            try:
+                erstes = self.request.recv(1, socket.MSG_PEEK)
+            except OSError:
+                erstes = b""
+            if erstes == b"\x16":
+                huelle = tls.wrap_socket(self.request, server_side=True, do_handshake_on_connect=False)
+                self.request = huelle      # ab hier trifft die Frist die Hülle
+                try:
+                    huelle.do_handshake()
+                except BaseException:
+                    self._aufgeben()
+                    raise
+        super().setup()
+
+    def _aufgeben(self) -> None:
+        """Der TLS-Handshake ist gescheitert (ein Gerät ohne das Profil, ein
+        Scanner, die Frist): Nach einem Fehler in setup() kommt kein finish(),
+        also hier Frist und Hülle zu."""
+        with self._frist_sperre:
+            self._frist_ende = True
+            if self._frist is not None:
+                self._frist.cancel()
+                self._frist = None
+        try:
+            self.request.close()
+        except OSError:
+            pass
 
     def _frist_starten(self) -> None:
         with self._frist_sperre:
@@ -2175,8 +2417,8 @@ class Handler(BaseHTTPRequestHandler):
                 return
             self.frist_abgelaufen = True
             try:
-                self.connection.shutdown(socket.SHUT_RDWR)
-            except OSError:
+                self.request.shutdown(socket.SHUT_RDWR)
+            except (OSError, ValueError):
                 pass
 
     @contextlib.contextmanager
@@ -2217,12 +2459,22 @@ class Handler(BaseHTTPRequestHandler):
                 if self._frist is not None:
                     self._frist.cancel()
                     self._frist = None
-        super().finish()
+        try:
+            super().finish()
+        finally:
+            # Eine TLS-Hülle schließt der Server nicht selbst — er kennt nur
+            # die angenommene Verbindung, und die gehört jetzt der Hülle
+            if self.request is not getattr(self, "_roh", self.request):
+                try:
+                    self.request.close()
+                except OSError:
+                    pass
 
     # ── Antworten ───────────────────────────────────────────────────────────
 
-    def _send(self, code, body, ctype="text/html; charset=utf-8", nonce_wert=None):
+    def _send(self, code, body, ctype="text/html; charset=utf-8", nonce_wert=None, kopf: dict | None = None):
         """`body`: Bytes — oder Text, der dann durch `als_bytes()` geht.
+        `kopf`: weitere Kopfzeilen (das Profil fürs iPhone kommt als Anhang).
 
         `nonce_wert`: None = die Nonce dieser Anfrage (Regelfall), ein Text =
         eine bestimmte (der gespeicherte Report bringt seine eigene mit),
@@ -2246,6 +2498,8 @@ class Handler(BaseHTTPRequestHandler):
         # Adresse sie kamen (Review 25.09., S8).
         self.send_header("X-Content-Type-Options", "nosniff")
         self.send_header("Referrer-Policy", "no-referrer")
+        for name, wert in (kopf or {}).items():
+            self.send_header(name, wert)
         self.end_headers()
         self.wfile.write(body)
 
@@ -2318,10 +2572,14 @@ class Handler(BaseHTTPRequestHandler):
         # jeden Namen: ein fremder Name, der auf 127.0.0.1 zeigt, bleibt so
         # ausgesperrt (DNS-Rebinding).
         allowed |= {f"{adresse}:{port}" for adresse in LAN["adressen"]}
+        # Seit 2.5.0 auch der Bonjour-Name des Macs aus dem Zertifikat — nur
+        # dieser eine, und nur, solange freigegeben ist
+        if LAN["aktiv"]:
+            allowed |= {f"{name.lower()}:{port}" for name in LAN["namen"]}
         if host not in allowed:
             return False
         origin = self.headers.get("Origin")
-        if origin and origin.lower() not in {f"http://{h}" for h in allowed}:
+        if origin and origin.lower() not in {f"{art}://{h}" for h in allowed for art in ("http", "https")}:
             return False
         return True
 
@@ -2693,6 +2951,45 @@ class Handler(BaseHTTPRequestHandler):
                                     "Anlauf in der besten Richtung — sieht gut aus.",
                                     km=f"{eintrag['max_fetch_km']:.1f}"))
 
+    def _von_aussen(self) -> bool:
+        """Kommt die Anfrage von einem anderen Gerät als diesem Mac? Die
+        Regel des Servers (BegrenzterServer.von_aussen; im Test eine eigene)."""
+        return getattr(self.server, "von_aussen", BegrenzterServer.von_aussen)(self.client_address)
+
+    def _handy(self, path: str) -> None:
+        """Die Knöpfe im Reiter „Handy“ (seit 2.5.0) — nur am Mac selbst: vom
+        Handy aus ließe sich sonst die Freigabe abschalten oder ein Schlüssel
+        erneuern, der einen selbst aussperrt."""
+        if self._von_aussen():
+            self._antwort(403, error=T("Das geht nur am Mac selbst."))
+            return
+        try:
+            self._json()
+        except ValueError as exc:
+            self._antwort(400, error=str(exc))
+            return
+        try:
+            if path == "/handy/freigeben":
+                freigeben()
+            elif path == "/handy/beenden":
+                freigabe_beenden()
+            elif path == "/handy/zertifikat":
+                with HANDY_ZERT_LOCK:
+                    handy.zertifikat_erzeugen(handy.adressen(), handy.bonjour_name())
+                tls_aktualisieren()
+            elif path == "/handy/schluessel":
+                neu = handy.neuer_schluessel()
+                with LAN_LOCK:
+                    if LAN["aktiv"]:
+                        LAN["schluessel"] = neu
+            else:
+                self._send(404, als_bytes(T("Nicht gefunden.")))
+                return
+        except handy.HandyFehler as exc:
+            self._antwort(400, error=str(exc))
+            return
+        self._antwort(200, ok=True)
+
     def _favoriten(self) -> None:
         """Die Favoritenliste merken (seit 2.4.0): {"ids": [...], "zuerst": bool}
         — nur IDs aus dem Katalog, höchstens zehn, in favoriten.json. Die
@@ -2830,7 +3127,7 @@ class Handler(BaseHTTPRequestHandler):
                 ziel += "?" + rest
             self.send_response(302)
             self.send_header("Location", ziel)
-            self.send_header("Set-Cookie", f"{COOKIE}={LAN['schluessel']}; Path=/; Max-Age=2592000; "
+            self.send_header("Set-Cookie", f"{COOKIE}={LAN['schluessel']}; Path=/; Max-Age=34560000; "
                                            f"HttpOnly; SameSite=Lax")
             self.send_header("Cache-Control", "no-store")
             self.send_header("Content-Length", "0")
@@ -2840,8 +3137,8 @@ class Handler(BaseHTTPRequestHandler):
                                   "<body style='font:16px/1.5 -apple-system,sans-serif;padding:40px 24px;color:#14303C'>"
                                   "<h1 style='font-size:1.3rem'>" + T("Kein Zugang") + "</h1>"
                                   "<p>" + T("Diese Wingfoilscout-Oberfläche ist für das Heimnetz freigegeben, aber nur "
-                                            "mit dem Schlüssel aus der Startadresse. Sie steht im Terminalfenster auf "
-                                            "dem Mac, das Wingfoilscout gestartet hat.") + "</p></body>"))
+                                            "mit dem Schlüssel aus der Startadresse. Den QR-Code dazu zeigt der Reiter "
+                                            "„Handy“ auf dem Mac.") + "</p></body>"))
         return False
 
     def _anfang(self) -> str | None:
@@ -2922,6 +3219,20 @@ class Handler(BaseHTTPRequestHandler):
         elif path == "/rueckblick/daten":
             from . import rueckblick
             self._send(200, json_bytes(rueckblick.laden()), "application/json")
+        elif path == "/handy":
+            if self._von_aussen():
+                self._send(200, als_bytes(handy_nur_am_mac()))
+            else:
+                self._send(200, als_bytes(handy_page(handy_stand())))
+        elif path == "/handy/profil":
+            # Das Profil fürs iPhone — auch fürs Handy selbst (mit Schlüssel):
+            # das Zertifikat darin ist nichts Geheimes
+            datei = handy.ORDNER / handy.PROFIL
+            if not datei.is_file():
+                self._send(404, als_bytes(T("Noch kein Zertifikat — erst im Reiter „Handy“ erzeugen.")))
+                return
+            self._send(200, datei.read_bytes(), "application/x-apple-aspen-config",
+                       kopf={"Content-Disposition": f'attachment; filename="{handy.PROFIL}"'})
         elif path == "/manifest.webmanifest":
             self._send(200, als_bytes(MANIFEST), "application/manifest+json; charset=utf-8")
         elif path in BILD_DATEIEN:
@@ -2966,6 +3277,9 @@ class Handler(BaseHTTPRequestHandler):
             return
         if path == "/favoriten":
             self._favoriten()
+            return
+        if path.startswith("/handy/"):
+            self._handy(path)
             return
         try:
             raw = self._form()
@@ -3138,19 +3452,20 @@ def _serve(port: int, open_browser: bool, config: str | None, lan: bool) -> None
     if wahl["hinweis"]:
         print(wahl["hinweis"])
     if wahl["laeuft"]:
+        # Seit 2.5.0 kein Neustart mehr nötig: freigeben geht im Reiter „Handy“
         if lan:
-            print(T("Für den WLAN-Zugang fürs iPhone: dort oben rechts „Beenden“, dann diesen Starter noch einmal."))
+            print(T("Fürs iPhone: im Reiter „Handy“ auf „Fürs Handy freigeben“ drücken."))
         if open_browser:
-            webbrowser.open(wahl["laeuft"])
+            webbrowser.open(wahl["laeuft"] + ("handy" if lan else ""))
         return
     if wahl["port"] is None:
         raise SystemExit(1)
     port = wahl["port"]
-    if lan:
-        LAN.update(aktiv=True, schluessel=secrets.token_urlsafe(9), adressen=tuple(eigene_adressen()))
     PORT["nr"] = port
     try:
-        server = BegrenzterServer(("0.0.0.0" if lan else "127.0.0.1", port), Handler)
+        # Immer nur auf diesem Mac; fürs Handy kommen Server je Adresse im
+        # WLAN dazu (`freigeben`, seit 2.5.0 — bis dahin hörte `--lan` auf 0.0.0.0)
+        server = BegrenzterServer(("127.0.0.1", port), Handler)
     except OSError as exc:
         print(T("Port {port} lässt sich nicht öffnen ({fehler}). Läuft dort ein anderes Programm? "
                 "Dann dieses beenden oder Wingfoilscout mit --port starten.", port=port, fehler=exc))
@@ -3159,15 +3474,16 @@ def _serve(port: int, open_browser: bool, config: str | None, lan: bool) -> None
     url = f"http://127.0.0.1:{port}/"
     print(T("Wingfoilscout läuft auf {url}", url=url))
     if lan:
-        if LAN["adressen"]:
-            print("\n" + T("Auf dem iPhone im selben WLAN (Safari öffnen und eintippen):"))
-            for adresse in LAN["adressen"]:
-                print(f"    http://{adresse}:{port}/?k={LAN['schluessel']}")
-            print("\n" + T("Danach „Teilen“ → „Zum Home-Bildschirm“, dann startet Wingfoilscout wie eine App."))
+        try:
+            freigeben(port)
+        except handy.HandyFehler as exc:
+            print("\n" + str(exc))
         else:
-            print("\n" + T("Keine Netzadresse gefunden — ist der Mac im WLAN?"))
-        print(T("Der Schlüssel gilt, bis Wingfoilscout beendet wird. Ohne ihn kommt vom Netz "
-                "her niemand an deine Daten."))
+            stand = handy_stand()
+            print("\n" + T("Fürs iPhone freigegeben. Am schnellsten: im Reiter „Handy“ den QR-Code scannen — "
+                           "oder in Safari eintippen:"))
+            print(f"    {stand['https'] or stand['http']}")
+            url += "handy"
     print(T("Zum Beenden den Knopf oben rechts in der Oberfläche drücken — "
             "oder hier Strg+C."))
     if open_browser:
@@ -3177,6 +3493,7 @@ def _serve(port: int, open_browser: bool, config: str | None, lan: bool) -> None
     except KeyboardInterrupt:
         pass
     finally:
+        freigabe_beenden()
         server.server_close()
         print("\n" + T("Wingfoilscout beendet."))
 

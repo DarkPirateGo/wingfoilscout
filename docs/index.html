@@ -173,8 +173,8 @@ footer img{height:46px;border-radius:6px}
           <figcaption><b>2</b><strong>The best destinations</strong><span>When, how much wind, which wing from your quiver – and whether it’s worth the drive.</span></figcaption>
         </figure>
         <figure>
-          <div class="handy"><picture><source media="(prefers-color-scheme: dark)" srcset="bilder/en/grid-dark.png"><img src="bilder/en/grid-light.png" width="780" height="1594" alt="Hourly grid: every spot hour by hour, coloured by rating"></picture></div>
-          <figcaption><b>3</b><strong>Hour by hour</strong><span>Every spot in the hourly grid, plus wind angle, waves, tide and weather for each session.</span></figcaption>
+          <div class="handy"><picture><source media="(prefers-color-scheme: dark)" srcset="bilder/en/grid-dark.png"><img src="bilder/en/grid-light.png" width="780" height="1594" alt="Hourly grid: every spot hour by hour, the best first, coloured by rating"></picture></div>
+          <figcaption><b>3</b><strong>Hour by hour</strong><span>Every spot in the hourly grid, the best first – plus wind angle, waves, tide and weather for each session.</span></figcaption>
         </figure>
       </div>
       <p class="notiz">Example view with made-up weather data · starting point Hamburg</p>
@@ -226,7 +226,7 @@ footer img{height:46px;border-radius:6px}
       <h2 id="los">How to start</h2>
       <p class="leser">Wingfoilscout runs on your Mac and opens in your browser – in English, German, French
       or Spanish, following your browser’s language until you pick one yourself. Your iPhone can join
-      over the same Wi-Fi (use the start file with “iPhone” in its name); the Mac does the computing.</p>
+      over the same Wi-Fi – the “Phone” tab shows a QR code to scan; the Mac does the computing.</p>
       <ol class="schritte">
         <li><div><h3>Open Terminal</h3><p>It’s in Applications → Utilities, or type “Terminal” into Spotlight. Two lines to paste – that’s all it takes.</p></div></li>
         <li><div><h3>Apple’s command line tools – once per Mac</h3><p>They bring Python and git. Paste this line and press Return:</p>
@@ -234,7 +234,7 @@ footer img{height:46px;border-radius:6px}
           <p>In the window that appears, click “Install”, accept the licence and wait until it’s done – a few minutes. If Terminal says they’re already installed, go on.</p></div></li>
         <li><div><h3>Fetch and start</h3><p>Paste this line – all of it at once:</p>
 <pre>cd ~ &amp;&amp; git clone https://github.com/DarkPirateGo/wingfoilscout.git &amp;&amp; cd wingfoilscout &amp;&amp; bash "Wingfoilscout starten.command"</pre>
-          <p>It creates the folder <code>wingfoilscout</code> in your home folder, installs its only extra package (PyYAML) and opens the app in your browser. From then on, double-click <strong>Wingfoilscout starten</strong> in that folder (German for “start Wingfoilscout”); <strong>Neuen Stand holen</strong> gets new versions.</p></div></li>
+          <p>It creates the folder <code>wingfoilscout</code> in your home folder, installs its only extra package (PyYAML) and opens the app in your browser. From then on, double-click <strong>Wingfoilscout starten</strong> in that folder (German for “start Wingfoilscout”); <strong>Neuen Stand holen</strong> gets new versions. Want it in the Dock? Double-click <strong>App fürs Dock erstellen</strong> once (“create Dock app”) and drag the app it makes into the Dock.</p></div></li>
         <li><div><h3>Set up and search</h3><p>Choose your starting point in the app – and, if you plan ahead, a start time; type in your favourite spots, and with “Show favourites first” every search checks them too, even outside the radius. The language switcher (DE · EN · FR · ES) sits next to the logo and version number at the top right (on phones, in the page footer). Enter your wings once in <code>config.yaml</code> – a text file in the same folder, created on first start; each wing gets its size in m² and its wind range in knots. Then hit “Find spots”.</p></div></li>
       </ol>
       <div class="kasten">

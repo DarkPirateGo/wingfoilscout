@@ -28,6 +28,12 @@ tagebuch.json
 # Your favourite spots — personal like the logbook (since 2.4.0)
 favoriten.json
 /favoriten*.json
+# Access key and certificate for the iPhone (since 2.5.0) — whoever has the
+# key gets in from the Wi-Fi, and server.key belongs to this Mac alone
+/handy/
+*.mobileconfig
+*.key
+*.pem
 # When saving, the app first writes <name>.neu and then renames it: a
 # half-written copy of config.yaml, tagebuch.json, spots.yaml …
 *.neu

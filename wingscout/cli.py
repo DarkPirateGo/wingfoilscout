@@ -11,7 +11,7 @@ from pathlib import Path
 from .config import load_config, quiver_range, KonfigFehler
 from .spots import load_spots, eligible, entfernungsgrund, ist_entfernungsgrund, KatalogFehler
 from .geo import parse_position
-from .score import score_hours, build_sessions, rank_trips
+from .score import score_hours, build_sessions, rank_trips, plan_b, beste_fenster
 from .tide import uebersicht as tide_uebersicht
 from . import report as report_mod
 from . import favoriten as fav_mod, i18n, zeitraum
@@ -308,12 +308,16 @@ def nur_laender_der_suche(landesweit: dict, keep) -> None:
 
 
 def favoriten_liste(fav_ids, spots_by_id, keep_ids, grund, trips, fav_trips, all_rows, fav_rows,
-                    alle_sessions, fav_spots=None) -> list[dict]:
+                    alle_sessions, fav_spots=None, nights: int = 0) -> list[dict]:
     """Je Favorit, in der Reihenfolge der Liste: der Spot, sein Ziel (oder
     None), sein Platz unter den Zielen der Suche (oder None), warum er nicht
     in der Suche war (oder None), seine Stunden und wie viele Sessions er hat
     — alles, was der Abschnitt „Favoriten“ im Report braucht. `fav_spots`:
-    die gerechneten Kopien der Favoriten außerhalb der Suche (run_search)."""
+    die gerechneten Kopien der Favoriten außerhalb der Suche (run_search).
+    Dazu je Eintrag `am_stueck`: die Zahl der Tage am Stück, die die Suche
+    verlangt (`nights` + 1) und die das Ziel des Favoriten nicht hat — sonst
+    None —, und `ohne_grenzen`: ob das Ziel aus den besten Fenstern ohne
+    deine Grenzen besteht (score.beste_fenster, seit 2.5.0)."""
     fav_spots = fav_spots or {}
     platz = {t["spot"]["id"]: (i, t) for i, t in enumerate(trips, 1)}
     extra = {t["spot"]["id"]: t for t in fav_trips}
@@ -324,9 +328,13 @@ def favoriten_liste(fav_ids, spots_by_id, keep_ids, grund, trips, fav_trips, all
     for sid in fav_ids:
         rang, trip = platz.get(sid, (None, extra.get(sid)))
         zeilen = (all_rows.get(sid) or fav_rows.get(sid) or (None, None))[1]
+        fehlt = (nights + 1 if nights and trip is not None and trip.get("run_len", 0) < nights + 1
+                 else None)
         liste.append({"spot": fav_spots.get(sid) or spots_by_id[sid], "trip": trip, "rang": rang,
                       "grund": None if sid in keep_ids else grund.get(sid),
-                      "rows": zeilen, "n_sessions": n_sessions.get(sid, 0)})
+                      "rows": zeilen, "n_sessions": n_sessions.get(sid, 0), "am_stueck": fehlt,
+                      "ohne_grenzen": bool(trip and any(s.get("ohne_grenzen") is not None
+                                                        for s in trip["sessions"]))})
     return liste
 
 
@@ -348,6 +356,7 @@ def run_search(cfg, args, log) -> int:
         log(T("Favorit „{id}“ steht nicht im Katalog — übergangen", id=fehlt))
     args._fav_ids = list(fav_ids)
     args._favoriten = []
+    fav_set = set(fav_ids)
 
     lo, hi = quiver_range(cfg)
     log(T("Quiver deckt {lo}–{hi} kn ab · {n} Spots im Katalog", lo=f"{lo:.0f}", hi=f"{hi:.0f}", n=len(spots_all)))
@@ -535,6 +544,9 @@ def run_search(cfg, args, log) -> int:
     # Die Favoriten außerhalb der Suche getrennt: sie gehören nicht ins
     # Raster, nicht auf die Karte und nicht in die Reihenfolge der Ziele.
     fav_rows, fav_sessions = {}, []
+    # Die besten Fenster der Favoriten ohne Session, ohne deine Grenzen
+    # gerechnet (seit 2.5.0) — nur für ihren Abschnitt im Report.
+    fav_fenster: list = []
     # `jetzt` mit Zone: die Stundenstempel sind Ortszeit am Spot, und
     # score_hours rechnet den Zeitpunkt je Spot dorthin um.
     jetzt = None if args.demo else datetime.now(timezone.utc)
@@ -570,6 +582,19 @@ def run_search(cfg, args, log) -> int:
         else:
             fav_rows[spot["id"]] = (spot, rows)
             fav_sessions.extend(neue)
+        # Ein Favorit ohne jede Session bekommt trotzdem eine Rechnung: sein
+        # bestes Fenster im Zeitraum, ohne deine Grenzen (Wasser, Luft,
+        # Quiver, Mindestdauer, Mindestgüte) und mit ihnen gekennzeichnet —
+        # gewünscht am 10.10.2026. Scheitert das, bleibt die flache Karte.
+        if spot["id"] in fav_set and not neue and rows:
+            try:
+                ohne = score_hours(spot, fc, cfg, sst, rose, m.get("tide"),
+                                   jetzt=jetzt, wave=welle, tide_info=tide_info,
+                                   ab=fenster.ab_mit_zone(), tage=fenster.tage_iso, grenzen=False)
+                fav_fenster.extend(beste_fenster(spot, ohne, cfg))
+            except Exception as exc:                  # noqa: BLE001 — ein Zusatz für einen Favoriten
+                log("    " + T("Bestes Fenster für {name} nicht berechenbar ({art}: {fehler})",
+                              name=spot["name"], art=type(exc).__name__, fehler=str(exc)[:120]))
     n_tide = sum(1 for spot in keep if (spot.get("_tide") or {}).get("aktiv"))
     if n_tide:
         mit_fenster = sum(1 for spot in keep if (spot.get("_tide") or {}).get("fenster"))
@@ -589,12 +614,22 @@ def run_search(cfg, args, log) -> int:
     add_camping(trips, cfg, args, log)
     nights = getattr(args, "nights", 0) or 0
     if fav_ids:
-        fav_trips = rank_trips(fav_sessions, cfg, nights) if fav_sessions else []
+        # Jeder Favorit wird gerechnet, auch wenn die Eingaben der Suche nicht
+        # passen (gewünscht am 07.10.2026) — auch ohne „N Tage am Stück“: Wer
+        # kein Ziel der Suche ist, bekommt eins aus allen seinen Sessions, ein
+        # Favorit in der Suche ebenso. Der Plan B kommt aus allen Zielen.
+        mit_ziel = {t["spot"]["id"] for t in trips}
+        eigene = fav_sessions + [s for s in sessions
+                                 if s["spot"]["id"] in fav_set and s["spot"]["id"] not in mit_ziel] + fav_fenster
+        fav_trips = rank_trips(eigene, cfg, nights, am_stueck=False) if eigene else []
         if fav_trips:
             add_ensemble(fav_trips, cfg, args, log, top=len(fav_trips))
+            # Erst danach: das Ensemble wählt den Plan B sonst unter den
+            # Favoriten allein neu
+            plan_b(fav_trips, cfg, kandidaten=trips + fav_trips)
         args._favoriten = favoriten_liste(fav_ids, spots_by_id, keep_ids, grund, trips, fav_trips,
                                           all_rows, fav_rows, sessions + fav_sessions,
-                                          {s["id"]: s for s in fav_extra})
+                                          {s["id"]: s for s in fav_extra}, nights=nights)
         # Stellplätze für die Favoriten außerhalb der Suche. Die Ziele der Suche
         # behalten ihre wie ohne Favoriten (die vordersten acht): ihre Objekte
         # hier zu ergänzen, hätte Karte und „Weitere Ziele“ verändert

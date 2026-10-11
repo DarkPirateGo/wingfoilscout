@@ -18,6 +18,7 @@ from . import tide as gezeiten
 from .models import normalize, einigkeit, DEFAULT_MODELS
 from .geo import haversine_km
 from .i18n import T, TD, N_
+from .config import quiver_range
 
 # Übersetzt: was nur angezeigt wird — Veto, Warnungen, Neoprenwahl (beim
 # Entstehen; der Lauf hat seine Sprache schon). Deutsch bleiben, was auch
@@ -158,6 +159,18 @@ def score_wind(wind_kn: float, cfg) -> tuple[float, dict | None]:
     return round(centrality * band, 3), wing
 
 
+def score_wind_ausserhalb(wind_kn: float, cfg) -> float:
+    """Wind ohne passenden Wing — nur für das beste Fenster eines Favoriten
+    ohne Session (seit 2.5.0): je näher am Quiver, desto mehr, höchstens so
+    viel wie der schlechteste Wind darin (0,3: Rand eines Wings, außerhalb
+    des Wohlfühlbands). So liegt jede Stunde mit passendem Wing vorn, und
+    unter den übrigen die mit dem meisten (oder bei zu viel: dem wenigsten)
+    Wind."""
+    lo, hi = quiver_range(cfg)
+    abstand = lo - wind_kn if wind_kn < lo else max(0.0, wind_kn - hi)
+    return round(max(0.02, 0.3 * (1.0 - abstand / 12.0)), 3)
+
+
 def score_gust(wind_kn: float, gust_kn: float, cfg) -> tuple[float, float]:
     gf = gust_kn / max(wind_kn, 1.0)
     ok, bad = cfg["wind"]["gust_ok"], cfg["wind"]["gust_bad"]
@@ -210,20 +223,25 @@ def score_water(water_label: str, wind_kn: float, cfg) -> float:
     return round(max(0.0, min(1.0, s)), 3)
 
 
-def score_weather(temp, rain, cape, code, cfg) -> tuple[float, list[str], str | None]:
+def score_weather(temp, rain, cape, code, cfg, luft_grenzen: bool = True) -> tuple[float, list[str], str | None]:
+    """`luft_grenzen=False` (seit 2.5.0, für das beste Fenster eines Favoriten
+    ohne Session): die Lufttemperatur sperrt nicht und mindert nicht — ob sie
+    außerhalb deiner Grenzen liegt, sagt dann score_hours. Ein Gewitter
+    sperrt immer."""
     w = cfg["weather"]
     warn: list[str] = []
     if code in w["thunder_codes"]:
         return 0.0, warn, TD("Gewitter gemeldet")
-    if temp is None or temp < w["air_temp_min"] or temp > w["air_temp_max"]:
+    if luft_grenzen and (temp is None or temp < w["air_temp_min"] or temp > w["air_temp_max"]):
         return 0.0, warn, TD("Lufttemperatur {temp} °C außerhalb {min}–{max} °C",
                             temp=temp, min=w["air_temp_min"], max=w["air_temp_max"])
 
     s = 1.0
-    edge = min(temp - w["air_temp_min"], w["air_temp_max"] - temp)
-    if edge < 3:
-        s *= 0.8
-        warn.append(TD("{temp} °C nah an deiner Grenze", temp=f"{temp:.0f}"))
+    if temp is not None and w["air_temp_min"] <= temp <= w["air_temp_max"]:
+        edge = min(temp - w["air_temp_min"], w["air_temp_max"] - temp)
+        if edge < 3:
+            s *= 0.8
+            warn.append(TD("{temp} °C nah an deiner Grenze", temp=f"{temp:.0f}"))
 
     rain = rain or 0.0
     if rain >= w["rain_hard_mm"]:
@@ -310,8 +328,15 @@ def score_hours(spot, fc: dict, cfg, marine: dict | None = None,
                 rose: list | None = None, tide: dict | None = None,
                 jetzt: datetime | None = None, wave: dict | None = None,
                 tide_info: dict | None = None, ab: datetime | None = None,
-                tage: tuple[str, str] | None = None) -> list[dict]:
+                tage: tuple[str, str] | None = None, grenzen: bool = True) -> list[dict]:
     """`jetzt` schneidet vergangene Stunden ab.
+
+    `grenzen=False` (seit 2.5.0): ohne deine Grenzen gerechnet, für das beste
+    Fenster eines Favoriten, der mit ihnen keine Session hat. Wassertemperatur,
+    Lufttemperatur und Quiver sperren dann keine Stunde; was eine Stunde
+    verletzt, steht in `row["ausser"]` als (Art, Wert). Was keine Grenze von
+    dir ist, sperrt weiter: Nacht, Vergangenheit, Gewitter, das Tidenfenster
+    des Spots und ablandiger Wind mit viel Wasser in Lee.
 
     Seit 2.3.0 kann eine Suche später beginnen (zeitraum.py): `tage` ist dann
     (erster Tag, Tag nach dem letzten) als „JJJJ-MM-TT“ — Stunden an anderen
@@ -463,12 +488,14 @@ def score_hours(spot, fc: dict, cfg, marine: dict | None = None,
             continue
 
         if sst is not None and sst < cfg["weather"]["water_temp_min"]:
-            row["veto"] = TD("Wasser {sst} °C unter deiner Grenze von {grenze} °C",
-                            sst=f"{sst:.0f}", grenze=cfg["weather"]["water_temp_min"])
-            row["veto_art"] = "wasser"
-            row["score"] = 0.0
-            rows.append(row)
-            continue
+            if grenzen:
+                row["veto"] = TD("Wasser {sst} °C unter deiner Grenze von {grenze} °C",
+                                sst=f"{sst:.0f}", grenze=cfg["weather"]["water_temp_min"])
+                row["veto_art"] = "wasser"
+                row["score"] = 0.0
+                rows.append(row)
+                continue
+            row.setdefault("ausser", []).append(("wasser", sst))
 
         if fenster and gezeiten.im_fenster(t + timedelta(minutes=30), ereignisse, fenster) is False:
             row["veto"] = TD("außerhalb des Tidenfensters ({fenster})", fenster=gezeiten.fenster_text(fenster))
@@ -478,13 +505,17 @@ def score_hours(spot, fc: dict, cfg, marine: dict | None = None,
             continue
 
         s_wind, wing = score_wind(wind, cfg)
-        if wing is None:
+        if wing is None and grenzen:
             row["veto"] = TD("{kn} kn — kein passender Wing im Quiver", kn=f"{wind:.0f}")
             row["veto_art"] = "quiver"
             row["score"] = 0.0
             rows.append(row)
             continue
-        row["wing"] = wing["size"]
+        if wing is None:
+            s_wind = score_wind_ausserhalb(wind, cfg)
+            row.setdefault("ausser", []).append(("quiver", wind))
+        else:
+            row["wing"] = wing["size"]
 
         s_gust, gf = score_gust(wind, gust, cfg)
         row["gust_factor"] = gf
@@ -535,7 +566,12 @@ def score_hours(spot, fc: dict, cfg, marine: dict | None = None,
         row["water"] = wlabel
         s_water = score_water(wlabel, wind, cfg)
 
-        s_weather, warns, veto = score_weather(row["temp"], row["rain"], row["cape"], row["code"], cfg)
+        s_weather, warns, veto = score_weather(row["temp"], row["rain"], row["cape"], row["code"], cfg,
+                                               luft_grenzen=grenzen)
+        if not grenzen and not veto:
+            w = cfg["weather"]
+            if row["temp"] is not None and not (w["air_temp_min"] <= row["temp"] <= w["air_temp_max"]):
+                row.setdefault("ausser", []).append(("luft", row["temp"]))
         row["warn"].extend(warns)
         if veto:
             row["veto"], row["veto_art"] = veto, "wetter"
@@ -701,6 +737,64 @@ def build_sessions(spot, rows: list[dict], cfg) -> list[dict]:
     return sessions
 
 
+def beste_fenster(spot, rows: list[dict], cfg) -> list[dict]:
+    """Die besten Fenster eines Favoriten, der mit deinen Grenzen keine Session
+    hat (seit 2.5.0, gewünscht am 10.10.2026: „das beste Zeitfenster für den
+    Zeitraum“). `rows` sind seine Stunden aus score_hours(…, grenzen=False).
+
+    Fenster sind die Stunden, die nah an der besten liegen: Güte ab 85 % der
+    besten Stunde im Zeitraum (höchstens ab deiner Mindestgüte), eine Stunde
+    reicht. Jedes Fenster trägt in `ohne_grenzen` die Grenzen, die es
+    verletzt — als Texte, die der Report in seiner Sprache zeigt — und
+    dieselben vorn in seinen Warnungen. Leer, wenn auch so keine Stunde geht
+    (nur Nacht, Gewitter, Tidenfenster …)."""
+    offen = [r for r in rows if not r["veto"] and r["score"] > 0]
+    if not offen:
+        return []
+    se = cfg["session"]
+    schwelle = min(se["min_score"], round(max(r["score"] for r in offen) * 0.85, 3))
+    locker = {**cfg, "session": {**se, "min_score": schwelle, "min_hours": 1}}
+    fenster = build_sessions(spot, rows, locker)
+    for s in fenster:
+        block = [r for r in rows if s["start"] <= r["t"] < s["end"]]
+        s["ohne_grenzen"] = grenzen_verletzt(s, block, cfg)
+        s["warn"] = s["ohne_grenzen"] + s["warn"]
+    return fenster
+
+
+def grenzen_verletzt(s: dict, block: list[dict], cfg) -> list:
+    """Welche deiner Grenzen ein Fenster verletzt, je eine Zeile (als TD-Text)."""
+    w, se = cfg["weather"], cfg["session"]
+    lo, hi = quiver_range(cfg)
+    werte: dict[str, list] = {}
+    for r in block:
+        for art, wert in r.get("ausser") or []:
+            werte.setdefault(art, []).append(wert)
+    aus = []
+    if werte.get("quiver"):
+        unten = [kn for kn in werte["quiver"] if kn < lo]
+        oben = [kn for kn in werte["quiver"] if kn > hi]
+        if unten:
+            aus.append(TD("höchstens {kn} kn — dein Quiver fängt bei {lo} kn an",
+                          kn=f"{max(unten):.0f}", lo=f"{lo:.0f}"))
+        if oben:
+            aus.append(TD("bis {kn} kn — dein Quiver reicht bis {hi} kn", kn=f"{max(oben):.0f}", hi=f"{hi:.0f}"))
+    if werte.get("wasser"):
+        aus.append(TD("Wasser {sst} °C unter deiner Grenze von {grenze} °C",
+                      sst=f"{min(werte['wasser']):.0f}", grenze=w["water_temp_min"]))
+    if werte.get("luft"):
+        temps = werte["luft"]
+        extrem = min(temps) if min(temps) < w["air_temp_min"] else max(temps)
+        aus.append(TD("Luft {temp} °C außerhalb deiner Grenzen {min}–{max} °C",
+                      temp=f"{extrem:.0f}", min=w["air_temp_min"], max=w["air_temp_max"]))
+    if s["hours"] < se["min_hours"]:
+        aus.append(TD("nur {h} h — deine Mindestdauer ist {min} h", h=s["hours"], min=f"{se['min_hours']:g}"))
+    if s["score"] < se["min_score"]:
+        aus.append(TD("Güte {guete} — deine Mindestgüte ist {min}", guete=f"{s['score']:.2f}",
+                      min=f"{se['min_score']:g}"))
+    return aus
+
+
 def summarize_warnings(block: list[dict], cfg) -> list[str]:
     """Aus 12 Stundenwarnungen werden vier Sätze statt vierzig."""
     w = cfg["weather"]
@@ -806,8 +900,13 @@ def ensemble_schwelle(kn: float, spot: dict, session: dict) -> float:
     return max(0.0, kn / max(faktor, 0.05) - delta)
 
 
-def rank_trips(sessions: list[dict], cfg, nights: int = 0) -> list[dict]:
-    """Fasst Sessions pro Spot zu Trips zusammen und prüft die Fahrzeit-Regel."""
+def rank_trips(sessions: list[dict], cfg, nights: int = 0, am_stueck: bool = True) -> list[dict]:
+    """Fasst Sessions pro Spot zu Trips zusammen und prüft die Fahrzeit-Regel.
+
+    `nights` verlangt so viele brauchbare Tage plus einen am Stück und gibt
+    der Fahrt mehr Spielraum. Mit `am_stueck=False` gilt nur Letzteres — für
+    die Favoriten, die immer ein Ziel bekommen, wenn sie Sessions haben
+    (seit 2.5.0)."""
     apply_reliability(sessions, cfg)
     by_spot: dict[str, list[dict]] = {}
     for s in sessions:
@@ -821,7 +920,7 @@ def rank_trips(sessions: list[dict], cfg, nights: int = 0) -> list[dict]:
         days = sorted({s["day"] for s in group})
         runs = consecutive_runs(days)
         best_run = max(runs, key=len) if runs else []
-        if nights and len(best_run) < nights + 1:
+        if nights and am_stueck and len(best_run) < nights + 1:
             continue
         hours_per_day = {d: min(cap, sum(s["hours"] for s in group if s["day"] == d)) for d in days}
         total_hours = sum(hours_per_day.values())
@@ -907,13 +1006,15 @@ def apply_ensemble(trips: list[dict], cfg) -> int:
     return n
 
 
-def plan_b(trips: list[dict], cfg) -> None:
-    """Die beste Alternative in Reichweite — wer Gruppen führt, hat immer eine."""
+def plan_b(trips: list[dict], cfg, kandidaten: list[dict] | None = None) -> None:
+    """Die beste Alternative in Reichweite — wer Gruppen führt, hat immer eine.
+    `kandidaten`: woraus gewählt wird, sonst aus `trips` selbst (für die
+    Favoriten seit 2.5.0: aus ihnen und den Zielen der Suche)."""
     plan_b_km = cfg.get("drive", {}).get("plan_b_km", 120)
     for t in trips:
         best = None
-        for o in trips:
-            if o is t:
+        for o in (trips if kandidaten is None else kandidaten):
+            if o is t or o["spot"]["id"] == t["spot"]["id"]:
                 continue
             d = haversine_km(t["spot"]["lat"], t["spot"]["lon"], o["spot"]["lat"], o["spot"]["lon"])
             if d * 1.22 <= plan_b_km and set(o["days"]) & set(t["days"]):

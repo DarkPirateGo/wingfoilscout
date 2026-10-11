@@ -8,6 +8,7 @@ from datetime import date, datetime
 from pathlib import Path
 
 from tests.helpers import cfg as load_cfg, SPOTS, CONFIG, ROOT
+from tests.test_i18n import chromium
 from wingscout import report
 from wingscout.cli import main, hour_stamps, apply_start
 from wingscout.spots import load_spots, eligible
@@ -373,16 +374,16 @@ class Bausteine(unittest.TestCase):
 
     def test_reihenfolge_drei_dann_raster_dann_rest(self):
         """Die besten drei, die Karte, das Raster — der Rest hinter einer Klappe.
-        Seit 2.3.0 stehen die besten drei vor der Karte."""
+        Seit 2.3.0 stehen die besten drei vor der Karte, seit 2.5.0 das Raster
+        gleich nach ihr, vor den Thermikabschnitten (gewünscht am 07.10.2026)."""
         with tempfile.TemporaryDirectory() as d:
             html = demo_report(Path(d))
         folge = [m for m in re.findall(r"<h2>([^<]+)</h2>", html)]
+        self.assertEqual(folge[:3], ["Die besten drei", "Karte", "Stundenraster"])
         # "Thermikziele" und "Wann die Thermik läuft" erscheinen nur, wenn im
-        # Zeitraum überhaupt Thermikspots in Frage kommen.
-        erwartet = ["Die besten drei", "Karte", "Thermikziele",
-                    "Wann die Thermik läuft", "Stundenraster"]
-        self.assertEqual([x for x in folge[:5] if x in erwartet],
-                         [x for x in erwartet if x in folge])
+        # Zeitraum überhaupt Thermikspots in Frage kommen — dann danach.
+        erwartet = ["Stundenraster", "Thermikziele", "Wann die Thermik läuft", "Weitere Ziele"]
+        self.assertEqual([x for x in folge if x in erwartet], [x for x in erwartet if x in folge])
         vor = html.split("<h2>Stundenraster</h2>")[0]
         self.assertEqual(vor.count("<details class='trip'"), 3)
         nach = html.split("<h2>Stundenraster</h2>")[1]
@@ -394,6 +395,46 @@ class Bausteine(unittest.TestCase):
         self.assertEqual(raenge, list(range(1, len(raenge) + 1)))
         # Die Klappe steht vor den Einzelartikeln, nicht dahinter
         self.assertLess(nach.index("<details class='abschnitt' id='weitere'>"), nach.index("<details class='trip'"))
+
+    def test_raster_die_besten_zuerst(self):
+        """Seit 2.5.0 (gewünscht am 07.10.2026; bis dahin nach Fahrzeit): die
+        Zeilen des Rasters in der Reihenfolge der Ziele, ihr Platz vor dem
+        Namen — die ersten drei sind die besten drei."""
+        with tempfile.TemporaryDirectory() as d:
+            html = demo_report(Path(d))
+        raster = html.split("<h2>Stundenraster</h2>")[1].split("<h2>")[0]
+        zeilen = re.findall(r"<span class='hmwer'><span class='hmrang'(?: title='Platz (\d+) unter den Zielen "
+                            r"der Suche')?>(\d*)</span><a [^>]*>([^<]+)</a></span>", raster)
+        self.assertGreater(len(zeilen), 3)
+        ziele = re.findall(r"<details class='trip' id='ziel-(\d+)'><summary><span class='rank'>\d+</span>"
+                           r"<span class='name'>([^<]+)</span>", html)
+        mit_platz = [(int(p), name) for titel, p, name in zeilen if p]
+        self.assertEqual(mit_platz, [(int(i), name) for i, name in ziele])
+        self.assertEqual(zeilen[:len(mit_platz)], [(str(i), str(i), n) for i, n in mit_platz],
+                         "erst die Ziele, in ihrer Reihenfolge")
+        self.assertEqual(zeilen[0][2], ziele[0][1])
+
+    def test_raster_ohne_ziel_nach_ihren_stunden(self):
+        """Spots ohne Ziel kommen nach den Zielen: je mehr Güte in ihren
+        Stunden, desto weiter oben; bei Gleichstand die beste Stunde, dann
+        die kürzere Fahrt — nicht mehr die Fahrzeit allein."""
+        def spot(sid, drive_h):
+            return {"id": sid, "name": sid.upper(), "drive_h": drive_h}
+
+        def zeilen(*werte):
+            return [{"score": w} for w in werte]
+        all_rows = {
+            "nah-leer": (spot("nah-leer", 0.5), zeilen(0, 0, 0)),
+            "ziel-2": (spot("ziel-2", 3.0), zeilen(0.2, 0.3)),
+            "viel": (spot("viel", 4.0), zeilen(0.5, 0.5, 0.5)),
+            "spitze": (spot("spitze", 2.0), zeilen(0.9, 0.6, 0, -1)),
+            "ziel-1": (spot("ziel-1", 5.0), zeilen(0.8)),
+            "weit-leer": (spot("weit-leer", 6.0), zeilen(0, -1)),
+            "gleich-nah": (spot("gleich-nah", 1.0), zeilen(0.9, 0.6)),
+        }
+        trips = [{"spot": all_rows["ziel-1"][0]}, {"spot": all_rows["ziel-2"][0]}]
+        folge = [sid for sid, _ in report._raster_folge(trips, all_rows)]
+        self.assertEqual(folge, ["ziel-1", "ziel-2", "gleich-nah", "spitze", "viel", "nah-leer", "weit-leer"])
 
     def test_fahrtnotiz_ist_markup_kein_text(self):
         """Das <span> mit der Herkunft der Fahrzeit stand wörtlich im Report."""
@@ -596,6 +637,32 @@ class Fahrstrecke(unittest.TestCase):
         self.assertEqual(zellen, sorted(zellen), "nach Fahrstrecke sortiert")
         self.assertIn(f"{len(dropped)} Spots, jeweils mit Grund", html)
 
+        # Wie in einer echten Suche — gemeldet am 07.10.2026 („Entfernung und
+        # Grund-Entfernung passen nicht“: Gardasee 426 km neben „656 km —
+        # außerhalb des Radius von 550 km“). Geroutet wird nach dem Vorfilter;
+        # ob ein Spot dort oder erst nach dem Routen herausfällt, Spalte und
+        # Grund nennen dieselbe Strecke.
+        import wingscout
+        from unittest import mock
+        from wingscout import cli
+
+        def routen(spots, cfg, args, log):
+            for s in spots:
+                s.update(road_km=round(s["dist_km"] * 1.45, 1), drive_h=round(s["dist_km"] * 1.45 / 85, 2),
+                         drive_source="Routing")
+        with tempfile.TemporaryDirectory() as d, mock.patch.object(cli, "fahrzeiten_routen", routen), \
+                mock.patch.object(wingscout, "CACHE", Path(d) / "cache"):
+            self.assertEqual(main(["--demo", "--days", "1", "--radius", "550", "--out", str(Path(d) / "r.html"),
+                                   "--quiet", "--config", str(CONFIG), "--spots", str(SPOTS),
+                                   "--geometry", str(Path(d) / "keine.json")]), 0)
+            teil = (Path(d) / "r.html").read_text(encoding="utf-8").split("<h2>Nicht berücksichtigt</h2>")[1]
+        paare = re.findall(r"<td class='n'><span title='[^']*'>(≈&#8239;)?(\d+) km</span></td>"
+                           r"<td>(\d+) km — außerhalb des Radius von 550 km</td>", teil)
+        self.assertTrue(any(not ca for ca, _, _ in paare), "nach dem Routen aussortiert")
+        self.assertTrue(any(ca for ca, _, _ in paare), "schon im Vorfilter aussortiert")
+        for _, spalte, grund in paare:
+            self.assertEqual(spalte, grund)
+
     def test_parameter_und_karte_sagen_fahrstrecke(self):
         html, _, _ = self.bauen(geroutet=True)
         self.assertIn("<b>Radius</b> 300 km Fahrstrecke", html)
@@ -652,3 +719,109 @@ class Kommandozeile(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+# Leaflet kommt im Report von cdnjs, das die Browsertests abweisen. Dieser
+# Ersatz kann gerade so viel, wie web/karte.js braucht, und merkt sich, was
+# auf der Karte liegt: window.__lage() zählt die sichtbaren Punkte je Art (an
+# Radius und Farbe aus karte.js erkannt) und nennt die Punkte des letzten
+# Zooms.
+LEAFLET_ERSATZ = r"""
+(function () {
+  function Gruppe() { this.kinder = []; }
+  Gruppe.prototype.addTo = function (k) { k._dazu(this); return this; };
+  function Punkt(ll, o) { this.ll = ll; this.o = o || {}; }
+  ['bindPopup', 'bindTooltip', 'unbindTooltip', 'on'].forEach(function (n) {
+    Punkt.prototype[n] = function () { return this; };
+  });
+  Punkt.prototype.getTooltip = function () { return null; };
+  Punkt.prototype.addTo = function (z) {
+    if (z instanceof Gruppe) z.kinder.push(this); else z._dazu(this);
+    return this;
+  };
+  var karte = {
+    ebenen: [], zoom: null,
+    _dazu: function (x) { if (this.ebenen.indexOf(x) < 0) this.ebenen.push(x); },
+    removeLayer: function (x) { var i = this.ebenen.indexOf(x); if (i >= 0) this.ebenen.splice(i, 1); },
+    createPane: function () {}, getPane: function () { return {style: {}}; },
+    fitBounds: function (b) { this.zoom = b.punkte; }, on: function () {}, invalidateSize: function () {},
+    scrollWheelZoom: {enable: function () {}}
+  };
+  var ART = {11: 'top', 8: 'hit', 6: 'quiet', 5: 'out', 13: 'thermik'};
+  window.__lage = function () {
+    var n = {};
+    karte.ebenen.forEach(function (e) {
+      (e.kinder || []).forEach(function (p) {
+        var k = p.o.fillColor === '#276B4F' ? 'camp' : (ART[p.o.radius] || '?');
+        n[k] = (n[k] || 0) + 1;
+      });
+    });
+    return {n: n, zoom: karte.zoom ? karte.zoom.length : 0};
+  };
+  window.L = {
+    map: function () { return karte; },
+    tileLayer: function () { return {addTo: function () { return this; }}; },
+    layerGroup: function () { return new Gruppe(); },
+    circleMarker: function (ll, o) { return new Punkt(ll, o); },
+    circle: function (ll, o) { return new Punkt(ll, o); },
+    polyline: function (ll, o) { return new Punkt(ll, o); },
+    latLngBounds: function (p) { return {punkte: p, pad: function () { return this; }}; }
+  };
+})();
+"""
+
+
+class KarteImBrowser(unittest.TestCase):
+    """Die Knöpfe unter der Karte in Chromium (mit LEAFLET_ERSATZ)."""
+
+    def test_auf_top_3_zeigt_nur_die_drei(self):
+        """Gewünscht am 07.10.2026: „Auf Top 3“ zeigt nur die drei besten —
+        bis dahin zoomte es nur, und die übrigen Ziele blieben auf der Karte.
+        „Alles zeigen“ holt zurück, was es ausgeschaltet hat."""
+        with tempfile.TemporaryDirectory() as d:
+            demo_report(Path(d))
+            with chromium(self) as (seite, fehler):
+                seite.add_init_script(LEAFLET_ERSATZ)
+                seite.goto((Path(d) / "r.html").as_uri())
+                daten = seite.evaluate("() => { var n = {}; KARTE.markers.forEach(function (m) {"
+                                       " n[m.kind] = (n[m.kind] || 0) + 1;"
+                                       " if (m.thermik) n.thermik = (n.thermik || 0) + 1; }); return n; }")
+                self.assertEqual(daten.get("top"), 3, daten)
+                self.assertTrue(daten.get("hit") and daten.get("out"), daten)
+
+                def lage():
+                    return seite.evaluate("() => window.__lage()")
+
+                def nur(*arten):
+                    return {k: daten[k] for k in arten if daten.get(k)}
+                self.assertEqual(lage()["n"], nur("top", "hit", "quiet"))
+                seite.check("#l_out")
+                seite.check("#l_thermik")
+                self.assertEqual(lage()["n"], nur("top", "hit", "quiet", "out", "thermik"))
+                seite.uncheck("#l_top")
+
+                seite.click("#b_top")
+                self.assertEqual(lage(), {"n": {"top": 3}, "zoom": 4}, "die drei und der Start")
+                for box in ("#l_hit", "#l_quiet", "#l_out", "#l_thermik"):
+                    self.assertFalse(seite.is_checked(box), box)
+                self.assertTrue(seite.is_checked("#l_top"))
+                seite.click("#b_top")                            # zweimal ändert nichts
+                self.assertEqual(lage()["n"], {"top": 3})
+
+                seite.click("#b_all")
+                self.assertEqual(lage(), {"n": nur("top", "hit", "quiet", "out", "thermik"),
+                                          "zoom": sum(daten.get(k, 0) for k in ("top", "hit", "quiet")) + 1})
+                for box in ("#l_top", "#l_hit", "#l_quiet", "#l_out", "#l_thermik"):
+                    self.assertTrue(seite.is_checked(box), box)
+                # „Alles zeigen“ schaltet nichts aus — und holt nur zurück, was
+                # „Auf Top 3“ ausgeschaltet hat
+                seite.click("#b_top")
+                seite.check("#l_out")
+                seite.uncheck("#l_out")
+                seite.click("#b_all")
+                self.assertTrue(seite.is_checked("#l_out"))
+                seite.uncheck("#l_thermik")
+                seite.click("#b_all")
+                self.assertFalse(seite.is_checked("#l_thermik"))
+                self.assertEqual(fehler, [])
+

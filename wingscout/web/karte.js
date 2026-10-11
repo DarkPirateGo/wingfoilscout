@@ -210,8 +210,34 @@
     pts.push([D.home.lat, D.home.lon]);
     map.fitBounds(L.latLngBounds(pts).pad(0.12));
   }
-  document.getElementById('b_top').addEventListener('click', function () { zeige(['top']); });
-  document.getElementById('b_all').addEventListener('click', function () { zeige(['top', 'hit', 'quiet']); });
+  /* „Auf Top 3“ zeigt nur noch die drei besten (seit 2.5.0, gewünscht am
+     07.10.2026 — bis dahin zoomte es nur, und die übrigen Ziele blieben
+     stehen): Treffer, windstille, aussortierte Spots, Stellplätze und
+     Thermikringe gehen aus. „Alles zeigen“ schaltet Top 3, Treffer und
+     windstille ein und dazu wieder, was „Auf Top 3“ ausgeschaltet hat — aus
+     schaltet es nichts. Beides über die Kästchen, damit Haken und Karte
+     zusammenpassen. */
+  function setze(id, an) {
+    var box = document.getElementById(id);
+    if (!box || box.checked === an) return false;
+    box.checked = an;
+    box.dispatchEvent(new Event('change', {bubbles: true}));
+    return true;
+  }
+  var ausserTop = ['l_hit', 'l_quiet', 'l_out', 'l_camp', 'l_thermik'], ausgeschaltet = [];
+  document.getElementById('b_top').addEventListener('click', function () {
+    setze('l_top', true);
+    ausserTop.forEach(function (id) {
+      if (setze(id, false) && ausgeschaltet.indexOf(id) < 0) ausgeschaltet.push(id);
+    });
+    if (linie) { map.removeLayer(linie); linie = null; }   // die Luftlinie zeigte evtl. auf einen der ausgeblendeten
+    zeige(['top']);
+  });
+  document.getElementById('b_all').addEventListener('click', function () {
+    ['l_top', 'l_hit', 'l_quiet'].concat(ausgeschaltet).forEach(function (id) { setze(id, true); });
+    ausgeschaltet = [];
+    zeige(['top', 'hit', 'quiet']);
+  });
 
   var voll = document.getElementById('b_full');
   voll.addEventListener('click', function () {

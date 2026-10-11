@@ -2,8 +2,8 @@
 /* Am Rechner: Reiter oben, wie gehabt. Am Handy (schmal oder Touch): eine
    feste Leiste unten, im Daumenbereich — so macht es jede iOS-App, und die
    Reiter oben brachen bei 375 pt in zwei Zeilen und kosteten 230 px Höhe. */
-.reiter{display:flex;gap:2px;margin:0 0 22px;border-bottom:1px solid var(--line);flex-wrap:wrap}
-.reiter a{display:inline-block;padding:9px 10px 11px;font-size:.92rem;font-weight:600;color:var(--muted);
+.reiter{display:flex;gap:0;margin:0 0 22px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.reiter a{display:inline-block;padding:9px 6px 11px;font-size:.92rem;font-weight:600;color:var(--muted);
 text-decoration:none;border-bottom:2px solid transparent;margin-bottom:-1px}
 .reiter a:hover{color:var(--ink)}
 .reiter a.an{color:var(--accent);border-bottom-color:var(--accent)}
@@ -14,7 +14,9 @@ text-decoration:none;border-bottom:2px solid transparent;margin-bottom:-1px}
    „Beenden“ folgen ihr — seit 2.1.0 alle in `.rechts`, die als Ganzes
    umbricht, wenn es eng wird. Die Nummer steht klein unter dem Logo: so
    bleibt die Leiste mit dem „?“ in allen vier Sprachen eine Zeile (gemessen
-   bei 1024 und 1440 px, auch auf den schmalen Seiten mit 760 px). */
+   bei 1024 und 1440 px, auch auf den schmalen Seiten mit 760 px). Seit 2.5.0
+   mit dem Reiter „Handy“: dafür 6 statt 10 px Rand je Reiter und keine Lücke
+   dazwischen — auf Französisch, der längsten Leiste, fehlten sonst 12 px. */
 .reiter .rechts{margin-left:auto;align-self:center;display:inline-flex;align-items:center;gap:6px;
   padding:4px 0}
 .reiter .marke{margin-left:auto;align-self:center;display:inline-flex;flex-direction:column;align-items:center;

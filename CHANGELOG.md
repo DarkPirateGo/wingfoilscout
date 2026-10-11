@@ -7,6 +7,147 @@ tell later which version a report was made with. From 2.1.0 on this file is
 written in English; the entries up to 2.0.0 below are in German, as they were
 written at the time.
 
+## 2.5.0 — 11.10.2026
+
+### Wingfoilscout on the iPhone: the “Phone” tab, and HTTPS at home
+
+- **Requested on 10 October**, after Safari on the iPhone refused the Wi-Fi
+  address with “Navigation failed because the request was for an HTTP URL
+  with HTTPS-Only enabled”: with the Safari setting “Not Secure Connection
+  Warning” on, Safari opens no `http://` address on the home network. And: “a
+  tab that shows how to connect the phone — it has to be quick to see”.
+- **A new tab, “Phone”** (on the Mac; on the phone you're already in). At
+  the top, what it takes every time: **“Share with phone”**, then a **QR
+  code** for the iPhone's camera, three steps, the address and “Stop
+  sharing”. Sharing works without a restart — one more server for each
+  Wi-Fi address of the Mac, next to the one on 127.0.0.1. Until 2.4.0 it took
+  `--lan` at the start, and the server then listened on all addresses.
+  “Wingfoilscout fürs iPhone starten” and `--lan` still work: they share
+  right away and open the tab. On the start page, “Data sources” points to
+  the tab.
+- **Set up once — option 1: with a certificate (recommended).** “Create
+  certificate” makes a certificate authority for this one Mac, which signs a
+  single server certificate for the Mac's Wi-Fi addresses and its Bonjour
+  name (`….local`) and is then gone: its key exists only in memory while it
+  signs. The profile (“Download profile”) goes to the iPhone by AirDrop or
+  mail; there it is installed and trusted under “Certificate Trust Settings”
+  — the tab lists every tap. After that Safari opens Wingfoilscout over https
+  without a warning, setting on or off. One port serves both: https for the
+  iPhone with the profile, http as before. If the Mac's address changes so
+  that the certificate no longer covers it, or after 820 days, the tab says
+  so; through the Bonjour name the iPhone also finds the Mac at a new
+  address.
+- **Option 2: without a certificate** — the Safari setting off. The tab
+  says what that costs: Safari then warns about no unencrypted page at all,
+  and everything, access key included, crosses the Wi-Fi unencrypted. And
+  what to do when it doesn't work (“… HTTPS-Only”, “This Connection Is Not
+  Private”, “No access”, the page doesn't load).
+- **The access key stays the same across restarts** (`handy/zugang.json`),
+  so the icon on the home screen keeps working; “New key” locks out every
+  device connected so far. Until 2.4.0 every start made a new one.
+- **No new dependency, and still no other program started:** the QR code
+  (`wingscout/qr.py`: byte mode, error correction M, versions 1 to 10) and
+  the certificates (`wingscout/zertifikat.py`: RSA 2048, X.509 v3, SHA-256)
+  come from Python's standard library (`SECURITY.md`, addendum of
+  10 October). Everything for the phone lives in `handy/` in the
+  Wingfoilscout folder — personal and never versioned: `.gitignore` and
+  `tools/persoenliche_daten.py` list it, and refuse `*.key`, `*.pem` and
+  `*.mobileconfig` anywhere.
+- Six tabs now fit on one line (a little less padding).
+- `tests/test_handy.py` (39 tests): QR codes against fixed results that an
+  independent reader (OpenCV) decoded, their fixed patterns, format and
+  version fields; the key; the Bonjour name; the certificate in a real TLS
+  handshake in which OpenSSL checks chain, address and name — and with
+  `openssl verify -x509_strict` where it is installed; the tab; https and
+  http on one port; a failed handshake that leaves nothing open; sharing,
+  a new key and stopping on a running server.
+- **Not tried on an iPhone before the release.** The steps follow Apple's
+  documentation; the names of the iOS settings may differ a little between
+  iOS versions and languages.
+
+### A Wingfoilscout app for the Dock
+
+- **Requested on 10 October** (“a nice shortcut with a logo”): double-click
+  **“App fürs Dock erstellen”**, and a Wingfoilscout app with its own icon —
+  a windsock above the water — lands in the Applications folder of your home
+  folder (`~/Applications`), selected in the Finder. Drag it to the Dock:
+  one click starts Wingfoilscout in the background, without a Terminal
+  window, and opens the browser; if it is already running, the click only
+  opens the browser. Quit as always with “Quit” in the interface.
+- It is built on your Mac (`tools/mac_app.sh`: a small AppleScript applet
+  that calls `tools/app_start.sh`, the icon from `tools/mac-app/`, signed ad
+  hoc), so it knows your folder and carries no quarantine. If the folder
+  moves, the app says so — then build it again.
+- The app looks for Python the way the Terminal does, then in the usual
+  places. If Python or PyYAML is missing, or the start fails, “Wingfoilscout
+  starten” opens in the Terminal and says what's wrong. Its output goes to
+  `cache/oberflaeche.log`. The app never shares with the phone.
+- `tests/test_mac_app.py` (8 tests). **Not tried on a Mac before the
+  release:** building needs macOS (`osacompile`, `codesign`), which the test
+  environment doesn't have.
+
+### Every favourite gets a calculation
+
+- **Requested on 7 October** (“a calculation for every favourite, even if
+  the input doesn't fit”) and on 10 October (“I still want to see whether
+  the wind is good for one day, instead of the two I wanted”).
+- **A favourite with sessions always gets a destination.** With overnight
+  stays, a favourite whose sessions didn't add up to the days in a row the
+  search asks for got only the sentence “There are sessions, but not 3 days
+  in a row.” Now it is ranked from all its sessions without that requirement
+  (`rank_trips(…, am_stueck=False)`; the nights still count for the drive
+  rule) and gets its full card with the badge “not 3 days in a row”, its
+  reason as a tooltip — inside the search as well as outside it. The search
+  itself still requires the days in a row. A favourite's plan B is chosen
+  among its own and the search's destinations, after the ensemble (which
+  would otherwise pick it among the favourites alone).
+- **A favourite without any session shows the best window of the period,
+  computed without your limits:** water and air temperature and your quiver
+  no longer rule an hour out (`score_hours(…, grenzen=False)`); night, past
+  hours, thunderstorms, the tide window and offshore wind still do. Wind
+  outside your quiver counts a little — at most as much as the worst wind
+  inside it, less the further away —, so an hour with a fitting wing always
+  comes first. The windows are the hours close to the best one: from 85 % of
+  the best hour's rating (at most from your minimum rating), one hour is
+  enough (`score.beste_fenster`). The card says what it is: the badge
+  “outside your limits”, the line “No session within your limits: …” with
+  the reason, then “Shown is the best window in the period, calculated
+  without these limits.”; each window lists the limits it breaks (“at most
+  9 kn — your quiver starts at 12 kn”, “water 14 °C below your limit of
+  16 °C” …), and where no wing fits, it says “no suitable wing”. Only if even
+  then no hour is left (only night, thunderstorms, tide window …) does the
+  flat card with the reason remain.
+- `tests/test_favoriten.py`: classes `ImmerEinZiel` and `BestesFenster`,
+  and the report for both kinds of card.
+
+### Hourly grid right after the map, best first; “Zoom to top 3” shows the three
+
+- **Requested on 7 October.** The hourly grid now comes right after the map,
+  before the thermal sections (until 2.4.0 after them).
+- **Its rows are in order of the ranking, not of the drive time:** first the
+  destinations of the search in their order, with the rank in front of the
+  name (“Rank n among the destinations of the search” as the tooltip) — the
+  first three rows are the best three —, then the spots without a
+  destination: the more and the better their rideable hours (the sum of
+  their hourly ratings), the higher; for a tie the best single hour, then
+  the shorter drive (`report._raster_folge`). The subtitle says “best first”.
+- **“Zoom to top 3” shows only the top 3.** Until now it only zoomed, and the
+  other destinations, the spots without wind and the overnight spots stayed
+  on the map. Now it switches off every other layer — session found, no
+  wind, excluded, overnight spots, thermal winds — through their checkboxes,
+  so ticks and map agree, and zooms to the three. “Show all” switches top 3,
+  session found and no wind on again, plus whatever “Zoom to top 3” switched
+  off; it switches nothing off.
+- `tests/test_report_cli.py`: the order of the sections, the order of the
+  grid rows (from a demo search and with made-up rows), and the two buttons
+  in Chromium — with a small stand-in for Leaflet, since the tests can't
+  reach cdnjs. Against the 2.4.0 map script the browser test fails.
+- `docs/`: new hourly-grid screenshots and example report.
+
+### Tests
+
+- 962 tests (2.4.0: 901).
+
 ## 2.4.0 — 07.10.2026
 
 ### Favourites

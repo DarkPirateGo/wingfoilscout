@@ -15,7 +15,7 @@ allemand, français et espagnol.
 <p align="center">
 <picture><source media="(prefers-color-scheme: dark)" srcset="docs/bilder/en/search-dark.png"><img src="docs/bilder/en/search-light.png" width="250" alt="Recherche : point de départ, heure de début, favoris et préréglages"></picture>
 <picture><source media="(prefers-color-scheme: dark)" srcset="docs/bilder/en/destinations-dark.png"><img src="docs/bilder/en/destinations-light.png" width="250" alt="Un favori, puis les trois meilleures destinations"></picture>
-<picture><source media="(prefers-color-scheme: dark)" srcset="docs/bilder/en/grid-dark.png"><img src="docs/bilder/en/grid-light.png" width="250" alt="Grille horaire : chaque spot, heure par heure"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/bilder/en/grid-dark.png"><img src="docs/bilder/en/grid-light.png" width="250" alt="Grille horaire : chaque spot, heure par heure, les meilleurs d’abord"></picture>
 </p>
 <p align="center"><sub>Vue d’exemple avec des données météo inventées ·
 <a href="https://darkpiratego.github.io/wingfoilscout/">Site web</a> ·
@@ -98,8 +98,8 @@ partir de `config.example.yaml` au premier lancement.
 Chaque fichier à double-cliquer demande une fois l’étape 3, « Wingfoilscout
 fürs iPhone starten » compris. Par ce chemin, les nouvelles versions
 n’arrivent que sous forme de nouveau ZIP : copie `config.yaml`,
-`tagebuch.json`, `modellguete.json`, `ui_defaults.json`, `favoriten.json` et
-`sprache.txt` de l’ancien dossier dans le nouveau. Les spots que tu as ajoutés toi-même
+`tagebuch.json`, `modellguete.json`, `ui_defaults.json`, `favoriten.json`,
+`sprache.txt` et le dossier `handy/` (si tu as configuré le mobile) de l’ancien dossier dans le nouveau. Les spots que tu as ajoutés toi-même
 restent dans le `spots.yaml` de l’ancien dossier — le chemin par le Terminal
 les garde lors des mises à jour.
 
@@ -149,7 +149,8 @@ guide les désigne sans l’extension `.command`.
 | Fichier | En français | Ce qu’il fait |
 |---|---|---|
 | `Wingfoilscout starten.command` | Lancer Wingfoilscout | ouvre l’interface dans le navigateur ; installe d’abord PyYAML s’il manque |
-| `Wingfoilscout fürs iPhone starten.command` | Lancer Wingfoilscout pour l’iPhone | pareil, mais l’interface est aussi accessible depuis un iPhone sur le même Wi-Fi (voir [Sur l’iPhone](#sur-liphone)) |
+| `Wingfoilscout fürs iPhone starten.command` | Lancer Wingfoilscout pour l’iPhone | pareil, et l’interface est aussitôt partagée avec un iPhone sur le même Wi-Fi — l’onglet « Mobile » affiche le QR code (voir [Sur l’iPhone](#sur-liphone)) |
+| `App fürs Dock erstellen.command` | Créer l’app pour le Dock | crée une app Wingfoilscout avec sa propre icône dans le dossier Applications de ton dossier personnel — glisse-la dans le Dock ; un clic lance Wingfoilscout sans fenêtre de Terminal (voir [Lancer et quitter](#lancer-et-quitter)) |
 | `wingfoilscout.bat` | — | Windows : ouvre l’interface dans le navigateur |
 | `Neuen Stand holen.command` | Récupérer la dernière version | récupère l’état actuel depuis GitHub sans perdre tes propres modifications, puis lance les tests (nécessite un clone `git`) |
 | `Auf GitHub veröffentlichen.command` | Publier sur GitHub | contrôle, commit et push — pour les contributeurs |
@@ -295,19 +296,27 @@ Entrée marchent aussi). Il arrive dans ta liste sous forme de petite
 
 Dès que la liste a une entrée, l’interrupteur **« Afficher les favoris
 d’abord »** apparaît (activé au départ). Activé, chaque recherche calcule
-aussi tes favoris — **même hors du rayon et malgré les filtres** (saison,
-types d’eau, herbiers, chiens…) — et le rapport commence par eux :
-**Favoris → les trois meilleurs → carte**. Chaque favori a la même carte
+aussi tes favoris — **même hors du rayon, malgré les filtres** (saison,
+types d’eau, herbiers, chiens…) **et sans les jours d’affilée** que demande
+**Nuitées** — et le rapport commence par eux : **Favoris → les trois
+meilleurs → carte → grille horaire**. Chaque favori a la même carte
 qu’une destination de la recherche, avec une ★ à la place du rang et une
 étiquette : **Rang 4** s’il figure aussi parmi les destinations de la
 recherche, ou **hors de la recherche**, avec la raison en info-bulle
-(« 2799 km — hors du rayon de 600 km », « hors saison »). Un favori sans
-session sur la période a une carte simple qui dit pourquoi — « Au plus 8 kn
-(sam. 10 oct. 14:00) — ton quiver commence à 10 kn » ou, là où il y aurait
-du vent, ce qui exclut ces heures, avec les mots de la grille horaire
-(« eau à 9 °C, sous ta limite de 12 °C », « hors de la fenêtre de marée… ») —,
-plus les liens vers Windy, l’itinéraire et la carte. Parmi les trois
-meilleurs et les autres destinations, un favori porte une ★ devant son nom.
+(« 2799 km — hors du rayon de 600 km », « hors saison »). Si ses sessions
+ne donnent pas les jours d’affilée que demande la recherche, il a quand même
+sa carte, avec l’étiquette **pas 3 jours d’affilée** (depuis la 2.5.0) — tu
+vois ainsi si un jour irait, au lieu des deux voulus. Un favori sans aucune
+session dans tes limites montre **la meilleure fenêtre de la période,
+calculée sans tes limites** (depuis la 2.5.0), avec l’étiquette **hors de tes
+limites** et la raison — « Aucune session dans tes limites : au plus 8 kn
+(sam. 10 oct. 14:00) — ton quiver commence à 10 kn » — ; chaque fenêtre
+indique les limites qu’elle dépasse (« eau à 9 °C, sous ta limite de
+12 °C »). La nuit, les orages, la fenêtre de marée et le vent de terre
+excluent toujours des heures ; s’il n’en reste aucune, une carte simple dit
+pourquoi, avec les liens vers Windy, l’itinéraire et la carte. Parmi les
+trois meilleurs et les autres destinations, un favori porte une ★ devant son
+nom.
 
 Les trois meilleurs, la carte et la grille horaire restent la recherche
 normale : les favoris hors de celle-ci n’y apparaissent pas et n’en évincent
@@ -560,20 +569,46 @@ dans l’onglet « Destinations » avec un en-tête replié, la grille horaire
 les tableaux larges à faire défiler latéralement. Conçue et testée pour des
 largeurs de 320 à 430 points — de l’iPhone SE au Pro Max.
 
-**Sur le Wi-Fi, avec le Mac qui fait le travail.** Normalement, Wingfoilscout
-n’écoute que sur 127.0.0.1. Pour un iPhone sur le même réseau :
+**Sur le Wi-Fi, avec le Mac qui fait le travail — l’onglet « Mobile »**
+(depuis la 2.5.0). Normalement, Wingfoilscout n’écoute que sur 127.0.0.1.
+Ouvre l’onglet **Mobile** sur le Mac et appuie sur **Partager avec le
+mobile** : un QR code apparaît — vise-le avec l’appareil photo de l’iPhone et
+touche le lien. L’adresse qu’il contient porte ta clé d’accès : sans elle,
+tout autre appareil du réseau reçoit une erreur 401. La clé passe dans un
+cookie et reste la même d’un redémarrage à l’autre (jusqu’à la 2.4.0, elle
+ne valait que pour une exécution) — l’icône de l’écran d’accueil continue
+donc de fonctionner ; **Nouvelle clé** dans l’onglet bloque tous les
+appareils connectés jusqu’ici. Le partage s’arrête avec **Arrêter le
+partage** ou quand tu quittes Wingfoilscout. La recherche tourne toujours
+sur le Mac — l’iPhone ne fait qu’afficher les résultats et lancer des
+recherches. Un double-clic sur **« Wingfoilscout fürs iPhone starten »** ou
+`python3 -m wingscout.webui --lan` partage dès le lancement et ouvre
+l’onglet.
 
-```
-python3 -m wingscout.webui --lan
-```
+**Safari affiche « … HTTPS-Only » ?** Alors, sur l’iPhone, le réglage de
+Safari qui avertit des connexions non sécurisées est activé (en anglais
+**Not Secure Connection Warning** ; Réglages → Apps → Safari), et Safari
+n’ouvre aucune adresse non chiffrée. Deux options, expliquées pas à pas dans
+l’onglet :
 
-ou double-clique sur **« Wingfoilscout fürs iPhone starten »**. Le terminal
-affiche alors une adresse du type `http://192.168.178.25:8765/?k=Xf3k…` —
-saisis-la dans Safari. La clé qu’elle contient est ton accès : sans elle, tout
-autre appareil du réseau reçoit une erreur 401. Elle est enregistrée une fois
-dans un cookie et reste valable jusqu’à l’arrêt de Wingfoilscout ; une fois le
-cookie posé, l’adresse sans `?k=` suffit. La recherche tourne toujours sur le
-Mac — l’iPhone ne fait qu’afficher les résultats et lancer des recherches.
+1. **Avec certificat** (recommandé ; une fois, environ deux minutes) : dans
+   l’onglet, **Créer le certificat**, puis **Télécharger le profil** et
+   l’envoyer sur l’iPhone par AirDrop ou par e-mail ; là, l’installer
+   (Réglages → « Profil téléchargé ») et activer la confiance (Réglages →
+   Général → Informations → Réglages de confiance des certificats). Ensuite,
+   Safari ouvre Wingfoilscout en https, sans avertissement. L’autorité de
+   certification qui l’a émis n’existe que le temps de signer et n’est jamais
+   enregistrée — rien d’autre ne pourra jamais être certifié avec elle
+   ([SECURITY.md](SECURITY.md)). Si l’adresse du Mac change et que le
+   certificat ne convient plus, l’onglet le dit — en créer un nouveau et
+   envoyer le nouveau profil.
+2. **Sans certificat :** désactiver le réglage de Safari. Safari n’avertit
+   alors plus pour aucun site non chiffré, et tout, clé d’accès comprise,
+   passe en clair sur le Wi-Fi — acceptable chez toi avec WPA2/WPA3, pas sur
+   un Wi-Fi étranger.
+
+Ne partage que sur ton propre Wi-Fi — pas à l’hôtel, dans le train ou au
+camping.
 
 **Sur l’écran d’accueil.** Dans Safari, « Partager » → « Sur l’écran d’accueil » : Wingfoilscout se lance alors comme une app, sans barre
 d’adresse, avec sa propre icône.
@@ -818,7 +853,8 @@ et la plus longue « session » continue durait 59 heures.
 ### Lancer et quitter
 
 L’interface tourne uniquement sur ton ordinateur (127.0.0.1:8765) et n’est pas
-accessible de l’extérieur. Pour quitter, utilise le bouton **Quitter** en haut
+accessible de l’extérieur — sauf si tu la partages avec ton mobile dans l’onglet
+« Mobile ». Pour quitter, utilise le bouton **Quitter** en haut
 à droite de la barre d’onglets, sur chaque page (sur téléphone, une petite
 étiquette en haut à droite) — appuie deux fois, pour qu’il ne se déclenche pas
 par accident en pleine exécution.
@@ -838,6 +874,17 @@ vert. Quand tu reviens à la recherche, elle affiche l’exécution en cours ou
 terminée avec son heure. Une fois que tu as quitté, le programme dans la
 fenêtre du terminal se termine aussi tout seul, et la fenêtre peut être fermée.
 Ctrl+C dans le terminal fonctionne toujours aussi.
+
+**Depuis le Dock** (depuis la 2.5.0) : double-clique une fois sur **« App
+fürs Dock erstellen »**. Cela crée une app Wingfoilscout avec sa propre icône
+dans le dossier Applications de ton dossier personnel et la sélectionne dans
+le Finder — glisse-la dans le Dock. Un clic lance Wingfoilscout en arrière-plan,
+sans fenêtre de Terminal, et ouvre le navigateur ; s’il tourne déjà, le clic
+ouvre seulement le navigateur. Pour quitter, **Quitter** comme toujours. L’app
+est créée sur ton Mac et connaît le dossier Wingfoilscout : si tu déplaces le
+dossier, crée-la à nouveau. S’il manque quelque chose (Python, PyYAML), l’app
+ouvre « Wingfoilscout starten » dans le Terminal, qui dit quoi ; ce que
+l’exécution en arrière-plan affiche se trouve dans `cache/oberflaeche.log`.
 
 > Au premier double-clic, macOS peut signaler que le fichier provient d’un
 > développeur non identifié. À partir de macOS 15 : Réglages Système →
@@ -1148,8 +1195,8 @@ interdisent d’aspirer les pages. Wingfoilscout fait donc deux choses :
 
 D’abord tes [favoris](#favoris), si tu les as activés (depuis la 2.4.0), puis
 les trois meilleures destinations (depuis la 2.3.0 avant la carte), puis la
-carte, les thermiques, la grille horaire, toutes les autres
-destinations, toutes les sessions en tableau, les spots écartés, et la
+carte, la grille horaire (depuis la 2.5.0 juste après la carte), les
+thermiques, toutes les autres destinations, toutes les sessions en tableau, les spots écartés, et la
 logique météo avec tes valeurs actuelles.
 
 **Deux vues** (depuis la 1.20.0), à choisir en haut sous le titre :
@@ -1189,8 +1236,15 @@ si les trois premiers ne tiennent pas leurs promesses.
 
 ### Grille horaire
 
-Une ligne par spot, une colonne par heure, l’heure en haut. Deux façons de la
-lire, à basculer avec l’interrupteur au-dessus :
+Une ligne par spot, une colonne par heure, l’heure en haut — **les meilleurs
+d’abord** (depuis la 2.5.0 ; avant, les lignes suivaient le temps de
+trajet) : les destinations de la recherche dans leur classement, le rang
+devant le nom, les trois premières lignes sont donc les trois meilleurs ;
+puis les spots sans destination, d’abord ceux qui ont le plus d’heures
+praticables et les meilleures — à égalité, la meilleure heure décide, puis le
+trajet le plus court.
+
+Deux façons de la lire, à basculer avec l’interrupteur au-dessus :
 
 - **Note** — l’heure vaut-elle le coup, oui ou non ? La couleur est le score
   tiré du vent, de la direction, des rafales et de la météo.
@@ -1219,8 +1273,8 @@ est exclue). Sur l’iPhone, c’est le seul moyen, car il n’y a pas d’infob
 
 ### Carte
 
-Le rapport s’ouvre sur une carte, et c’est une vue à part entière, pas une
-illustration. Points : plein = destination avec une session (le top 3 plus
+La carte vient juste après les trois meilleurs, et c’est une vue à part
+entière, pas une illustration. Points : plein = destination avec une session (le top 3 plus
 marqué), gris-bleu = dans le rayon mais sans vent, creux = écarté (raison dans
 la popup).
 
@@ -1236,8 +1290,12 @@ séparément — sinon 277 points d’un coup ne font qu’un tapis de couleurs�
 - **Noms des spots trouvés** affichés en permanence ; au survol, chaque point
   montre de toute façon son nom
 - **Rayon** en cercle pointillé
-- **Zoom sur le top 3**, **Tout afficher**, **Plein écran** (Échap pour en
-  sortir)
+- **Zoom sur le top 3** n’affiche plus que le top 3 (depuis la 2.5.0) : toutes
+  les autres couches — session trouvée, sans vent, exclu, emplacements pour la
+  nuit, vents thermiques — sont désactivées, et la carte zoome sur les trois.
+  **Tout afficher** réactive top 3, session trouvée et sans vent, plus ce que
+  « Zoom sur le top 3 » a désactivé, et dézoome sur l’ensemble
+- **Plein écran** (Échap pour en sortir)
 
 La popup d’un spot montre la meilleure session, la direction et la wing, le
 trajet, la **bande horaire** dans la même échelle de couleurs que la grille

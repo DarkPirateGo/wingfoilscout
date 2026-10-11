@@ -24,9 +24,22 @@ explains them as they come up.
                           hour, tide windows, the three settings (auto/yes/no)
       report.py           the HTML report
       webui.py            the browser UI: Search, Catalogue, Check coordinates,
-                          Review, Logbook (one tab bar, `reiter()`), the two Help
-                          pages behind the "?" in the tab bar; server,
-                          endpoints, HTML skeleton
+                          Review, Logbook, Phone (one tab bar, `reiter()`), the
+                          two Help pages behind the "?" in the tab bar; server,
+                          endpoints, HTML skeleton; sharing for the phone at
+                          runtime (`freigeben()`: one more server per Wi-Fi
+                          address, https and http on one port, see
+                          `Handler.setup`)
+      handy.py            the phone (since 2.5.0): the access key that stays
+                          (handy/zugang.json), the Mac's Wi-Fi addresses and
+                          Bonjour name, the certificate for https and the
+                          profile for the iPhone, the start addresses for the
+                          QR code
+      zertifikat.py       RSA keys, X.509 certificates and their signature with
+                          the standard library only (since 2.5.0) — no openssl,
+                          no program started
+      qr.py               QR codes as SVG (since 2.5.0): byte mode, error
+                          correction M, versions 1–10
       hilfe.py            Help in the app: a small Markdown renderer for the
                           README (anchors as on GitHub, everything escaped, raw
                           HTML dropped), the sanitiser and the scoped CSS for
@@ -41,9 +54,10 @@ explains them as they come up.
                           at the displayed time), beenden.js (the Quit button
                           in the tab bar), lauf.js (the dot on the tab while
                           something is running), sprache.js (the language
-                          switcher), hilfe.css (the Help pages), the
-                          home-screen icons (icon-*.png) and the creator's logo
-                          (logo.png, in tab bar, footer and report)
+                          switcher), hilfe.css (the Help pages), handy.css and
+                          handy.js (the Phone tab), the home-screen icons
+                          (icon-*.png) and the creator's logo (logo.png, in tab
+                          bar, footer and report)
       i18n.py             UI languages (since 2.1.0): T(), TN(), N_(), TD(), which
                           language applies, dates — see "Languages (i18n)" below
       zeitraum.py         the period of a search (since 2.3.0): start time
@@ -77,7 +91,10 @@ explains them as they come up.
     tests/                unittest, no extra dependencies, no network (blocked)
     tools/                check run, benchmark, hook, translation check
                           (i18n_texte.py), terminal language of the
-                          double-click files (sprache.sh)
+                          double-click files (sprache.sh); the Dock app (since
+                          2.5.0): mac_app.sh builds it on the Mac (osacompile,
+                          the icon from mac-app/, signed ad hoc), app_start.sh
+                          is what a click on it runs
     README.md             the guide (English); README.de.md, README.fr.md,
                           README.es.md its translations — shown in the app too
     spots.yaml            the catalogue — the actual asset
@@ -90,6 +107,8 @@ explains them as they come up.
     modellguete.json      memory of the model comparison (personal, not versioned)
     tagebuch.json         the session logbook (personal, not versioned)
     favoriten.json        your favourites (personal, not versioned, since 2.4.0)
+    handy/                access key, certificate and profile for the phone
+                          (personal, not versioned, since 2.5.0)
     sprache.txt           the language chosen in the switcher (personal, not
                           versioned)
     pyproject.toml        package metadata (Python ≥ 3.9, PyYAML) and the linter rules

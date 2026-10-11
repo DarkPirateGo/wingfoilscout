@@ -39,6 +39,7 @@ VERBOTEN = [
      "persönliche Konfiguration oder eine Kopie davon"),
     (r"(^|/)tagebuch\.json$|^tagebuch[^/]*\.json$", "Logbuch"),
     (r"(^|/)favoriten\.json$|^favoriten[^/]*\.json$", "eigene Favoriten"),
+    (r"^handy/|\.(mobileconfig|key|pem)$", "Zugangsschlüssel, Zertifikat oder Profil fürs Handy"),
     (r"(^|/)modellguete\.json$|^modellguete[^/]*\.json$", "eigener Modellvergleich"),
     (r"(^|/)ui_defaults\.json$|^ui_defaults[^/]*\.json$", "gespeicherte Voreinstellungen"),
     (r"(^|/)sprache\.txt$", "eigene Sprachwahl"),

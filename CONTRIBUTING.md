@@ -127,7 +127,8 @@ changes".
 `config.yaml` and any copy of it, `report.html`, `ui_defaults.json`,
 `cache/`, your logbook (`tagebuch.json`), your favourites (`favoriten.json`),
 the memory of the model comparison (`modellguete.json`), your language choice
-(`sprache.txt`), the app's
+(`sprache.txt`), access key and certificate for the phone (`handy/`, and any
+`*.key`, `*.pem` or `*.mobileconfig` file), the app's
 half-written `*.neu` files, exports for importing (Takeout, GPX, KML,
 GeoJSON, CSV or JSON in `import/`, ZIP archives), screenshots, editor backups
 and local Claude settings. All of it is in `.gitignore`;

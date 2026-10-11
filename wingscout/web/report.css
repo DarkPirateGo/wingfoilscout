@@ -90,6 +90,7 @@ color:var(--ink-2);font-variant-numeric:tabular-nums}
 .tide-tage i{font-style:normal;color:var(--muted)}
 .tide-meta{flex:1 1 100%;font-size:.76rem;color:var(--muted)}
 .p-info{background:var(--surface-2);color:var(--ink-2)}
+.p-warn{background:var(--warn-soft);color:var(--warn)}
 .p-ok{background:var(--ok-soft);color:var(--ok)}
 .links{padding:10px 18px 14px;font-size:.82rem;display:flex;gap:14px;flex-wrap:wrap;border-top:1px solid var(--line-soft)}
 a{color:var(--accent)}
@@ -111,6 +112,9 @@ td.n{font:12px/1.4 ui-monospace,monospace;font-variant-numeric:tabular-nums;whit
 .hmname a:hover{color:var(--accent);text-decoration:underline}
 .hmkm{font-size:.72rem;color:var(--muted);font-variant-numeric:tabular-nums;flex:none;padding-right:6px;text-decoration:none}
 .hmkm:hover{color:var(--accent);text-decoration:underline}
+/* Platz unter den Zielen vor dem Namen (seit 2.5.0): die Zeilen stehen in dieser Reihenfolge */
+.hmwer{display:flex;gap:5px;align-items:baseline;min-width:0;overflow:hidden}
+.hmrang{flex:none;min-width:1.5em;text-align:right;font-size:.7rem;color:var(--muted);font-variant-numeric:tabular-nums}
 .hmcells{display:grid;gap:1px}
 .cell{height:15px;border-radius:1px;background:var(--surface-2);cursor:pointer}
 .cell.gewaehlt{outline:2px solid var(--ink);outline-offset:-1px}

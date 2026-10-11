@@ -26,6 +26,73 @@ open. The review was done by hand, line by line; automated tools such as
 from this audit are pinned down as tests in `tests/test_security.py`, so that
 they don't silently disappear in the next rework.
 
+### Addendum 10 October 2026: the phone tab and HTTPS on the home network (2.5.0)
+
+Safari on the iPhone refused the Wi-Fi address with an "HTTPS-Only" error:
+if the Safari setting "Not Secure Connection Warning" is on, it opens no
+`http://` address on the home network. 2.5.0 therefore adds a "Phone" tab
+and an optional certificate. What changes for security:
+
+- **No more listening on all addresses.** The main server always binds to
+  127.0.0.1, also with `--lan`. Sharing for the phone (`freigeben` in
+  `webui.py`, from the tab or with `--lan` at start) adds one server per IPv4
+  address of the Mac on the local network, on the same port, and only
+  together with the access key. It never starts by itself and ends when
+  Wingfoilscout quits. The tab's buttons (`POST /handy/…`) answer 403 to
+  every other device, on top of the usual origin checks; opened from the
+  phone, the tab shows neither the QR code nor the key.
+- **The access key stays the same across restarts** (`handy/zugang.json`,
+  96 bits from `secrets.token_urlsafe(12)`, file 0600), so the icon on the
+  home screen keeps working; the cookie now lasts 400 days. The trade-off: a
+  key that got out stays valid until someone presses "New key" in the tab —
+  that locks out every connected device. It is still compared with
+  `hmac.compare_digest`.
+- **HTTPS with a certificate authority that no longer exists.** "Create
+  certificate" generates a certificate authority (CA) for this one Mac, lets
+  it sign exactly one server certificate and then discards it: the CA's
+  private key lives only in memory while `handy.zertifikat_erzeugen` runs and
+  is never written to disk. So nobody can later issue more certificates that
+  the iPhone trusts — not even someone who gets onto the Mac. The server
+  certificate names the Mac's IPv4 addresses and its Bonjour name
+  (`….local`) in the SubjectAltName, carries ExtendedKeyUsage serverAuth and
+  is valid for 820 days (Apple allows at most 825); RSA 2048, SHA-256.
+  Its key, `handy/server.key` (0600), stays on the Mac. Whoever steals it
+  can pose as Wingfoilscout towards that iPhone at those addresses — so the
+  folder is personal and never versioned (`.gitignore`,
+  `tools/persoenliche_daten.py`, which now also refuse `*.key`, `*.pem` and
+  `*.mobileconfig` anywhere). Removing the profile on the iPhone ends the
+  trust at any time.
+- **Generated in Python, without starting a program.** `wingscout/zertifikat.py`
+  does RSA key generation (Miller–Rabin with random bases from `secrets`),
+  X.509 v3 in DER and the PKCS #1 v1.5 signature with the standard library.
+  No `openssl` call — the rule "no `subprocess`" from this audit stays as it
+  is. `tests/test_handy.py` checks the result with a real TLS handshake in
+  which Python's `ssl` (OpenSSL) verifies the chain, the address and the
+  name, and — where installed — with `openssl verify -x509_strict`. The
+  Bonjour name comes from `/Library/Preferences/SystemConfiguration/preferences.plist`,
+  read with `plistlib` (which refuses entity declarations).
+- **One port, two protocols.** The first byte of a connection decides: a TLS
+  handshake (0x16) gets TLS 1.2 or newer, everything else plain HTTP as
+  before (way 2, without a certificate). The handshake runs under the same
+  deadline as a request, so a device that starts one and stalls holds a
+  connection no longer than before (A2).
+- **Host and origin check:** besides 127.0.0.1, localhost and the Mac's own
+  addresses, the Bonjour name from the certificate is now accepted — only
+  that one name and only while sharing is on. A `.local` name is resolved by
+  multicast DNS on the local network, not by public DNS, so a website can't
+  point it at the Mac (DNS rebinding).
+- **The profile** (`/handy/profil`) contains only the CA's certificate, which
+  is public. iOS installs it only after the passcode, and trusts it for
+  websites only after a second, separate switch in "Certificate Trust
+  Settings".
+
+The 20 September addendum called a certificate for a local address "the next
+step" but feared a warning that users learn to click away. With the profile
+there is no warning to click away: iOS checks the certificate like any other.
+Way 2 — switching the Safari setting off — stays possible; the tab says what
+it costs (no more warnings for any unencrypted site, and the key crosses the
+Wi-Fi in plain text).
+
 ### Addendum 7 October 2026: favourites (2.4.0)
 
 2.4.0 adds one endpoint and one personal file; no new third-party service.

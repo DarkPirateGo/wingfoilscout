@@ -1,6 +1,21 @@
 # TODO
 
-As of 7 October 2026, version 2.4.0 (901 tests). In it: **favourites** —
+As of 11 October 2026, version 2.5.0 (962 tests). In it: **the “Phone”
+tab** — share with the iPhone without a restart, a QR code instead of typing,
+the access key stays the same across restarts, and **HTTPS on the home
+network** for Safari's “Not Secure Connection Warning”: a certificate from a
+certificate authority that exists only while it signs, the profile by
+AirDrop — or the way without a certificate, both explained in the tab
+(`wingscout/handy.py`, `qr.py`, `zertifikat.py`, `web/handy.js`/`.css`,
+`tests/test_handy.py`; `SECURITY.md`, addendum of 10 October); **a Dock app**
+with its own icon, built on the Mac by “App fürs Dock erstellen”
+(`tools/mac_app.sh`, `tools/app_start.sh`, `tools/mac-app/`); **every
+favourite gets a calculation** — with sessions but not the days in a row its
+full card, without any session the best window of the period, computed
+without your limits; **the hourly grid** right after the map, best first;
+**“Zoom to top 3”** shows only the top 3. Neither the phone tab on an iPhone
+nor the Dock app on a Mac has been tried yet. Before that, 2.4.0 (901 tests),
+published on 7 October. In it: **favourites** —
 typed into the first form with a list of matches, stored in `favoriten.json`
 (personal); with “Show favourites first” every search also computes them,
 even outside the radius and despite the filters, and the report begins
@@ -100,6 +115,28 @@ wasn't important enough to keep.
 
 ## Open — Philipp
 
+- **Try 2.5.0 once** (restart Wingfoilscout first — the bar at the top says
+  so):
+  - **Phone tab:** open “Phone”, “Create certificate”, “Download profile”,
+    AirDrop it to the iPhone, install it there (Settings → “Profile
+    Downloaded”), switch on trust (Settings → General → About → Certificate
+    Trust Settings), then “Share with phone” and scan the code: Safari should
+    open Wingfoilscout over https without a warning, with “Not Secure
+    Connection Warning” on. Then “Add to Home Screen”, quit Wingfoilscout,
+    start it again, share again — the icon should still work. The iOS labels
+    in the tab come from Apple's documentation, not from a device: tell me
+    what they are called on your iPhone, and whether the Mac offered to
+    install the profile itself after the download.
+  - **Dock app:** double-click “App fürs Dock erstellen”, drag the app from
+    the Finder window into the Dock, click it: Wingfoilscout should start
+    without a Terminal window and open the browser; a second click only
+    opens the browser. If nothing happens, `cache/oberflaeche.log` says why.
+  - **Favourites:** with 2 overnight stays, a favourite without 3 days in a
+    row gets its card with “not 3 days in a row”; a favourite without any
+    session (say, with the water limit at 25 °C) shows its best window with
+    “outside your limits”. Below the map the hourly grid, rows numbered 1,
+    2, 3 …; on the map, “Zoom to top 3” leaves only the three, “Show all”
+    brings the rest back.
 - **Try 2.4.0 once:** restart Wingfoilscout, add two favourites in the
   search form — one near home, one far away (say Tarifa) —, search with
   “Show favourites first”: the report should start with both, the far one
@@ -146,10 +183,9 @@ wasn't important enough to keep.
   from the report with BSH (Pegelonline) or Rijkswaterstaat for the same day.
   I don't know how far off the model is — I have no number for it; only the
   comparison will tell whether the 8 km grid is good enough at that spot.
-- **Double-check on the iPhone** — I can't do that from here: does
-  "Wingfoilscout fürs iPhone starten" run through, does the terminal show an
-  address like `http://192.168.…:8765/?k=…`, and does Safari reach the
-  interface with it? Does the tab bar sit above the home indicator, does no
+- **Double-check on the iPhone** — I can't do that from here: does the QR
+  code in the “Phone” tab open the interface in Safari (see “Try 2.5.0
+  once”)? Does the tab bar sit above the home indicator, does no
   input field zoom in when tapped, and does "Share" → "Add to Home Screen"
   work with icon and name? I measured in Chromium at iPhone sizes
   (320–430 pt), not on a device.
@@ -299,9 +335,8 @@ wasn't important enough to keep.
   personal files, install ruff as well
   (`pip install -r requirements.txt ruff`) — needs a token with the
   `workflow` scope, or SSH, so not touched so far.
-- **iPhone, next steps:** a QR code for the Wi-Fi address (saves typing;
-  needs either ~200 lines of QR encoder or the `qrcode` package — so far
-  Wingfoilscout's only dependency is PyYAML). A service worker would show the
+- **iPhone, next steps:** the QR code came with 2.5.0 (`wingscout/qr.py`,
+  no new dependency). A service worker would show the
   most recently loaded interface offline; without it, the report is the
   offline version on the go. Dynamic Type (text size from the iOS settings)
   is not supported.

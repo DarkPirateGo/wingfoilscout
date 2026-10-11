@@ -15,7 +15,7 @@ Spanish.
 <p align="center">
 <picture><source media="(prefers-color-scheme: dark)" srcset="docs/bilder/en/search-dark.png"><img src="docs/bilder/en/search-light.png" width="250" alt="Search: starting point, start time, favourites and presets"></picture>
 <picture><source media="(prefers-color-scheme: dark)" srcset="docs/bilder/en/destinations-dark.png"><img src="docs/bilder/en/destinations-light.png" width="250" alt="A favourite, then the best three destinations"></picture>
-<picture><source media="(prefers-color-scheme: dark)" srcset="docs/bilder/en/grid-dark.png"><img src="docs/bilder/en/grid-light.png" width="250" alt="Hourly grid: every spot, hour by hour"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/bilder/en/grid-dark.png"><img src="docs/bilder/en/grid-light.png" width="250" alt="Hourly grid: every spot, hour by hour, the best first"></picture>
 </p>
 <p align="center"><sub>Example view with made-up weather data ·
 <a href="https://darkpiratego.github.io/wingfoilscout/">Website</a> ·
@@ -92,7 +92,7 @@ You choose the starting point in the interface. You enter your gear once in
 Every double-click file needs step 3 once, “Wingfoilscout fürs iPhone
 starten” included. New versions come only as a new ZIP this way: copy
 `config.yaml`, `tagebuch.json`, `modellguete.json`, `ui_defaults.json`,
-`favoriten.json` and `sprache.txt` from the old folder into the new one. Spots you added yourself
+`favoriten.json`, `sprache.txt` and the folder `handy/` (if you set up the phone) from the old folder into the new one. Spots you added yourself
 stay in the old folder's `spots.yaml` — the Terminal way keeps them when
 updating.
 
@@ -140,7 +140,8 @@ refers to them without the `.command` extension.
 | File | In English | What it does |
 |---|---|---|
 | `Wingfoilscout starten.command` | Start Wingfoilscout | opens the interface in the browser; installs PyYAML first if it's missing |
-| `Wingfoilscout fürs iPhone starten.command` | Start Wingfoilscout for iPhone | the same, but the interface can also be reached from an iPhone on the same Wi-Fi (see [On the iPhone](#on-the-iphone)) |
+| `Wingfoilscout fürs iPhone starten.command` | Start Wingfoilscout for iPhone | the same, and the interface is shared with an iPhone on the same Wi-Fi right away — the “Phone” tab shows the QR code (see [On the iPhone](#on-the-iphone)) |
+| `App fürs Dock erstellen.command` | Create Dock app | builds a Wingfoilscout app with its own icon in the Applications folder of your home folder — drag it to the Dock; a click starts Wingfoilscout without a Terminal window (see [Running and quitting](#running-and-quitting)) |
 | `wingfoilscout.bat` | — | Windows: opens the interface in the browser |
 | `Neuen Stand holen.command` | Get the latest version | fetches the current state from GitHub without losing your own changes, then runs the tests (needs a `git` clone) |
 | `Auf GitHub veröffentlichen.command` | Publish to GitHub | check run, commit and push — for contributors |
@@ -273,18 +274,25 @@ small tag; its × takes it out again. Up to ten, in the order you add them.
 
 Once the list has an entry, the switch **“Show favourites first”** appears
 (on to begin with). With it on, every search also computes your favourites —
-**even outside the radius and despite the filters** (season, water types,
-seagrass, dogs …) — and the report starts with them: **Favourites → the best
-three → map**. Each favourite gets the same card as a destination of the
+**even outside the radius, despite the filters** (season, water types,
+seagrass, dogs …) **and without the days in a row** that **Overnight stays**
+asks for — and the report starts with them: **Favourites → the best three →
+map → hourly grid**. Each favourite gets the same card as a destination of the
 search, with a ★ instead of the rank and a badge: **Rank 4** if it is also
 among the destinations of the search, or **outside the search**, with the
 reason as a tooltip (“2799 km — outside the 600 km radius”, “out of season”).
-A favourite without a session in the period gets a flat card that says why —
-“At most 8 kn (Sat 10 Oct 14:00) — your quiver starts at 10 kn”, or, where
-there would be wind, what rules those hours out, in the words of the hour
-grid (“water 9 °C below your limit of 12 °C”, “outside the tide window …”) —
-plus the links to Windy, the route and the map. Among the best three and the
-further destinations, a favourite carries a ★ before its name.
+A favourite whose sessions don't add up to the days in a row the search asks
+for still gets its card, with the badge **not 3 days in a row** (since
+2.5.0) — so you see whether one day would work instead of the two you wanted.
+A favourite without any session within your limits shows **the best window
+of the period, calculated without your limits** (since 2.5.0), with the badge
+**outside your limits** and the reason — “No session within your limits: at
+most 8 kn (Sat 10 Oct 14:00) — your quiver starts at 10 kn” —; each window
+lists the limits it breaks (“water 9 °C below your limit of 12 °C”). Night,
+thunderstorms, the tide window and offshore wind still rule hours out; if no
+hour is left at all, a flat card says why, with the links to Windy, the route
+and the map. Among the best three and the further destinations, a favourite
+carries a ★ before its name.
 
 The best three, the map and the hour grid stay the normal search: favourites
 outside it don't appear there and don't push anything out. They are fetched
@@ -526,20 +534,39 @@ items (Search, Destinations, Review, Logbook), the report as the
 swipe sideways. Built and tested for widths of 320 to 430 points — from the
 iPhone SE to the Pro Max.
 
-**On Wi-Fi, with the Mac doing the work.** Wingfoilscout normally listens only
-on 127.0.0.1. For an iPhone on the same network:
+**On Wi-Fi, with the Mac doing the work — the “Phone” tab** (since 2.5.0).
+Wingfoilscout normally listens only on 127.0.0.1. Open the **Phone** tab on
+the Mac and press **Share with phone**: a QR code appears — point the
+iPhone's camera at it and tap the link. The address in it carries your access
+key: without it, every other device on the network gets a 401. The key moves
+into a cookie and stays the same across restarts (until 2.4.0 it was valid
+for one run), so the icon on the Home Screen keeps working; **New key** in the
+tab locks out every device connected so far. Sharing ends with **Stop
+sharing** or when you quit Wingfoilscout. The search still runs on the Mac —
+the iPhone only shows the results and starts searches. A double-click on
+**“Wingfoilscout fürs iPhone starten”** or `python3 -m wingscout.webui --lan`
+shares right at the start and opens the tab.
 
-```
-python3 -m wingscout.webui --lan
-```
+**Safari says “… HTTPS-Only”?** Then the iPhone has the Safari setting **Not
+Secure Connection Warning** on (Settings → Apps → Safari) and opens no
+unencrypted address. Two ways, both explained step by step in the tab:
 
-or double-click **“Wingfoilscout fürs iPhone starten”**. The terminal then
-shows an address like `http://192.168.178.25:8765/?k=Xf3k…` — type it into
-Safari. The key in it is your access: without it, every other device on the
-network gets a 401. It is stored in a cookie once and stays valid until
-Wingfoilscout is quit; after that, the address without `?k=` is enough. The
-search still runs on the Mac — the iPhone only shows the results and starts
-searches.
+1. **With a certificate** (recommended; once, about two minutes): in the
+   tab, **Create certificate**, then **Download profile** and send it to the
+   iPhone by AirDrop or mail; on the iPhone, install it (Settings → “Profile
+   Downloaded”) and switch on trust (Settings → General → About → Certificate
+   Trust Settings). From then on Safari opens Wingfoilscout over https,
+   without a warning. The certificate authority that signed it exists only
+   while it signs and is never stored, so nothing else can ever be certified
+   with it ([SECURITY.md](SECURITY.md)). If the Mac's address changes so that
+   the certificate no longer fits, the tab says so — create a new one and
+   send the new profile.
+2. **Without a certificate:** switch the Safari setting off. Safari then
+   warns about no unencrypted website at all, and everything, the access key
+   included, crosses the Wi-Fi unencrypted — acceptable at home with
+   WPA2/WPA3, not on other people's Wi-Fi.
+
+Share only on your own Wi-Fi — not in a hotel, on a train or at a campsite.
 
 **To the Home Screen.** In Safari, “Share” → “Add to Home Screen”:
 Wingfoilscout then starts like an app, without an address bar, with its own
@@ -772,7 +799,7 @@ of all session hours lay between 20:00 and 7:00, and the longest continuous
 ### Running and quitting
 
 The interface runs only on your computer (127.0.0.1:8765) and can't be reached
-from outside. To quit, use the **Quit** button at the top right of the tab
+from outside — unless you share it with your phone in the “Phone” tab. To quit, use the **Quit** button at the top right of the tab
 bar, on every page (on phones a small label at the top right) — press it
 twice, so that it isn't triggered by accident in the middle of a run.
 
@@ -790,6 +817,17 @@ the report is ready, “Destinations” gets a green one. When you come back to
 the search, it shows the running or finished run with its time. After you
 quit, the program in the terminal window ends by itself too, and the window
 can be closed. Ctrl+C in the terminal still works as well.
+
+**From the Dock** (since 2.5.0): double-click **“App fürs Dock erstellen”**
+once. It builds a Wingfoilscout app with its own icon in the Applications
+folder of your home folder and selects it in the Finder — drag it to the Dock.
+One click starts Wingfoilscout in the background, without a Terminal window,
+and opens the browser; if it is already running, the click only opens the
+browser. Quit with **Quit** as always. The app is built on your Mac and knows
+the Wingfoilscout folder: if you move the folder, build it again. If
+something is missing (Python, PyYAML), the app opens “Wingfoilscout starten”
+in the Terminal, which says what; the output of the background run goes to
+`cache/oberflaeche.log`.
 
 > On the first double-click, macOS may report that the file comes from an
 > unidentified developer. From macOS 15: System Settings → Privacy & Security
@@ -1082,8 +1120,9 @@ things:
 
 Your [favourites](#favourites) first, if you have switched them on (since
 2.4.0), then the best three destinations (since 2.3.0 above the map), then
-the map, thermals, hourly grid, all further destinations, all sessions as a table, the
-excluded spots, and the weather logic with your current values.
+the map, the hourly grid (since 2.5.0 right after the map), thermals, all
+further destinations, all sessions as a table, the excluded spots, and the
+weather logic with your current values.
 
 **Two views** (since 1.20.0), switchable at the top below the heading:
 
@@ -1120,8 +1159,14 @@ three don't deliver.
 
 ### Hourly grid
 
-One row per spot, one column per hour, the time at the top. Two ways to read
-it, switchable with the toggle above:
+One row per spot, one column per hour, the time at the top — **the best
+first** (since 2.5.0; before, the rows were in order of drive time): the
+destinations of the search in their ranking, with the rank in front of the
+name, so the first three rows are the best three; then the spots without a
+destination, those with the most and best rideable hours first — for a tie,
+the best single hour decides, then the shorter drive.
+
+Two ways to read it, switchable with the toggle above:
 
 - **Rating** — is the hour worth it at all? The colour is the score from wind,
   direction, gustiness and weather.
@@ -1148,8 +1193,8 @@ only way, because there are no tooltips there.
 
 ### Map
 
-The report opens with a map, and it is a view of its own, not an illustration.
-Dots: filled = destination with a session (the top 3 stronger), blue-grey =
+The map comes right after the best three, and it is a view of its own, not an
+illustration. Dots: filled = destination with a session (the top 3 stronger), blue-grey =
 within the radius but no wind, hollow = excluded (reason in the popup).
 
 With the switches below it, each layer can be shown or hidden individually —
@@ -1165,7 +1210,12 @@ otherwise 277 dots at once are just a carpet of colour:
 - **Names of matches** shown permanently; on hover, every dot shows its name
   anyway
 - **Radius** as a dashed circle
-- **Zoom to top 3**, **Show all**, **Full screen** (Escape ends it)
+- **Zoom to top 3** shows only the top 3 (since 2.5.0): every other layer —
+  session found, no wind, excluded, overnight spots, thermal winds — is
+  switched off, and the map zooms to the three. **Show all** switches top 3,
+  session found and no wind on again, plus whatever “Zoom to top 3” switched
+  off, and zooms out to all of them
+- **Full screen** (Escape ends it)
 
 The popup of a spot shows the best session, direction and wing, the drive, the
 **hour strip** in the same colour scale as the grid (hover for time and

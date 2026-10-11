@@ -58,16 +58,23 @@ class Server(unittest.TestCase):
         self.text = read(ROOT / "wingscout" / "webui.py")
 
     def test_bindet_nur_lokal_ausser_mit_lan_und_schluessel(self):
-        """Standard bleibt 127.0.0.1. Seit 1.17.0 gibt es `--lan` fürs iPhone —
-        dann hört Wingfoilscout im ganzen WLAN, und genau dann muss ein
+        """Standard bleibt 127.0.0.1. Seit 1.17.0 gibt es den Weg fürs iPhone —
+        dann hört Wingfoilscout auch im WLAN, und genau dann muss ein
         Zugangsschlüssel gelten. Beides gehört zusammen; fällt eines weg,
-        steht die Oberfläche offen im Netz."""
+        steht die Oberfläche offen im Netz. Seit 2.5.0 hört der Hauptserver
+        immer nur auf 127.0.0.1; fürs WLAN kommt je Adresse ein eigener Server
+        dazu (`freigeben`, Reiter „Handy“), und zwar nur mit dem Schlüssel aus
+        handy.py, der über Neustarts gleich bleibt."""
         # Seit 2.1.0 der BegrenzterServer: ein ThreadingHTTPServer mit Obergrenze
         # für offene Verbindungen (A2, tests/test_sicherheit_http.py)
-        self.assertIn('BegrenzterServer(("0.0.0.0" if lan else "127.0.0.1", port)', self.text)
+        self.assertIn('BegrenzterServer(("127.0.0.1", port)', self.text)
+        self.assertNotRegex(self.text, r"BegrenzterServer\(\(\s*(\"|')(0\.0\.0\.0)?(\"|')")  # nie alle Adressen
         self.assertIn("class BegrenzterServer(ThreadingHTTPServer)", self.text)
         self.assertIn("lan: bool = False", self.text)          # Vorgabe: nur lokal
-        self.assertIn("secrets.token_urlsafe", self.text)      # Schlüssel wird gewürfelt
+        freigeben = self.text[self.text.index("def freigeben("):self.text.index("def freigabe_beenden(")]
+        self.assertIn("schluessel=handy.schluessel()", freigeben)   # keine Freigabe ohne Schlüssel
+        handy_text = read(ROOT / "wingscout" / "handy.py")
+        self.assertIn("secrets.token_urlsafe", handy_text)     # Schlüssel wird gewürfelt
         self.assertIn("def zugang_pruefen(", self.text)
         self.assertIn("hmac.compare_digest", self.text)        # Vergleich ohne Zeitverrat
         import wingscout.webui as w

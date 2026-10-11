@@ -848,6 +848,14 @@ def _beste_session(t: dict) -> dict | None:
     return max(t["sessions"], key=lambda s: s.get("score", 0)) if t.get("sessions") else None
 
 
+def _wings(ws) -> str:
+    """„5 / 6.5 m²“ — oder, im besten Fenster eines Favoriten außerhalb deines
+    Quivers (seit 2.5.0), dass keiner passt."""
+    if not ws:
+        return T("kein passender Wing")
+    return (f"{ws[0]:g}–{ws[-1]:g}" if len(ws) > 2 else " / ".join(f"{w:g}" for w in ws)) + " m²"
+
+
 def _kern(t: dict) -> str:
     """Die Antwort in einer Zeile: wann, wie viel Wind, welcher Wing, welche
     Lage — aus der besten Session. Weitere Sessions nur als Zahl; sie stehen
@@ -855,10 +863,8 @@ def _kern(t: dict) -> str:
     s = _beste_session(t)
     if not s:
         return ""
-    ws = s["wings"]
-    wings = f"{ws[0]:g}–{ws[-1]:g}" if len(ws) > 2 else " / ".join(f"{w:g}" for w in ws)
     teile = [_tag(s['start']) + " " + T("{von}–{bis} Uhr", von=i18n.stunde(s['start']), bis=i18n.stunde(s['end'])),
-             f"{s['wind_min']}–{s['wind_max']} kn", f"{wings} m²"]
+             f"{s['wind_min']}–{s['wind_max']} kn", _wings(s["wings"])]
     if s.get("geo"):
         teile.append(T(QUAL_LABEL.get(s["quality"], s["quality"])))
     # Jeder Teil bleibt beisammen (2.1.0): am Handy brach „5 / 6.5 m²“ sonst
@@ -958,6 +964,21 @@ def _trip_article(i: int, t: dict, cfg, args, home, favorit: dict | None = None)
                       f"{T('außerhalb der Suche')}</span>")
         else:
             zusatz = ""
+        if favorit.get("am_stueck"):
+            # Die Suche verlangt Tage am Stück, der Favorit hat sie nicht — er
+            # steht trotzdem da (seit 2.5.0), mit dieser Plakette.
+            n = favorit["am_stueck"]
+            warum = T("Die Suche verlangt {n} brauchbare Tage am Stück — dieser Favorit hat sie nicht "
+                      "und steht trotzdem hier.", n=n)
+            zusatz += (f"<span class='pill p-warn' title='{_esc(warum)}'>"
+                       f"{T('keine {n} Tage am Stück', n=n)}</span>")
+        if favorit.get("ohne_grenzen"):
+            # Mit deinen Grenzen keine Session — hier das beste Fenster ohne
+            # sie (seit 2.5.0); im Tooltip, welche das beste verletzt.
+            beste = _beste_session(t) or {}
+            welche = "; ".join(str(i18n.uebersetzt(x)) for x in beste.get("ohne_grenzen") or [])
+            zusatz += (f"<span class='pill p-warn' title='{_esc(welche)}'>"
+                       f"{T('außerhalb deiner Grenzen')}</span>")
     else:
         kennung, rang, zusatz = f"ziel-{i}", f"<span class='rank'>{i}</span>", ""
         stern = (f"<span class='favstern' title='{_esc(T('Favorit'))}'>★</span>"
@@ -982,6 +1003,11 @@ def _trip_article(i: int, t: dict, cfg, args, home, favorit: dict | None = None)
     # am Stück, Plan B.
     am_stueck = " · " + T("{n} am Stück", n=t['run_len']) if t.get('run_len', 0) > 1 else ""
     teile.append(f"<div class='metazeile'>{regel}{am_stueck}{plan_b_html}</div>")
+    if favorit is not None and favorit.get("ohne_grenzen"):
+        teile.append("<div class='metazeile'>"
+                     + T("Mit deinen Grenzen keine Session: {warum}", warum=_esc(_warum_nichts(favorit, cfg, args)))
+                     + " " + T("Gezeigt ist das beste Fenster im Zeitraum, ohne diese Grenzen gerechnet.")
+                     + "</div>")
     if favorit is not None and favorit.get("grund") and not favorit.get("rang"):
         teile.append("<div class='metazeile'>"
                      + T("Nicht in der Suche: {grund} — als Favorit trotzdem gerechnet.", grund=_esc(favorit["grund"]))
@@ -1011,8 +1037,6 @@ def _trip_article(i: int, t: dict, cfg, args, home, favorit: dict | None = None)
     teile.append(_tide_zeile(spot, tage=_tage_der_suche(args)))
     teile.append("<div class='sess'>")
     for s in t["sessions"]:
-        ws = s["wings"]
-        wings = f"{ws[0]:g}–{ws[-1]:g}" if len(ws) > 2 else " / ".join(f"{w:g}" for w in ws)
         note = ", ".join(i18n.uebersetzt(w) for w in s["warn"]) or T(QUAL_LABEL.get(s["quality"], ""))
         lage = ""
         if s.get("geo"):
@@ -1066,7 +1090,7 @@ def _trip_article(i: int, t: dict, cfg, args, home, favorit: dict | None = None)
             f"{T('{von}–{bis} Uhr', von=i18n.stunde(s['start']), bis=i18n.stunde(s['end']))}</span>"
             f"<span class='num'>{s['hours']} h</span>"
             f"<span class='num'>{s['wind_min']}–{s['wind_max']} kn ({s['gust_max']})</span>"
-            f"<span class='num'>{_esc(_richtungen(s['dirs']))} · {wings} m²</span>"
+            f"<span class='num'>{_esc(_richtungen(s['dirs']))} · {_esc(_wings(s['wings']))}</span>"
             f"<span class='note'>{lage}"
             f"{_wasser_pill(s['water'])} "
             f"{geo_num}{_esc(note)} · {s['temp']} °C{_esc(extra)}</span></div>")
@@ -1090,9 +1114,8 @@ def _warum_nichts(e: dict, cfg, args) -> str:
     rows = e.get("rows")
     if not rows:
         return T("Keine Vorhersage für diesen Spot.")
-    nights = getattr(args, "nights", 0) or 0
-    if e.get("n_sessions") and nights:
-        return T("Sessions gibt es, aber keine {n} Tage am Stück.", n=nights + 1)
+    # Ein Favorit mit Sessions hat seit 2.5.0 immer ein Ziel, auch ohne die
+    # Tage am Stück der Suche — hier landet nur, wer gar keine hat.
     tag = [r for r in rows if r.get("veto_art") not in OHNE_CHANCE]
     if not tag:
         return T("Im Zeitraum keine Stunde bei Tageslicht.")
@@ -1357,6 +1380,121 @@ def _thermik_block(trips, cfg, args, home) -> str:
         + f"</p><div class='thliste'>{''.join(zeilen)}</div>{fuss}", "thermikziele")
 
 
+def _raster_folge(trips, all_rows) -> list:
+    """Die Zeilen des Stundenrasters, die besten zuerst (seit 2.5.0, gewünscht
+    am 07.10.2026 — bis dahin in der Reihenfolge der Fahrzeit): die Ziele der
+    Suche in ihrer Reihenfolge, dann die übrigen Spots nach ihren Stunden —
+    die Summe ihrer Güte, also je mehr und je bessere, desto weiter oben; bei
+    Gleichstand die beste Stunde, dann die kürzere Fahrt."""
+    platz = {t["spot"]["id"]: i for i, t in enumerate(trips, 1)}
+
+    def schluessel(eintrag):
+        sid, (spot, rows) = eintrag
+        if sid in platz:
+            return (0, platz[sid], 0.0, 0.0, 0.0, "")
+        guete = [r["score"] for r in rows if r["score"] > 0]
+        return (1, 0, -sum(guete), -max(guete, default=0.0), spot.get("drive_h") or 0.0, spot["name"])
+    return sorted(all_rows.items(), key=schluessel)
+
+
+def _stundenraster(trips, all_rows, cfg, home, nonce: str = "") -> str:
+    """Der Abschnitt „Stundenraster“: je Spot eine Zeile, je Stunde eine Zelle."""
+    # ── Heatmap ──────────────────────────────────────────────────────────────
+    # Zwei Lesarten derselben Stunden: die Güte beantwortet „lohnt sich das?",
+    # die Knoten „welcher Wing?". Ein Umschalter statt zweier Raster
+    # untereinander — dieselben Zellen, andere Farbe.
+    g = knoten_grenzen(cfg)
+    raster: list[str] = []
+    raster.append("<div class='hmschalter'>"
+                 f"<button type='button' id='f_guete' class='an'>{T('Güte')}</button>"
+                 f"<button type='button' id='f_knoten'>{T('Knoten')}</button></div>")
+    raster.append("<div class='hmlegend' id='leg_guete'>"
+                 f"<span><span class='swatch' style='background:var(--surface-2)'></span>{T('nicht fahrbar')}</span>"
+                 f"<span><span class='swatch' style='background:rgba(174,31,104,.35)'></span>{T('geht')}</span>"
+                 f"<span><span class='swatch' style='background:rgba(174,31,104,1)'></span>{T('Top')}</span>"
+                 f"<span>{T('je Spalte eine Stunde, Tageslicht wie Nacht')}</span></div>")
+    raster.append(
+        f"<div class='hmlegend' id='leg_knoten' style='display:none'>"
+        f"<span><span class='swatch' style='background:{ROT}'></span>{T('unter {kn} kn', kn=format(g['rot_unter'], '.0f'))}</span>"
+        f"<span><span class='swatch' style='background:{ORANGE}'></span>{g['rot_unter']:.0f}–{g['gruen_von'] - 1:.0f} kn</span>"
+        f"<span><span class='swatch' style='background:{GRUEN}'></span>"
+        + T("Wohlfühlband {von}–{bis} kn", von=f"{g['gruen_von']:.0f}", bis=f"{g['gruen_bis']:.0f}") + "</span>"
+        f"<span><span class='swatch' style='background:{ORANGE}'></span>"
+        f"{g['gruen_bis'] + 1:.0f}–{g['rot_ueber']:.0f} kn</span>"
+        + (f"<span><span class='swatch' style='background:{ROT}'></span>"
+           f"{g['rot_ueber'] + 1:.0f}–{g['dunkel_ueber']:.0f} kn</span>"
+           if g["dunkel_ueber"] > g["rot_ueber"] else "")
+        + f"<span><span class='swatch' style='background:{DUNKELROT}'></span>"
+          f"{T('über {kn} kn', kn=format(g['dunkel_ueber'], '.0f'))}</span>"
+          f"<span>{T('blass = Nacht oder ausgeschlossen')}</span></div>")
+    raster.append("<p class='wischen'>" + T("Seitlich wischen — die Spalten sind die Stunden.") + "</p>")
+    raster.append("<div class='scroll' style='padding:12px' id='hmraster'>")
+
+    folge = _raster_folge(trips, all_rows)
+    platz = {t["spot"]["id"]: i for i, t in enumerate(trips, 1)}
+    ref = folge[0][1][1] if folge else []
+    axis_days, axis_ticks = _hour_axis(ref)
+    if axis_days:
+        raster.append(axis_days)
+        raster.append(axis_ticks)
+
+    # Uhrzeit, Richtung, Score und Tide wiederholen sich Zeile für Zeile: je
+    # Wert einmal übersetzt und escaped statt in jeder der bis zu 100 000
+    # Zellen. Escaped, weil sie in title="…" stehen: bis 2.1.0 standen sie dort
+    # roh, und ein `"` in einer Übersetzung (oder in den Kürzeln der
+    # Kompassrose) setzte jeder Zelle eigene Attribute — im Test 552 Zellen mit
+    # `onmouseover`, nur die Richtlinie (csp.py) hielt sie still.
+    @functools.lru_cache(maxsize=None)
+    def stunde_titel(t) -> str:
+        return _esc(_stunde(t))
+
+    @functools.lru_cache(maxsize=None)
+    def richtung_titel(name) -> str:
+        return _esc(name)
+
+    @functools.lru_cache(maxsize=None)
+    def score_titel(wert: str) -> str:
+        return _esc(T("Score {score}", score=wert))
+
+    @functools.lru_cache(maxsize=None)
+    def tide_titel(lage: str) -> str:
+        return _esc(" · " + T("Tide {lage}", lage=T(gezeiten.LAGE_TEXT.get(lage, ""))))
+
+    for pos, (spot_id, (spot, rows)) in enumerate(folge):
+        if pos and pos % 12 == 0 and axis_ticks and len(rows) == len(ref):
+            raster.append(axis_ticks)                      # bei langen Listen wiederholen
+        n = len(rows)
+        # data-kn und data-aus reisen mit, damit der Umschalter die Farben im
+        # Browser neu setzen kann, ohne dass der Report zweimal alles enthält.
+        cells = "".join(f"<div class='cell{' dstart' if r['t'].hour == 0 else ''}' "
+                        f"style='background:{_cell_color(r['score'])}' "
+                        f"data-kn='{r['wind']:.0f}'{AUS if r['score'] <= 0 else ''} "
+                        f"title=\"{stunde_titel(r['t'])} · {r['wind']:.0f} kn "
+                        f"{richtung_titel(r['dir_name'])} · {score_titel(format(r['score'], '.2f'))}"
+                        f"{tide_titel(r['tide_lage']) if r.get('tide_lage') else ''}"
+                        f"{' · ' + _esc(r['veto']) if r['veto'] else ''}\"></div>" for r in rows)
+        # Name führt auf Windy, die Kilometerangabe auf die Route: beide
+        # Fragen („wie wird der Wind?" und „wie weit ist das?") haben damit je
+        # ein eigenes Ziel, ohne dass die Zeile eine zweite Zeile braucht.
+        weit = (f"<a class='hmkm' href='{_maps_route(spot, home)}' target='_blank' "
+                f"rel='noopener' title='{_esc(T('Route in Google Maps'))}'>{spot['road_km']:.0f} km</a>"
+                if spot.get("road_km") else "")
+        # Der Platz unter den Zielen vor dem Namen — daran liest man die
+        # Reihenfolge ab; ohne Ziel bleibt die Stelle leer, die Namen fluchten.
+        rang = (f"<span class='hmrang' title='{_esc(T('Platz {n} unter den Zielen der Suche', n=platz[spot_id]))}'>"
+                f"{platz[spot_id]}</span>" if spot_id in platz else "<span class='hmrang'></span>")
+        raster.append(f"<div class='hm'>"
+                     f"<div class='hmname'><span class='hmwer'>{rang}"
+                     f"<a href='{_windy(spot)}' target='_blank' rel='noopener' "
+                     f"title='{_esc(T('Wind und Vorhersage auf Windy'))}'>{_esc(spot['name'])}</a></span>{weit}</div>"
+                     f"<div class='hmcells' style='grid-template-columns:repeat({n},1fr)'>{cells}</div></div>")
+    raster.append("</div>")
+    raster.append(_raster_schalter(g, nonce))
+    return _abschnitt(T("Stundenraster"),
+                      T("{n} Spots, die besten zuerst — Stunde für Stunde, Güte oder Knoten", n=len(all_rows)),
+                      "".join(raster), "raster")
+
+
 def render(trips, all_rows, dropped, cfg, args, demo: bool = False) -> str:
     now = i18n.datum_zeit(datetime.now())
     # Eine Nonce je Erzeugung: nur Skripte mit ihr laufen — ein Katalogtext,
@@ -1449,96 +1587,12 @@ def render(trips, all_rows, dropped, cfg, args, demo: bool = False) -> str:
         parts.append(_trip_article(i, t, cfg, args, home))
 
     parts.append(_map_block(trips, all_rows, dropped, cfg, args, nonce))
+    # Das Stundenraster gleich nach der Karte, die besten Spots zuerst
+    # (seit 2.5.0, gewünscht am 07.10.2026; bis dahin nach den Thermik-
+    # abschnitten und nach Fahrzeit sortiert)
+    parts.append(_stundenraster(trips, all_rows, cfg, home, nonce))
     parts.append(_thermik_block(trips, cfg, args, home))
     parts.append(_thermik_raster(all_rows, cfg, home))
-    # ── Heatmap ──────────────────────────────────────────────────────────────
-    # Zwei Lesarten derselben Stunden: die Güte beantwortet „lohnt sich das?",
-    # die Knoten „welcher Wing?". Ein Umschalter statt zweier Raster
-    # untereinander — dieselben Zellen, andere Farbe.
-    g = knoten_grenzen(cfg)
-    raster: list[str] = []
-    raster.append("<div class='hmschalter'>"
-                 f"<button type='button' id='f_guete' class='an'>{T('Güte')}</button>"
-                 f"<button type='button' id='f_knoten'>{T('Knoten')}</button></div>")
-    raster.append("<div class='hmlegend' id='leg_guete'>"
-                 f"<span><span class='swatch' style='background:var(--surface-2)'></span>{T('nicht fahrbar')}</span>"
-                 f"<span><span class='swatch' style='background:rgba(174,31,104,.35)'></span>{T('geht')}</span>"
-                 f"<span><span class='swatch' style='background:rgba(174,31,104,1)'></span>{T('Top')}</span>"
-                 f"<span>{T('je Spalte eine Stunde, Tageslicht wie Nacht')}</span></div>")
-    raster.append(
-        f"<div class='hmlegend' id='leg_knoten' style='display:none'>"
-        f"<span><span class='swatch' style='background:{ROT}'></span>{T('unter {kn} kn', kn=format(g['rot_unter'], '.0f'))}</span>"
-        f"<span><span class='swatch' style='background:{ORANGE}'></span>{g['rot_unter']:.0f}–{g['gruen_von'] - 1:.0f} kn</span>"
-        f"<span><span class='swatch' style='background:{GRUEN}'></span>"
-        + T("Wohlfühlband {von}–{bis} kn", von=f"{g['gruen_von']:.0f}", bis=f"{g['gruen_bis']:.0f}") + "</span>"
-        f"<span><span class='swatch' style='background:{ORANGE}'></span>"
-        f"{g['gruen_bis'] + 1:.0f}–{g['rot_ueber']:.0f} kn</span>"
-        + (f"<span><span class='swatch' style='background:{ROT}'></span>"
-           f"{g['rot_ueber'] + 1:.0f}–{g['dunkel_ueber']:.0f} kn</span>"
-           if g["dunkel_ueber"] > g["rot_ueber"] else "")
-        + f"<span><span class='swatch' style='background:{DUNKELROT}'></span>"
-          f"{T('über {kn} kn', kn=format(g['dunkel_ueber'], '.0f'))}</span>"
-          f"<span>{T('blass = Nacht oder ausgeschlossen')}</span></div>")
-    raster.append("<p class='wischen'>" + T("Seitlich wischen — die Spalten sind die Stunden.") + "</p>")
-    raster.append("<div class='scroll' style='padding:12px' id='hmraster'>")
-
-    ref = next(iter(all_rows.values()))[1] if all_rows else []
-    axis_days, axis_ticks = _hour_axis(ref)
-    if axis_days:
-        raster.append(axis_days)
-        raster.append(axis_ticks)
-
-    # Uhrzeit, Richtung, Score und Tide wiederholen sich Zeile für Zeile: je
-    # Wert einmal übersetzt und escaped statt in jeder der bis zu 100 000
-    # Zellen. Escaped, weil sie in title="…" stehen: bis 2.1.0 standen sie dort
-    # roh, und ein `"` in einer Übersetzung (oder in den Kürzeln der
-    # Kompassrose) setzte jeder Zelle eigene Attribute — im Test 552 Zellen mit
-    # `onmouseover`, nur die Richtlinie (csp.py) hielt sie still.
-    @functools.lru_cache(maxsize=None)
-    def stunde_titel(t) -> str:
-        return _esc(_stunde(t))
-
-    @functools.lru_cache(maxsize=None)
-    def richtung_titel(name) -> str:
-        return _esc(name)
-
-    @functools.lru_cache(maxsize=None)
-    def score_titel(wert: str) -> str:
-        return _esc(T("Score {score}", score=wert))
-
-    @functools.lru_cache(maxsize=None)
-    def tide_titel(lage: str) -> str:
-        return _esc(" · " + T("Tide {lage}", lage=T(gezeiten.LAGE_TEXT.get(lage, ""))))
-
-    for pos, (spot_id, (spot, rows)) in enumerate(all_rows.items()):
-        if pos and pos % 12 == 0 and axis_ticks and len(rows) == len(ref):
-            raster.append(axis_ticks)                      # bei langen Listen wiederholen
-        n = len(rows)
-        # data-kn und data-aus reisen mit, damit der Umschalter die Farben im
-        # Browser neu setzen kann, ohne dass der Report zweimal alles enthält.
-        cells = "".join(f"<div class='cell{' dstart' if r['t'].hour == 0 else ''}' "
-                        f"style='background:{_cell_color(r['score'])}' "
-                        f"data-kn='{r['wind']:.0f}'{AUS if r['score'] <= 0 else ''} "
-                        f"title=\"{stunde_titel(r['t'])} · {r['wind']:.0f} kn "
-                        f"{richtung_titel(r['dir_name'])} · {score_titel(format(r['score'], '.2f'))}"
-                        f"{tide_titel(r['tide_lage']) if r.get('tide_lage') else ''}"
-                        f"{' · ' + _esc(r['veto']) if r['veto'] else ''}\"></div>" for r in rows)
-        # Name führt auf Windy, die Kilometerangabe auf die Route: beide
-        # Fragen („wie wird der Wind?" und „wie weit ist das?") haben damit je
-        # ein eigenes Ziel, ohne dass die Zeile eine zweite Zeile braucht.
-        weit = (f"<a class='hmkm' href='{_maps_route(spot, home)}' target='_blank' "
-                f"rel='noopener' title='{_esc(T('Route in Google Maps'))}'>{spot['road_km']:.0f} km</a>"
-                if spot.get("road_km") else "")
-        raster.append(f"<div class='hm'>"
-                     f"<div class='hmname'>"
-                     f"<a href='{_windy(spot)}' target='_blank' rel='noopener' "
-                     f"title='{_esc(T('Wind und Vorhersage auf Windy'))}'>{_esc(spot['name'])}</a>{weit}</div>"
-                     f"<div class='hmcells' style='grid-template-columns:repeat({n},1fr)'>{cells}</div></div>")
-    raster.append("</div>")
-    raster.append(_raster_schalter(g, nonce))
-    parts.append(_abschnitt(T("Stundenraster"),
-                            T("{n} Spots, Stunde für Stunde — Güte oder Knoten", n=len(all_rows)),
-                            "".join(raster), "raster"))
 
     weitere = trips[3:]
     if weitere:

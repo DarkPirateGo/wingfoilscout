@@ -39,7 +39,8 @@ from wingscout import spotedit
 from wingscout import webui as w
 from wingscout import config as config_mod
 from wingscout.config import load_config
-from wingscout.score import score_hours
+from wingscout.score import (score_hours, rank_trips, plan_b, beste_fenster, build_sessions,
+                             score_wind, score_wind_ausserhalb)
 from wingscout.spots import load_spots, eligible, entfernungsgrund, ist_entfernungsgrund
 
 GEOMETRIE = ROOT / "geometry.json"
@@ -75,6 +76,18 @@ def kaltes_wasser(tmp: Path) -> Path:
     neu, n = re.subn(r"(?m)^(\s*water_temp_min:\s*)\d+", r"\g<1>30", text)
     assert n == 1, "water_temp_min nicht gefunden"
     pfad = tmp / "kalt.yaml"
+    pfad.write_text(neu, encoding="utf-8")
+    return pfad
+
+
+def gewitter(tmp: Path) -> Path:
+    """Die Vorlage mit jedem Wettercode als Gewitter: im Demo-Lauf ist jede
+    Stunde gesperrt — so gibt es Favoriten, die auch ohne deine Grenzen kein
+    Fenster haben (flache Karte mit dem Grund)."""
+    text = CONFIG.read_text(encoding="utf-8")
+    neu, n = re.subn(r"(?m)^(\s*thunder_codes:\s*)\[[^\]]*\]", r"\g<1>[" + ", ".join(map(str, range(100))) + "]", text)
+    assert n == 1, "thunder_codes nicht gefunden"
+    pfad = tmp / "gewitter.yaml"
     pfad.write_text(neu, encoding="utf-8")
     return pfad
 
@@ -341,22 +354,48 @@ class Bericht(unittest.TestCase):
         erwartet = sorted(str(e["rang"]) for e in self.args._favoriten if e["rang"])
         self.assertEqual(sorted(sterne), erwartet)
 
-    def test_ohne_session_steht_warum(self):
-        """Mit Wassergrenze 30 °C hat kein Meerspot eine Session: Fehmarn
-        (in der Suche) und Tarifa (draußen) stehen als flache Karte mit Grund."""
+    def test_ohne_session_das_beste_fenster(self):
+        """Mit Wassergrenze 30 °C hat kein Meerspot eine Session. Bis 2.4.0
+        standen Fehmarn (in der Suche) und Tarifa (draußen) als flache Karte mit
+        dem Grund da; seit 2.5.0 (gewünscht am 10.10.2026) bekommen sie ihr
+        bestes Fenster, ohne die Grenze gerechnet und mit ihr gekennzeichnet."""
         teil = self.abschnitt(self.kalt)
-        leer = re.findall(r"<div class='trip favleer' id='fav-(\d+)'>(.*?)</div><div class='links'>", teil, re.S)
-        nummern = [n for n, _ in leer]
+        self.assertNotIn("class='trip favleer'", teil)
         for sid in ("wingfoil-surfschule-fehmarn", "wingfoil-center-tarifa"):
             with self.subTest(sid=sid):
                 e = next(x for x in self.kalt_args._favoriten if x["spot"]["id"] == sid)
-                self.assertIsNone(e["trip"])
-                self.assertIn(str(FAVORITEN.index(sid) + 1), nummern)
+                self.assertEqual(e["n_sessions"], 0)
+                self.assertIsNone(e["rang"])
+                self.assertTrue(e["ohne_grenzen"])
+                for s in e["trip"]["sessions"]:
+                    self.assertRegex(str(s["ohne_grenzen"][0]), r"^Wasser \d+ °C unter deiner Grenze von 30 °C$")
+                    self.assertEqual(s["warn"][0], s["ohne_grenzen"][0], "vorn in den Hinweisen der Session")
+                karte = teil.split(f"id='fav-{FAVORITEN.index(sid) + 1}'>")[1].split("</details>")[0]
+                self.assertRegex(karte, r"<span class='pill p-warn' title='Wasser \d+ °C unter deiner Grenze von "
+                                        r"30 °C'>außerhalb deiner Grenzen</span>")
+                self.assertRegex(re.sub(r"<[^>]+>", " ", karte),
+                                 r"Mit deinen Grenzen keine Session: Wind reicht zeitweise \(\d+ kn, [^)]+\), aber: "
+                                 r"Wasser \d+ °C unter deiner Grenze von 30 °C\. Gezeigt ist das beste Fenster im "
+                                 r"Zeitraum, ohne diese Grenzen gerechnet\.")
+        # Die Suche selbst bleibt bei deinen Grenzen: Fehmarn ist kein Ziel
+        beste = self.kalt.split("<h2>Die besten drei</h2>")[1].split("<h2>Karte</h2>")[0]
+        self.assertIn("id='ziel-1'", beste)
+        self.assertNotIn("Fehmarn – Burg, Hafen", beste)
+
+    def test_ohne_jedes_fenster_die_flache_karte(self):
+        """Sperrt etwas, das keine Grenze von dir ist (hier: Gewitter in jeder
+        Stunde), gibt es auch ohne deine Grenzen kein Fenster — dann bleibt die
+        flache Karte mit dem Grund."""
+        (self.tmp / "gewitter").mkdir()
+        args, html_text, _ = suchen(self.tmp / "gewitter", "--favoriten", ",".join(FAVORITEN),
+                                    config=gewitter(self.tmp))
+        teil = self.abschnitt(html_text)
+        leer = re.findall(r"<div class='trip favleer' id='fav-(\d+)'>(.*?)</div><div class='links'>", teil, re.S)
+        self.assertEqual([n for n, _ in leer], ["1", "2", "3", "4"])
+        self.assertTrue(all(e["trip"] is None for e in args._favoriten))
         texte = " ".join(re.sub(r"<[^>]+>", " ", inhalt) for _, inhalt in leer)
-        self.assertRegex(texte, r"Wind reicht zeitweise \(\d+ kn, [^)]+\), aber: Wasser \d+ °C unter deiner "
-                                r"Grenze von 30 °C\.")
+        self.assertRegex(texte, r"Wind reicht zeitweise \(\d+ kn, [^)]+\), aber: Gewitter gemeldet\.")
         self.assertIn("außerhalb der Suche", texte, "Tarifa liegt draußen")
-        self.assertEqual(len(leer), 2, "nur die beiden Meerspots ohne Session")
         self.assertIn("windy.com", teil.split("class='trip favleer'")[1])
 
 
@@ -378,8 +417,6 @@ class WarumNichts(unittest.TestCase):
 
     def test_die_faelle(self):
         self.assertEqual(self.satz(None), "Keine Vorhersage für diesen Spot.")
-        self.assertEqual(self.satz(self.zeilen(20), n_sessions=2, nights=1),
-                         "Sessions gibt es, aber keine 2 Tage am Stück.")
         self.assertEqual(self.satz(self.zeilen(30, "nacht", i18n.TD("außerhalb der Tageslichtzeit"))),
                          "Im Zeitraum keine Stunde bei Tageslicht.")
         schwach = self.satz(self.zeilen(self.lo - 3))
@@ -418,6 +455,165 @@ class WarumNichts(unittest.TestCase):
         self.assertIn("<div class='links'><a href=", teil)
 
 
+class ImmerEinZiel(unittest.TestCase):
+    """Gewünscht am 07.10.2026, seit 2.5.0: jeder Favorit wird gerechnet, auch
+    wenn die Eingaben der Suche nicht passen. Bis 2.4.0 stand ein Favorit mit Sessions,
+    aber ohne die Tage am Stück der Suche, als flache Karte da („Sessions gibt
+    es, aber keine 3 Tage am Stück.“) — jetzt bekommt er sein Ziel, mit einer
+    Plakette, die das sagt."""
+
+    @classmethod
+    def setUpClass(cls):
+        tmp = tempfile.TemporaryDirectory()
+        cls.addClassCleanup(tmp.cleanup)
+        cls.tmp = Path(tmp.name)
+        # Sechs Tage am Stück in einer Suche über zwei: kein Ziel der Suche —
+        # und jeder Favorit trotzdem eins
+        cls.args, cls.html, _ = suchen(cls.tmp, "--nights", "5", "--favoriten", ",".join(FAVORITEN))
+
+    def test_jeder_favorit_mit_sessions_hat_ein_ziel(self):
+        self.assertEqual(self.args._n_trips, 0)
+        self.assertTrue(all(e["n_sessions"] for e in self.args._favoriten), "Voraussetzung des Tests")
+        for e in self.args._favoriten:
+            with self.subTest(sid=e["spot"]["id"]):
+                self.assertIsNotNone(e["trip"])
+                self.assertIsNone(e["rang"])
+                self.assertEqual(e["am_stueck"], 6)
+                self.assertLess(e["trip"]["run_len"], 6)
+
+    def test_plakette_sagt_es(self):
+        teil = self.html.split("<h2>Favoriten</h2>")[1].split("<h2>")[0]
+        self.assertNotIn("class='trip favleer'", teil)
+        self.assertEqual(teil.count("<span class='pill p-warn' title='Die Suche verlangt 6 brauchbare Tage am "
+                                    "Stück — dieser Favorit hat sie nicht und steht trotzdem hier.'>keine 6 Tage "
+                                    "am Stück</span>"), len(FAVORITEN))
+        cfg = load_config(CONFIG)
+        with i18n.in_sprache("en"):
+            englisch = report._favoriten_block(cfg, self.args, cfg["rider"]["home"])
+        self.assertEqual(englisch.count("title='The search asks for 6 usable days in a row — this favourite "
+                                        "doesn&#x27;t have them and is shown anyway.'>not 6 days in a row</span>"),
+                         len(FAVORITEN))
+
+    def test_ohne_tage_am_stueck_zaehlen_die_naechte_fuer_die_fahrt(self):
+        cfg = load_cfg()
+        spot = {"id": "a", "name": "A", "lat": 54.0, "lon": 11.0, "drive_h": 3.0}
+        sessions = [{"spot": spot, "day": tag, "hours": 3.0, "score": 0.7, "start": f"{tag}T12:00"}
+                    for tag in ("2026-10-08", "2026-10-10")]
+        self.assertEqual(rank_trips(sessions, cfg, nights=1), [], "die Suche selbst verlangt die Tage")
+        mit, = rank_trips(sessions, cfg, nights=1, am_stueck=False)
+        ohne, = rank_trips(sessions, cfg, nights=0)
+        self.assertEqual(mit["run_len"], 1)
+        self.assertEqual(mit["acceptable_drive_h"], round(min(ohne["acceptable_drive_h"] * 1.5,
+                                                             cfg["drive"]["max_hours"]), 1))
+
+    def test_plan_b_auch_aus_den_zielen_der_suche(self):
+        cfg = load_cfg()
+        fav = {"spot": {"id": "f", "name": "F", "lat": 54.0, "lon": 11.0}, "days": ["2026-10-08"],
+               "rank": 0.4, "total_hours": 4.0}
+        ziel = {"spot": {"id": "z", "name": "Z", "lat": 54.1, "lon": 11.0}, "days": ["2026-10-08"],
+                "rank": 0.6, "total_hours": 5.0}
+        plan_b([fav], cfg)
+        self.assertIsNone(fav["plan_b"])
+        plan_b([fav], cfg, kandidaten=[ziel, fav])
+        self.assertEqual(fav["plan_b"]["name"], "Z")
+        self.assertNotIn("plan_b", ziel, "die Ziele der Suche bleiben, wie sie sind")
+
+    def test_plan_b_erst_nach_dem_ensemble(self):
+        """Das Ensemble wählt den Plan B unter den Zielen, die es bekommt, neu
+        — für die Favoriten wären das nur sie selbst."""
+        def ensemble(trips, cfg, args, log, top=None):
+            if top is not None:                    # nur der Aufruf für die Favoriten
+                for t in trips:
+                    t["plan_b"] = {"name": "vom Ensemble", "km": 1, "hours": 1.0}
+        (self.tmp / "ens").mkdir()
+        with mock.patch.object(cli, "add_ensemble", ensemble):
+            args, _, _ = suchen(self.tmp / "ens", "--favoriten", ",".join(FAVORITEN))
+        geprueft = [e for e in args._favoriten if e["trip"] and e["rang"] is None]
+        self.assertTrue(geprueft)
+        for e in geprueft:
+            with self.subTest(sid=e["spot"]["id"]):
+                self.assertNotEqual((e["trip"]["plan_b"] or {}).get("name"), "vom Ensemble")
+
+
+class BestesFenster(unittest.TestCase):
+    """score_hours(…, grenzen=False) und score.beste_fenster (seit 2.5.0)."""
+
+    def setUp(self):
+        self.cfg = load_cfg()
+        self.fc = _forecast("2026-09-16", "_dwd_icon_seamless")      # 18 kn aus West, 07–19 Uhr hell
+
+    def tag(self, rows):
+        return [r for r in rows if r.get("veto_art") not in ("nacht", "vorbei", "vor_start")]
+
+    def test_wasser_luft_und_quiver_sperren_nicht_mehr(self):
+        self.cfg["weather"]["water_temp_min"] = 30
+        self.cfg["weather"]["air_temp_max"] = 15                      # 18 °C in der Vorhersage
+        self.cfg["quiver"]["wings"] = [{"size": 2.0, "low": 45, "high": 60}]
+        sst = {t: 12.0 for t in self.fc["hourly"]["time"]}
+        mit = self.tag(score_hours(SONNENSPOT, self.fc, self.cfg, sst))
+        self.assertTrue(mit and all(r["veto_art"] == "wasser" for r in mit))
+        ohne = score_hours(SONNENSPOT, self.fc, self.cfg, sst, grenzen=False)
+        self.assertTrue(any(r.get("veto_art") == "nacht" for r in ohne), "die Nacht sperrt weiter")
+        tag = self.tag(ohne)
+        self.assertTrue(tag)
+        for r in tag:
+            self.assertIsNone(r["veto"])
+            self.assertGreater(r["score"], 0)
+            self.assertNotIn("wing", r)
+            self.assertEqual(sorted(a for a, _ in r["ausser"]), ["luft", "quiver", "wasser"])
+        fenster = beste_fenster(SONNENSPOT, ohne, self.cfg)
+        self.assertEqual(len(fenster), 1)
+        s = fenster[0]
+        # Richtung, Wasser und Wetter passen — die Güte reicht trotz des Winds
+        self.assertGreaterEqual(s["score"], self.cfg["session"]["min_score"])
+        self.assertEqual([str(x) for x in s["ohne_grenzen"]],
+                         ["höchstens 18 kn — dein Quiver fängt bei 45 kn an",
+                          "Wasser 12 °C unter deiner Grenze von 30 °C",
+                          "Luft 18 °C außerhalb deiner Grenzen 7–15 °C"])
+        self.assertEqual(s["wings"], [])
+        with i18n.in_sprache("en"):
+            self.assertEqual(str(i18n.uebersetzt(s["ohne_grenzen"][0])), i18n.T(
+                "höchstens {kn} kn — dein Quiver fängt bei {lo} kn an", kn="18", lo="45"))
+
+    def test_gewitter_sperrt_auch_ohne_grenzen(self):
+        self.cfg["weather"]["thunder_codes"] = [1]
+        ohne = score_hours(SONNENSPOT, self.fc, self.cfg, grenzen=False)
+        self.assertTrue(all(r["veto"] for r in ohne))
+        self.assertEqual(beste_fenster(SONNENSPOT, ohne, self.cfg), [])
+
+    def zeilen(self, *scores):
+        from datetime import datetime
+        return [{"t": datetime(2026, 10, 10, 10 + i), "day": "2026-10-10", "score": s, "veto": None,
+                 "wind": 15.0, "gust": 18.0, "dir_name": "W", "temp": 15.0, "warn": [], "wing": 5.0}
+                for i, s in enumerate(scores)]
+
+    def test_eine_stunde_reicht_und_wird_genannt(self):
+        self.cfg["session"].update(min_hours=2, min_score=0.55)
+        rows = self.zeilen(0.3, 0.8, 0.3)
+        self.assertEqual(build_sessions(SONNENSPOT, rows, self.cfg), [])
+        s, = beste_fenster(SONNENSPOT, rows, self.cfg)
+        self.assertEqual((s["start"].hour, s["hours"]), (11, 1))
+        self.assertEqual([str(x) for x in s["ohne_grenzen"]], ["nur 1 h — deine Mindestdauer ist 2 h"])
+        self.assertEqual([str(x) for x in s["warn"]][:1], ["nur 1 h — deine Mindestdauer ist 2 h"])
+
+    def test_die_stunden_nah_an_der_besten(self):
+        """Erreicht keine Stunde deine Mindestgüte, ist das Fenster, was bis 15 %
+        unter der besten Stunde liegt — nicht der ganze Tag."""
+        self.cfg["session"].update(min_hours=2, min_score=0.55)
+        rows = self.zeilen(0.2, 0.36, 0.42, 0.40, 0.25)
+        s, = beste_fenster(SONNENSPOT, rows, self.cfg)
+        self.assertEqual((s["start"].hour, s["hours"]), (11, 3))
+        self.assertEqual([str(x) for x in s["ohne_grenzen"]], ["Güte 0.39 — deine Mindestgüte ist 0.55"])
+
+    def test_wind_ausserhalb_je_naeher_desto_besser(self):
+        self.cfg["quiver"]["wings"] = [{"size": 5.0, "low": 12, "high": 25}]
+        werte = [score_wind_ausserhalb(kn, self.cfg) for kn in (2, 6, 9, 11.9)]
+        self.assertEqual(werte, sorted(werte))
+        self.assertLessEqual(max(werte), 0.3)
+        self.assertGreater(score_wind_ausserhalb(28, self.cfg), score_wind_ausserhalb(35, self.cfg))
+        self.assertLessEqual(score_wind_ausserhalb(11.9, self.cfg), score_wind(12, self.cfg)[0])
+
+
 class NachtVorWasser(unittest.TestCase):
     """Seit 2.4.0 sperrt die Nacht vor dem Wasser: nachts geht es nie, und die
     Favoriten suchen die beste Stunde nur bei Tageslicht."""
@@ -450,9 +646,12 @@ class InJederSprache(tsp.Umgebung):
         cls.deutsch = cls.standard.read_text(encoding="utf-8")
 
     def test_deckt_beide_kartenarten_ab(self):
+        """Ziele der Suche und beste Fenster ohne deine Grenzen (seit 2.5.0;
+        die flache Karte prüfen `WarumNichts` und `Bericht`)."""
         self.assertIn("<h2>Favoriten</h2>", self.deutsch)
-        self.assertIn("class='trip favleer'", self.deutsch)
         self.assertIn("<details class='trip' id='fav-", self.deutsch)
+        self.assertIn(">außerhalb deiner Grenzen</span>", self.deutsch)
+        self.assertIn("Mit deinen Grenzen keine Session:", self.deutsch)
         self.assertIn("außerhalb des Radius von 600 km", self.deutsch)
 
     def test_jede_fassung_gleicht_der_suche_in_ihrer_sprache(self):
