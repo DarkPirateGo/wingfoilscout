@@ -4,7 +4,7 @@
 # QR-Code. Weil damit jedes Gerät im WLAN anklopfen könnte, gilt ein
 # Zugangsschlüssel — er steckt im QR-Code und in der Adresse, die nach dem
 # Start hier im Fenster steht. Seit 2.5.0 geht dasselbe ohne diese Datei:
-# normal starten und im Reiter „Handy“ auf „Fürs Handy freigeben“ drücken.
+# normal starten und im Reiter „Handy“ auf „QR-Code zeigen“ drücken.
 # Das Fenster bleibt offen, solange die Oberfläche läuft — zum Beenden schließen.
 
 cd "$(dirname "$0")" || exit 1

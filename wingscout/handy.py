@@ -31,6 +31,7 @@ Besitzer lesbar (0600, spotedit.schreibe_atomar).
 """
 from __future__ import annotations
 
+import hashlib
 import ipaddress
 import json
 import plistlib
@@ -49,6 +50,7 @@ from .i18n import T
 ORDNER = ROOT / "handy"
 ZUGANG = "zugang.json"
 META = "zertifikat.json"
+ZUSTAND = "zustand.json"          # was sich gezeigt hat (seit 2.5.1), siehe zustand()
 CA = "wingfoilscout-ca.crt"
 SERVER_CRT = "server.crt"
 SERVER_KEY = "server.key"
@@ -59,6 +61,7 @@ TAGE_SERVER = 820
 TAGE_CA = 825
 SCHLUESSEL_MUSTER = re.compile(r"[A-Za-z0-9_-]{16,64}")
 NAME_MUSTER = re.compile(r"[A-Za-z0-9-]{1,63}\.local")
+KENNUNG_MUSTER = re.compile(r"[0-9a-f]{16}")
 BUNDLE = "io.github.darkpiratego.wingfoilscout"
 
 # Wo macOS den Bonjour-Namen ablegt (System → Network → HostNames →
@@ -147,20 +150,26 @@ def bonjour_name(quelle: Path | str | None = None) -> str | None:
 # ── Zertifikat ───────────────────────────────────────────────────────────────
 
 def zertifikat(pfad: Path | str | None = None) -> dict | None:
-    """Was das Zertifikat abdeckt: {"ips", "namen", "bis", "erstellt"} — oder
-    None, wenn keines da ist oder es sich nicht laden lässt."""
+    """Was das Zertifikat abdeckt: {"ips", "namen", "bis", "erstellt",
+    "abgelaufen"} — seit 2.5.1 auch `kennung` (die ersten 16 Zeichen des
+    SHA-256 über das Zertifikat der Zertifizierungsstelle: ändert sich mit
+    jedem neu erzeugten, denn das iPhone braucht dann ein neues Profil) und
+    `zeit` (wann es erzeugt wurde). None, wenn keines da ist oder es sich
+    nicht laden lässt."""
     d = ordner(pfad)
     try:
         meta = json.loads((d / META).read_text(encoding="utf-8"))
+        zeit = (d / META).stat().st_mtime
+        kennung = hashlib.sha256(ssl.PEM_cert_to_DER_cert((d / CA).read_text(encoding="ascii"))).hexdigest()[:16]
     except (OSError, ValueError, RecursionError):
         return None
-    if not isinstance(meta, dict) or tls_kontext(pfad) is None or not (d / CA).is_file():
+    if not isinstance(meta, dict) or tls_kontext(pfad) is None:
         return None
     ips = [a for a in meta.get("ips") or [] if isinstance(a, str)]
     namen = [n for n in meta.get("namen") or [] if isinstance(n, str) and NAME_MUSTER.fullmatch(n)]
     bis = meta.get("bis") if isinstance(meta.get("bis"), str) else ""
     return {"ips": ips, "namen": namen, "bis": bis, "erstellt": str(meta.get("erstellt") or ""),
-            "abgelaufen": bool(bis) and bis < date.today().isoformat()}
+            "abgelaufen": bool(bis) and bis < date.today().isoformat(), "kennung": kennung, "zeit": zeit}
 
 
 def tls_kontext(pfad: Path | str | None = None) -> ssl.SSLContext | None:
@@ -257,6 +266,52 @@ def _ist_ipv4(text: str) -> bool:
         return isinstance(ipaddress.ip_address(text), ipaddress.IPv4Address)
     except ValueError:
         return False
+
+
+# ── Was sich gezeigt hat (seit 2.5.1) ────────────────────────────────────────
+
+def zustand(pfad: Path | str | None = None) -> dict:
+    """Was sich der Mac fürs Handy merkt — nur, was sich gezeigt hat, nie
+    bloß eine Wahl im Reiter:
+
+    - `bewaehrt`: "https" oder "http" — auf diesem Weg ist ein iPhone schon
+      durchgekommen; dazu `zeit` (wann zuletzt festgehalten) und bei https
+      `kennung`, das Zertifikat, dem es vertraut hat. Danach öffnet der Reiter
+      gleich mit dem QR-Code — solange dieser Weg noch gehen kann (siehe
+      webui.handy_ansicht).
+    - `profil`: die Kennung des Zertifikats, dessen Profil am Mac geladen wurde.
+    """
+    try:
+        daten = json.loads((ordner(pfad) / ZUSTAND).read_text(encoding="utf-8"))
+    except (OSError, ValueError, RecursionError):
+        return {}
+    if not isinstance(daten, dict):
+        return {}
+    aus: dict = {}
+    if daten.get("bewaehrt") in ("https", "http"):
+        aus["bewaehrt"] = daten["bewaehrt"]
+        zeit = daten.get("zeit")
+        aus["zeit"] = float(zeit) if isinstance(zeit, (int, float)) and not isinstance(zeit, bool) else 0.0
+        if isinstance(daten.get("kennung"), str) and KENNUNG_MUSTER.fullmatch(daten["kennung"]):
+            aus["kennung"] = daten["kennung"]
+    if isinstance(daten.get("profil"), str) and KENNUNG_MUSTER.fullmatch(daten["profil"]):
+        aus["profil"] = daten["profil"]
+    return aus
+
+
+def merken(pfad: Path | str | None = None, **werte) -> dict:
+    """Einträge in zustand.json setzen — None nimmt einen heraus. Geschrieben
+    wird nur, wenn sich etwas ändert."""
+    alt = zustand(pfad)
+    neu = dict(alt)
+    for name, wert in werte.items():
+        if wert is None:
+            neu.pop(name, None)
+        else:
+            neu[name] = wert
+    if neu != alt:
+        _schreiben(ordner(pfad) / ZUSTAND, json.dumps(neu, indent=1, sort_keys=True) + "\n")
+    return neu
 
 
 # ── Die Adresse fürs iPhone ──────────────────────────────────────────────────

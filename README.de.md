@@ -545,39 +545,46 @@ Wischen. Gebaut und geprüft für 320 bis 430 Punkte Breite — vom iPhone SE bi
 zum Pro Max.
 
 **Im WLAN, mit dem Mac als Rechenknecht — der Reiter „Handy“** (seit 2.5.0).
-Wingfoilscout hört normalerweise nur auf 127.0.0.1. Öffne auf dem Mac den
-Reiter **Handy** und drück **Fürs Handy freigeben**: Ein QR-Code erscheint —
-die Kamera des iPhones darauf richten und den Link antippen. Die Adresse
-darin trägt deinen Zugangsschlüssel: Ohne ihn bekommt jedes andere Gerät im
-Netz eine 401. Der Schlüssel wandert ins Cookie und bleibt auch über
-Neustarts gleich (bis 2.4.0 galt er für einen Lauf) — so geht das Symbol auf
-dem Home-Bildschirm weiter; **Neuer Schlüssel** im Reiter sperrt alle bisher
-verbundenen Geräte aus. Die Freigabe endet mit **Freigabe beenden** oder wenn
-du Wingfoilscout beendest. Die Suche läuft weiter auf dem Mac — das iPhone
-zeigt nur an und stößt Suchen an. Ein Doppelklick auf **„Wingfoilscout fürs
-iPhone starten“** oder `python3 -m wingscout.webui --lan` gibt gleich beim
-Start frei und öffnet den Reiter.
+Wingfoilscout hört normalerweise nur auf 127.0.0.1. Der Reiter **Handy** auf
+dem Mac fragt zuerst, wie dein iPhone es öffnen soll (seit 2.5.1) — zwei
+Wege, Schritt für Schritt erklärt, der QR-Code im letzten Schritt:
 
-**Safari meldet „… HTTPS-Only“?** Dann ist auf dem iPhone die
-Safari-Einstellung an, die vor nicht sicheren Verbindungen warnt (englisch
-**Not Secure Connection Warning**; Einstellungen → Apps → Safari), und Safari
-öffnet keine unverschlüsselte Adresse. Zwei Wege, beide im Reiter Schritt für
-Schritt erklärt:
-
-1. **Mit Zertifikat** (empfohlen; einmal, etwa zwei Minuten): im Reiter
-   **Zertifikat erzeugen**, dann **Profil laden** und per AirDrop oder Mail
-   aufs iPhone schicken; dort installieren (Einstellungen → „Profil
-   geladen“) und das Vertrauen einschalten (Einstellungen → Allgemein → Info
-   → Zertifikatsvertrauenseinstellungen). Danach öffnet Safari Wingfoilscout
+1. **Sicher** (empfohlen; einmal, etwa zwei Minuten): **Zertifikat
+   erzeugen**, dann **Profil laden** und per AirDrop oder Mail aufs iPhone
+   schicken; dort installieren (Einstellungen → „Profil geladen“) und das
+   Vertrauen einschalten (Einstellungen → Allgemein → Info →
+   Zertifikatsvertrauenseinstellungen). Danach öffnet Safari Wingfoilscout
    über https, ohne Warnung. Die Zertifizierungsstelle, die es ausgestellt
    hat, gibt es nur, solange sie unterschreibt, und sie wird nie gespeichert —
    mit ihr lässt sich nie etwas anderes beglaubigen ([SECURITY.md](SECURITY.md)).
    Ändert sich die Adresse des Macs so, dass das Zertifikat nicht mehr passt,
    sagt es der Reiter — neu erzeugen und das neue Profil schicken.
-2. **Ohne Zertifikat:** die Safari-Einstellung ausschalten. Dann warnt Safari
+2. **Schnell:** auf dem iPhone Einstellungen → Apps → Safari → unter
+   „Datenschutz & Sicherheit“ **„Warnung vor unsicherer Verbindung“**
+   ausschalten (englisch „Not Secure Connection Warning“). Dann warnt Safari
    bei keiner unverschlüsselten Website mehr, und alles, samt
    Zugangsschlüssel, geht unverschlüsselt durchs WLAN — zu Hause mit
    WPA2/WPA3 vertretbar, in fremden WLANs nicht.
+
+Dann **QR-Code zeigen**, die Kamera des iPhones darauf richten und den Link
+antippen. Solange freigegeben ist, sagt der Reiter, was vom iPhone ankommt:
+verbunden (verschlüsselt oder nicht), die verschlüsselte Verbindung
+abgebrochen (meist fehlt das Vertrauen), mit einem alten Code gekommen —
+oder noch nichts, mit den üblichen Gründen. Hat ein Weg einmal geklappt,
+öffnet der Reiter beim nächsten Mal gleich mit **QR-Code zeigen**; kann er
+nicht mehr klappen (neues Zertifikat, neue Adresse), zeigt er wieder die
+Schritte.
+
+Die Adresse im QR-Code trägt deinen Zugangsschlüssel: Ohne ihn bekommt jedes
+andere Gerät im Netz eine 401. Der Schlüssel wandert ins Cookie und bleibt
+auch über Neustarts gleich (bis 2.4.0 galt er für einen Lauf) — so geht das
+Symbol auf dem Home-Bildschirm weiter; **Neuer Schlüssel** (unter „Klappt
+nicht?“) sperrt alle bisher verbundenen Geräte aus. Die Freigabe endet mit
+**Freigabe beenden** oder wenn du Wingfoilscout beendest. Die Suche läuft
+weiter auf dem Mac — das iPhone zeigt nur an und stößt Suchen an. Ein
+Doppelklick auf **„Wingfoilscout fürs iPhone starten“** oder
+`python3 -m wingscout.webui --lan` gibt gleich beim Start frei und öffnet den
+Reiter.
 
 Freigeben nur im eigenen WLAN — nicht im Hotel, im Zug oder auf dem
 Campingplatz.

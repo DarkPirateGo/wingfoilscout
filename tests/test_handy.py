@@ -400,49 +400,158 @@ class Startadressen(unittest.TestCase):
     def test_abgelaufen_steht_im_zertifikat(self):
         with tempfile.TemporaryDirectory() as d:
             with mock.patch.object(handy, "tls_kontext", return_value=object()):
-                (Path(d) / handy.CA).write_text("x")
+                shutil.copy(VORRAT["ordner"] / handy.CA, Path(d) / handy.CA)
                 (Path(d) / handy.META).write_text(json.dumps({"ips": ["192.168.1.23"], "bis": "2020-01-01"}))
                 self.assertTrue(handy.zertifikat(d)["abgelaufen"])
 
 
 # ── Der Reiter ───────────────────────────────────────────────────────────────
 
+class Ansicht(unittest.TestCase):
+    """Welche Ansicht der Reiter zeigt (seit 2.5.1): erst einrichten, der
+    QR-Code zuletzt — und erst, wenn ein Weg einmal geklappt hat, gleich der
+    QR-Code. Gemerkt wird nur, was sich gezeigt hat."""
+    META = {"ips": ["192.168.1.23"], "namen": [], "erstellt": "2026-10-10", "bis": "2029-01-07",
+            "abgelaufen": False, "kennung": "a" * 16, "zeit": 1000.0}
+
+    def ansicht(self, weg="", **stand):
+        grund = {"aktiv": False, "adressen": ["192.168.1.23"], "zertifikat": None, "passt": False,
+                 "https": "", "http": "", "gemerkt": {}}
+        return w.handy_ansicht(dict(grund, **stand), weg)
+
+    def test_nichts_eingerichtet_erst_die_wahl(self):
+        self.assertEqual(self.ansicht(), "wahl")
+
+    def test_ein_zertifikat_heisst_der_sichere_weg_ist_im_gang(self):
+        self.assertEqual(self.ansicht(zertifikat=self.META, passt=True), "sicher")
+        self.assertEqual(self.ansicht(zertifikat=self.META, passt=False), "sicher")
+
+    def test_erprobt_https_solange_es_dasselbe_zertifikat_ist_und_passt(self):
+        gemerkt = {"bewaehrt": "https", "kennung": "a" * 16, "zeit": 2000.0}
+        self.assertEqual(self.ansicht(zertifikat=self.META, passt=True, gemerkt=gemerkt), "fertig")
+        self.assertEqual(self.ansicht(zertifikat=self.META, passt=False, gemerkt=gemerkt), "sicher")
+        self.assertEqual(self.ansicht(zertifikat=dict(self.META, kennung="b" * 16), passt=True, gemerkt=gemerkt),
+                         "sicher")                                   # neu erzeugt: das iPhone braucht das neue Profil
+        self.assertEqual(self.ansicht(gemerkt=gemerkt), "wahl")      # Zertifikat weg
+
+    def test_erprobt_http_solange_danach_kein_zertifikat_kam(self):
+        gemerkt = {"bewaehrt": "http", "zeit": 2000.0}
+        self.assertEqual(self.ansicht(gemerkt=gemerkt), "fertig")
+        self.assertEqual(self.ansicht(zertifikat=self.META, passt=True, gemerkt=gemerkt), "fertig")      # älteres
+        self.assertEqual(self.ansicht(zertifikat=dict(self.META, zeit=3000.0), passt=True, gemerkt=gemerkt),
+                         "sicher")                                   # jüngeres: der sichere Weg ist im Gang
+
+    def test_der_weg_aus_der_adresse_geht_vor(self):
+        gemerkt = {"bewaehrt": "http", "zeit": 2000.0}
+        for weg in ("wahl", "sicher", "schnell"):
+            with self.subTest(weg):
+                self.assertEqual(self.ansicht(weg, gemerkt=gemerkt), weg)
+        self.assertEqual(self.ansicht("<script>", gemerkt=gemerkt), "fertig")      # Unsinn zählt nicht
+
+
 class Reiter(unittest.TestCase):
     STAND = {"aktiv": False, "adressen": ["192.168.1.23"], "zertifikat": None, "passt": False,
-             "https": "", "http": ""}
+             "https": "", "http": "", "gemerkt": {}}
+    META = {"ips": ["192.168.1.23"], "namen": [], "erstellt": "2026-10-10", "bis": "2029-01-07",
+            "abgelaufen": False, "kennung": "a" * 16, "zeit": 1000.0}
+    HTTPS = "https://192.168.1.23:8765/?k=" + "k" * 16
+    HTTP = "http://192.168.1.23:8765/?k=" + "k" * 16
 
-    def test_ohne_freigabe_der_knopf_und_kein_code(self):
+    def test_zuerst_die_wahl_und_kein_qr_knopf(self):
+        """Wer den Reiter zum ersten Mal sieht, bekommt keinen QR-Code, der
+        dann nicht geht — sondern die Frage nach dem Weg."""
         seite = w.handy_page(dict(self.STAND))
-        self.assertIn("data-pfad='/handy/freigeben'", seite)
-        self.assertIn("data-pfad='/handy/zertifikat'", seite)
+        self.assertIn("href='/handy?weg=sicher'", seite)
+        self.assertIn("href='/handy?weg=schnell'", seite)
+        self.assertNotIn("data-pfad='/handy/freigeben'", seite)
         self.assertNotIn("class='hqr'", seite)
-        self.assertNotIn("/handy/profil", seite)            # erst mit Zertifikat
-        self.assertIn("Not Secure Connection Warning", seite)
+        self.assertIn("<details class='hkarte hmehr'>", seite)                  # „Klappt nicht?“ zugeklappt
 
-    def test_freigegeben_mit_zertifikat(self):
-        url = "https://192.168.1.23:8765/?k=" + "k" * 16
-        meta = {"ips": ["192.168.1.23"], "namen": [], "erstellt": "2026-10-10", "bis": "2029-01-07",
-                "abgelaufen": False}
-        seite = w.handy_page(dict(self.STAND, aktiv=True, zertifikat=meta, passt=True, https=url,
-                                  http=url.replace("https", "http")))
-        self.assertIn("<div class='hqr'><svg viewBox", seite)
-        self.assertIn(url, seite)
+    def test_sicher_die_schritte_und_der_qr_code_zuletzt(self):
+        seite = w.handy_page(dict(self.STAND), "sicher")
+        self.assertIn("data-pfad='/handy/zertifikat'", seite)
+        self.assertNotIn("data-pfad='/handy/freigeben'", seite)                 # erst mit Zertifikat
+        self.assertNotIn("/handy/profil", seite)
+        seite = w.handy_page(dict(self.STAND, zertifikat=self.META, passt=True), "sicher")
         self.assertIn("href='/handy/profil'", seite)
         self.assertIn("„Wingfoilscout 2026-10-10“", seite)    # so heißt die Zertifizierungsstelle auf dem iPhone
+        self.assertIn("data-daten='{&quot;weg&quot;: &quot;sicher&quot;}'", seite)
+        self.assertLess(seite.index("/handy/zertifikat"), seite.index("/handy/freigeben"))
+        self.assertEqual(seite.count("<li class='erledigt'>"), 1)              # Schritt 1
+        geladen = w.handy_page(dict(self.STAND, zertifikat=self.META, passt=True, gemerkt={"profil": "a" * 16}),
+                               "sicher")
+        self.assertEqual(geladen.count("<li class='erledigt'>"), 2)            # Schritt 2: Profil geladen
+
+    def test_sicher_freigegeben(self):
+        seite = w.handy_page(dict(self.STAND, aktiv=True, zertifikat=self.META, passt=True, https=self.HTTPS,
+                                  http=self.HTTP), "sicher")
+        self.assertIn("<div class='hqr'><svg viewBox", seite)
+        self.assertIn(self.HTTPS, seite)
+        self.assertNotIn(self.HTTP, seite)
+        self.assertIn("data-ansicht='sicher' data-art='https'", seite)
         self.assertIn("data-pfad='/handy/beenden'", seite)
 
-    def test_freigegeben_ohne_zertifikat_warnt(self):
-        url = "http://192.168.1.23:8765/?k=" + "k" * 16
-        seite = w.handy_page(dict(self.STAND, aktiv=True, http=url))
-        self.assertIn(url, seite)
+    def test_schnell_mit_der_anleitung_fuer_safari(self):
+        seite = w.handy_page(dict(self.STAND), "schnell")
+        self.assertIn("„Warnung vor unsicherer Verbindung“", seite)
+        self.assertIn("Not Secure Connection Warning", seite)
+        self.assertIn("data-daten='{&quot;weg&quot;: &quot;schnell&quot;}'", seite)
+        seite = w.handy_page(dict(self.STAND, aktiv=True, zertifikat=self.META, passt=True, https=self.HTTPS,
+                                  http=self.HTTP), "schnell")
+        self.assertIn(self.HTTP, seite)                     # unverschlüsselt — auch wenn ein Zertifikat da ist
+        self.assertNotIn(self.HTTPS, seite)
         self.assertIn("class='hart offen'", seite)
-        self.assertIn("class='hwarn'", seite)
+        self.assertIn("data-ansicht='schnell' data-art='http'", seite)
+
+    def test_eingerichtet_gleich_der_qr_code(self):
+        gemerkt = {"bewaehrt": "https", "kennung": "a" * 16, "zeit": 2000.0}
+        aus = w.handy_page(dict(self.STAND, zertifikat=self.META, passt=True, gemerkt=gemerkt))
+        self.assertIn("data-pfad='/handy/freigeben'", aus)
+        self.assertNotIn("data-pfad='/handy/zertifikat'", aus)
+        self.assertIn("href='/handy?weg=sicher'", aus)                         # weiteres iPhone
+        self.assertIn("href='/handy?weg=wahl'", aus)
+        an = w.handy_page(dict(self.STAND, aktiv=True, zertifikat=self.META, passt=True, https=self.HTTPS,
+                               http=self.HTTP, gemerkt=gemerkt))
+        self.assertIn(self.HTTPS, an)
+        self.assertIn("data-ansicht='fertig' data-art='https'", an)
 
     def test_zertifikat_passt_nicht_mehr(self):
-        meta = {"ips": ["192.168.1.5"], "namen": [], "erstellt": "2026-10-10", "bis": "2029-01-07",
-                "abgelaufen": False}
+        meta = dict(self.META, ips=["192.168.1.5"])
         self.assertIn("passt nicht", w.handy_page(dict(self.STAND, zertifikat=meta)))
         self.assertIn("abgelaufen", w.handy_page(dict(self.STAND, zertifikat=dict(meta, abgelaufen=True))))
+
+    def test_wahl_bei_laufender_freigabe(self):
+        seite = w.handy_page(dict(self.STAND, aktiv=True, http=self.HTTP))
+        self.assertIn("Schon fürs Handy freigegeben", seite)
+        self.assertIn("data-pfad='/handy/beenden'", seite)
+        self.assertNotIn(self.HTTP, seite)
+
+
+class Gemerkt(EigenerOrdner):
+    """handy/zustand.json: nur gültige Einträge, None nimmt heraus."""
+
+    def test_leer_und_kaputt(self):
+        self.assertEqual(handy.zustand(), {})
+        self.ordner.mkdir(parents=True)
+        for inhalt in ("kein json", "[]", '{"bewaehrt": "ftp"}', '{"profil": "zu-kurz"}'):
+            with self.subTest(inhalt):
+                (self.ordner / handy.ZUSTAND).write_text(inhalt)
+                self.assertEqual(handy.zustand(), {})
+
+    def test_merken_und_herausnehmen(self):
+        handy.merken(bewaehrt="https", kennung="c" * 16, zeit=5.0)
+        self.assertEqual(handy.zustand(), {"bewaehrt": "https", "kennung": "c" * 16, "zeit": 5.0})
+        handy.merken(bewaehrt="http", kennung=None, zeit=6.0, profil="d" * 16)
+        self.assertEqual(handy.zustand(), {"bewaehrt": "http", "zeit": 6.0, "profil": "d" * 16})
+        if os.name == "posix":
+            self.assertEqual((self.ordner / handy.ZUSTAND).stat().st_mode & 0o777, 0o600)
+
+    def test_kennung_wechselt_mit_dem_zertifikat(self):
+        erstes = handy.zertifikat(VORRAT["ordner"])
+        self.assertRegex(erstes["kennung"], r"^[0-9a-f]{16}$")
+        self.assertGreater(erstes["zeit"], 0)
+        neu = handy.zertifikat_erzeugen(["127.0.0.1"], None)
+        self.assertNotEqual(neu["kennung"], erstes["kennung"])
 
 
 class Probeserver(w.BegrenzterServer):
@@ -488,7 +597,8 @@ class AmLaufendenServer(ServerBasis):
     def test_reiter_und_profil_am_mac(self):
         status, _, seite = self._http("GET", "/handy")
         self.assertEqual(status, 200)
-        self.assertIn("data-pfad='/handy/freigeben'".encode(), seite)
+        self.assertIn(b"href='/handy?weg=sicher'", seite)                    # erst die Wahl
+        self.assertIn(b"data-pfad='/handy/zertifikat'", self._http("GET", "/handy?weg=sicher")[2])
         self.assertEqual(self._http("GET", "/handy/profil")[0], 404)       # noch kein Zertifikat
         self.zertifikat_holen()
         status, kopf, profil = self._http("GET", "/handy/profil")
@@ -496,6 +606,15 @@ class AmLaufendenServer(ServerBasis):
         self.assertEqual(kopf["Content-Type"], "application/x-apple-aspen-config")
         self.assertIn("attachment", kopf["Content-Disposition"])
         self.assertEqual(plistlib.loads(profil)["PayloadType"], "Configuration")
+        # Schritt 2 erledigt: das Profil für dieses Zertifikat ist geladen
+        self.assertEqual(handy.zustand()["profil"], handy.zertifikat()["kennung"])
+
+    def test_stand_fuer_den_reiter(self):
+        status, kopf, roh = self._http("GET", "/handy/stand")
+        self.assertEqual(status, 200)
+        stand = json.loads(roh)
+        self.assertFalse(stand["aktiv"])
+        self.assertEqual(stand["verbunden"], 0.0)
 
     def test_vom_handy_nur_der_hinweis_und_keine_knoepfe(self):
         Probeserver.aussen = True
@@ -539,10 +658,10 @@ class AmLaufendenServer(ServerBasis):
         self.assertEqual(self._http("GET", "/manifest.webmanifest")[0], 200)
 
 
-class FreigabeImWlan(ServerBasis):
-    """Freigeben und beenden über die Knöpfe — ein Server je Adresse im
-    WLAN, hier 127.0.0.2. Andere Geräte spielt 127.0.0.3 (unter Linux ist
-    127.0.0.0/8 ganz da; macOS kennt ohne Weiteres nur 127.0.0.1)."""
+class WlanBasis(ServerBasis):
+    """Ein Server je Adresse im WLAN, hier 127.0.0.2. Andere Geräte spielt
+    127.0.0.3 (unter Linux ist 127.0.0.0/8 ganz da; macOS kennt ohne
+    Weiteres nur 127.0.0.1 — dann fallen diese Tests aus)."""
 
     def setUp(self):
         super().setUp()
@@ -568,6 +687,10 @@ class FreigabeImWlan(ServerBasis):
                     break
                 teile.append(stueck)
         return b"".join(teile)
+
+
+class FreigabeImWlan(WlanBasis):
+    """Freigeben und beenden über die Knöpfe."""
 
     def test_freigeben_schluessel_beenden(self):
         self.assertEqual(self._http("POST", "/handy/freigeben", b"{}")[0], 200)
@@ -606,6 +729,79 @@ class FreigabeImWlan(ServerBasis):
                 s.sendall(f"GET /manifest.webmanifest HTTP/1.0\r\nHost: 127.0.0.2:{self.port}\r\n"
                           f"Cookie: wingscout_schluessel={handy.schluessel()}\r\n\r\n".encode())
                 self.assertTrue(s.recv(1024).startswith(b"HTTP/1.0 200"))
+
+
+class RueckmeldungVomHandy(WlanBasis):
+    """Was vom Handy ankommt, sagt der Reiter (seit 2.5.1) — und einen Weg,
+    der geklappt hat, merkt sich der Mac (handy/zustand.json)."""
+
+    def stand(self):
+        status, _, roh = self._http("GET", "/handy/stand")
+        self.assertEqual(status, 200)
+        return json.loads(roh)
+
+    def _tls(self, ctx, cookie):
+        with socket.create_connection(("127.0.0.2", self.port), timeout=10, source_address=("127.0.0.3", 0)) as roh:
+            with ctx.wrap_socket(roh, server_hostname="127.0.0.2") as s:
+                s.sendall(f"GET /manifest.webmanifest HTTP/1.0\r\nHost: 127.0.0.2:{self.port}\r\n"
+                          f"Cookie: {cookie}\r\n\r\n".encode())
+                return s.recv(1024)
+
+    def test_schnell_ohne_und_mit_schluessel(self):
+        self.assertEqual(self._http("POST", "/handy/freigeben", b'{"weg": "schnell"}')[0], 200)
+        self.assertEqual(w.LAN["weg"], "schnell")
+        self.assertEqual(self.stand()["ohne_schluessel"], 0.0)
+        self._von("/")                                                       # ohne Schlüssel
+        stand = self.stand()
+        self.assertGreater(stand["ohne_schluessel"], 0)
+        self.assertRegex(stand["ohne_schluessel_um"], r"^\d\d:\d\d$")
+        self.assertEqual(stand["verbunden"], 0.0)
+        self.assertNotIn(handy.schluessel(), json.dumps(stand))              # nie der Schlüssel
+        self.assertEqual(handy.zustand(), {})                                # nichts gemerkt
+        self._von(f"/?k={handy.schluessel()}")
+        stand = self.stand()
+        self.assertGreater(stand["verbunden"], 0)
+        self.assertFalse(stand["verschluesselt"])
+        self.assertEqual(handy.zustand()["bewaehrt"], "http")
+        self.assertEqual(w.handy_ansicht(w.handy_stand()), "fertig")         # beim nächsten Mal gleich der Code
+
+    def test_sicher_abgebrochen_dann_verbunden(self):
+        self.zertifikat_holen()
+        self.assertEqual(self._http("POST", "/handy/freigeben", b'{"weg": "sicher"}')[0], 200)
+        cookie = f"wingscout_schluessel={handy.schluessel()}"
+        # Ein iPhone ohne das Profil: es vertraut dem Zertifikat nicht und bricht ab
+        with self.assertRaises(ssl.SSLCertVerificationError):
+            self._tls(ssl.create_default_context(), cookie)
+        for _ in range(50):
+            if self.stand()["abgebrochen"]:
+                break
+            time.sleep(0.05)
+        self.assertGreater(self.stand()["abgebrochen"], 0)
+        # Ein altes Symbol, das noch über http kommt, macht http nicht zum Weg
+        self._von("/manifest.webmanifest", cookie)
+        self.assertEqual(handy.zustand(), {})
+        # Mit dem Profil: verbunden, verschlüsselt — gemerkt mit der Kennung des Zertifikats
+        self.assertTrue(self._tls(ssl.create_default_context(cafile=str(self.ordner / handy.CA)), cookie)
+                        .startswith(b"HTTP/1.0 200"))
+        stand = self.stand()
+        self.assertTrue(stand["verschluesselt"])
+        gemerkt = handy.zustand()
+        self.assertEqual(gemerkt["bewaehrt"], "https")
+        self.assertEqual(gemerkt["kennung"], handy.zertifikat()["kennung"])
+        self.assertEqual(w.handy_ansicht(w.handy_stand()), "fertig")
+
+    def test_stand_nur_am_mac(self):
+        self.assertEqual(self._http("POST", "/handy/freigeben", b"{}")[0], 200)
+        antwort = self._von("/handy/stand", f"wingscout_schluessel={handy.schluessel()}")
+        self.assertTrue(antwort.startswith(b"HTTP/1.0 404"), antwort[:60])
+
+    def test_freigeben_leert_die_meldungen(self):
+        self.assertEqual(self._http("POST", "/handy/freigeben", b"{}")[0], 200)
+        self._von("/")
+        self.assertGreater(self.stand()["ohne_schluessel"], 0)
+        self.assertEqual(self._http("POST", "/handy/beenden", b"{}")[0], 200)
+        self.assertEqual(self._http("POST", "/handy/freigeben", b"{}")[0], 200)
+        self.assertEqual(self.stand()["ohne_schluessel"], 0.0)
 
 
 if __name__ == "__main__":

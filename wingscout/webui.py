@@ -212,7 +212,8 @@ PRUEFEN_AKTIV = {"n": 0}
 # dann ein Zugangsschlüssel: Er steht in der Startadresse, wandert einmal ins
 # Cookie und gilt, bis Wingfoilscout beendet wird. Ohne ihn kommt vom Netz her
 # niemand an Katalog, Tagebuch oder den Beenden-Knopf.
-LAN = {"aktiv": False, "schluessel": "", "adressen": (), "namen": (), "server": [], "tls": False}
+LAN = {"aktiv": False, "schluessel": "", "adressen": (), "namen": (), "server": [], "tls": False,
+       "weg": None, "kennung": None, "zert_zeit": 0.0}
 # Seit 2.5.0 (handy.py): Der Schlüssel bleibt über Neustarts gleich, bis im
 # Reiter „Handy“ ein neuer erzeugt wird — und die Freigabe lässt sich dort
 # ein- und ausschalten, ohne Neustart: ein eigener Server je Adresse im WLAN,
@@ -220,6 +221,15 @@ LAN = {"aktiv": False, "schluessel": "", "adressen": (), "namen": (), "server": 
 # am ersten Byte erkannt), sonst http.
 LAN_LOCK = threading.Lock()
 HANDY_ZERT_LOCK = threading.Lock()       # zwei Klicks auf „Zertifikat erzeugen“ nacheinander
+# Was vom Handy ankommt, solange freigegeben ist (seit 2.5.1) — für die
+# Rückmeldung im Reiter: wann zuletzt verbunden (und ob verschlüsselt), wann
+# zuletzt ein verschlüsselter Verbindungsaufbau abbrach, wann zuletzt ein Gerät
+# ohne gültigen Schlüssel kam. Nur im Speicher, beim Freigeben geleert. Dazu
+# ein Spiegel dessen, was handy/zustand.json über den erprobten Weg weiß —
+# damit nicht jede Anfrage vom Handy die Datei liest.
+HANDY_MELDUNG = {"seit": 0.0, "verbunden": 0.0, "verschluesselt": False, "abgebrochen": 0.0, "ohne_schluessel": 0.0}
+HANDY_GEMERKT = {"bewaehrt": None, "kennung": None, "zeit": 0.0}
+HANDY_MELDUNG_LOCK = threading.Lock()
 COOKIE = "wingscout_schluessel"
 
 
@@ -883,7 +893,7 @@ def handy_kasten(port: int = 8765) -> str:
     dahin stand hier die Adresse samt Schlüssel). Am Handy steht er nicht:
     wer ihn dort sähe, ist schon drauf."""
     text = (T("Fürs Handy freigegeben — den QR-Code zeigt der Reiter „Handy“.") if LAN["aktiv"] else
-            T("Wingfoilscout auch auf dem iPhone: im Reiter „Handy“ freigeben und den QR-Code scannen."))
+            T("Wingfoilscout auch auf dem iPhone: im Reiter „Handy“ einmal einrichten, dann den QR-Code scannen."))
     return ("<div class='gruppe nurgross'><h4>" + T("Auf dem iPhone") + "</h4>"
             "<p class='hint' style='margin:0'>" + text + " <a href='/handy'>" + T("Zum Reiter „Handy“") + "</a></p></div>")
 
@@ -894,13 +904,19 @@ HANDY_CSS = _web("handy.css")
 HANDY_JS = _web("handy.js")
 
 
-def freigeben(port: int | None = None) -> None:
+def freigeben(port: int | None = None, weg: str | None = None) -> None:
     """Fürs Handy freigeben, ohne Neustart: ein Server je Adresse im WLAN,
     neben dem auf 127.0.0.1, mit dem bleibenden Schlüssel — und mit https,
     wenn ein Zertifikat da ist (handy.py). Bis 2.4.0 ging das nur mit
-    `--lan` beim Start, und der Server hörte dann auf allen Adressen."""
+    `--lan` beim Start, und der Server hörte dann auf allen Adressen.
+
+    `weg` (seit 2.5.1): "sicher" oder "schnell", wenn aus den Schritten des
+    Reiters freigegeben wird — dann zählt nur eine Verbindung auf diesem Weg
+    als erprobt (handy_melden)."""
     with LAN_LOCK:
         if LAN["aktiv"]:
+            if weg in ("sicher", "schnell"):
+                LAN["weg"] = weg
             return
         port = port or PORT["nr"]
         adressen = handy.adressen()
@@ -919,17 +935,25 @@ def freigeben(port: int | None = None) -> None:
                                           adresse=f"{adresse}:{port}", fehler=exc.strerror or exc)) from exc
             s.tls = tls
             server.append(s)
+        gemerkt = handy.zustand()
+        with HANDY_MELDUNG_LOCK:
+            HANDY_MELDUNG.update(seit=time.time(), verbunden=0.0, verschluesselt=False, abgebrochen=0.0,
+                                 ohne_schluessel=0.0)
+            HANDY_GEMERKT.update(bewaehrt=gemerkt.get("bewaehrt"), kennung=gemerkt.get("kennung"),
+                                 zeit=gemerkt.get("zeit", 0.0))
         for s in server:
             threading.Thread(target=s.serve_forever, kwargs={"poll_interval": 0.5}, daemon=True).start()
         LAN.update(aktiv=True, schluessel=handy.schluessel(), adressen=tuple(adressen),
-                   namen=tuple((meta or {}).get("namen") or ()), server=server, tls=tls is not None)
+                   namen=tuple((meta or {}).get("namen") or ()), server=server, tls=tls is not None,
+                   weg=weg if weg in ("sicher", "schnell") else None,
+                   kennung=(meta or {}).get("kennung") if tls else None, zert_zeit=(meta or {}).get("zeit", 0.0))
 
 
 def freigabe_beenden() -> None:
     """Die Server im WLAN zu — Wingfoilscout hört wieder nur auf diesem Mac."""
     with LAN_LOCK:
         server = list(LAN["server"])
-        LAN.update(aktiv=False, server=[], adressen=(), namen=(), tls=False)
+        LAN.update(aktiv=False, server=[], adressen=(), namen=(), tls=False, weg=None, kennung=None, zert_zeit=0.0)
     for s in server:
         try:
             s.shutdown()
@@ -946,11 +970,69 @@ def tls_aktualisieren() -> None:
         for s in LAN["server"]:
             s.tls = tls
         if LAN["aktiv"]:
-            LAN.update(tls=tls is not None, namen=tuple((meta or {}).get("namen") or ()))
+            LAN.update(tls=tls is not None, namen=tuple((meta or {}).get("namen") or ()),
+                       kennung=(meta or {}).get("kennung") if tls else None,
+                       zert_zeit=(meta or {}).get("zeit", 0.0))
+
+
+def handy_melden(art: str, verschluesselt: bool = False) -> None:
+    """Festhalten, was vom Handy ankommt (seit 2.5.1): "verbunden" (mit
+    gültigem Schlüssel, `verschluesselt` über https), "abgebrochen" (ein
+    verschlüsselter Verbindungsaufbau scheiterte — meist vertraut das iPhone
+    dem Zertifikat noch nicht) oder "ohne_schluessel".
+
+    Eine Verbindung merkt sich der Mac als erprobten Weg (handy/zustand.json)
+    — aber nur auf dem Weg, für den freigegeben wurde: Wer gerade den sicheren
+    einrichtet, dem macht ein altes Symbol, das noch über http kommt, nicht
+    den unverschlüsselten zum Standard."""
+    jetzt = time.time()
+    with HANDY_MELDUNG_LOCK:
+        HANDY_MELDUNG[art] = jetzt
+        if art == "verbunden":
+            HANDY_MELDUNG["verschluesselt"] = verschluesselt
+    if art != "verbunden":
+        return
+    weg = "https" if verschluesselt else "http"
+    with LAN_LOCK:
+        sitzung, kennung, zert_zeit, server = LAN["weg"], LAN["kennung"], LAN["zert_zeit"], LAN["server"]
+    if not server:                      # keine echte Freigabe (etwa im Test): nichts zu merken
+        return
+    if (sitzung == "sicher" and weg != "https") or (sitzung == "schnell" and weg != "http"):
+        return
+    kennung = kennung if verschluesselt else None
+    with HANDY_MELDUNG_LOCK:
+        g = HANDY_GEMERKT
+        noetig = ((g["bewaehrt"], g["kennung"]) != (weg, kennung)
+                  or (weg == "http" and (g["zeit"] or 0.0) < (zert_zeit or 0.0)))
+        if noetig:
+            g.update(bewaehrt=weg, kennung=kennung, zeit=jetzt)
+    if noetig:
+        try:
+            handy.merken(bewaehrt=weg, kennung=kennung, zeit=jetzt)
+        except OSError:
+            pass                        # nicht gemerkt: der Reiter zeigt dann weiter die Schritte
+
+
+def handy_meldung() -> dict:
+    """Was der Reiter alle zwei Sekunden abfragt (GET /handy/stand, nur am Mac):
+    Freigabe und die letzten Ereignisse vom Handy, mit Uhrzeit — nie der
+    Schlüssel."""
+    with LAN_LOCK:
+        aktiv = LAN["aktiv"]
+    with HANDY_MELDUNG_LOCK:
+        m = dict(HANDY_MELDUNG)
+
+    def uhr(zeitpunkt: float) -> str:
+        return datetime.fromtimestamp(zeitpunkt).strftime("%H:%M") if zeitpunkt else ""
+    return {"aktiv": aktiv, "jetzt": time.time(), "seit": m["seit"],
+            "verbunden": m["verbunden"], "verbunden_um": uhr(m["verbunden"]), "verschluesselt": m["verschluesselt"],
+            "abgebrochen": m["abgebrochen"], "abgebrochen_um": uhr(m["abgebrochen"]),
+            "ohne_schluessel": m["ohne_schluessel"], "ohne_schluessel_um": uhr(m["ohne_schluessel"])}
 
 
 def handy_stand() -> dict:
-    """Was der Reiter zeigt: Freigabe, Adressen, Zertifikat, die Startadressen."""
+    """Was der Reiter zeigt: Freigabe, Adressen, Zertifikat, die Startadressen —
+    und seit 2.5.1, was sich gezeigt hat (handy.zustand)."""
     with LAN_LOCK:
         aktiv, adressen, tls, wert = LAN["aktiv"], list(LAN["adressen"]), LAN["tls"], LAN["schluessel"]
     if not aktiv:
@@ -958,7 +1040,34 @@ def handy_stand() -> dict:
     meta = handy.zertifikat()
     urls = handy.startadressen(adressen, PORT["nr"], wert, meta)
     return {"aktiv": aktiv, "adressen": adressen, "zertifikat": meta, "passt": bool(urls["https"]),
-            "https": urls["https"] if (tls or not aktiv) else "", "http": urls["http"]}
+            "https": urls["https"] if (tls or not aktiv) else "", "http": urls["http"],
+            "gemerkt": handy.zustand()}
+
+
+def handy_ansicht(stand: dict, weg: str = "") -> str:
+    """Welche Ansicht der Reiter zeigt (seit 2.5.1 — gewünscht am 11.10.2026:
+    „Ein User, der das zum ersten Mal sieht, klickt intuitiv auf die
+    Erstellung des QR-Codes und wundert sich dann, warum es nicht
+    funktioniert“):
+
+    - "fertig": Ein iPhone ist auf einem Weg schon durchgekommen, und der geht
+      noch — dann gleich der QR-Code. https geht, solange es dasselbe
+      Zertifikat ist und es zur Adresse passt; http, solange nicht danach ein
+      Zertifikat erzeugt wurde (dann ist der sichere Weg im Gang).
+    - "sicher", "schnell": die Schritte dieses Weges, der QR-Code zuletzt.
+    - "wahl": nichts eingerichtet — erst den Weg wählen.
+
+    `weg` aus der Adresse (?weg=…) geht vor: so lässt sich ein weiteres iPhone
+    einrichten oder der Weg wechseln."""
+    if weg in ("wahl", "sicher", "schnell"):
+        return weg
+    gemerkt, meta = stand.get("gemerkt") or {}, stand.get("zertifikat")
+    if (gemerkt.get("bewaehrt") == "https" and meta and stand.get("passt")
+            and gemerkt.get("kennung") == meta.get("kennung")):
+        return "fertig"
+    if gemerkt.get("bewaehrt") == "http" and (not meta or gemerkt.get("zeit", 0.0) >= meta.get("zeit", 0.0)):
+        return "fertig"
+    return "sicher" if meta else "wahl"
 
 
 def _wo(art: str) -> str:
@@ -966,57 +1075,54 @@ def _wo(art: str) -> str:
             f"{'Mac' if art == 'mac' else 'iPhone'}</span>")
 
 
-def _knopf(pfad: str, text: str, ghost: bool = False, zweimal: bool = False) -> str:
+def _knopf(pfad: str, text: str, ghost: bool = False, zweimal: bool = False, daten: dict | None = None) -> str:
     klasse = " class='ghost'" if ghost else ""
     zweites = " data-zweimal" if zweimal else ""
-    return f"<button type='button' data-pfad='{pfad}'{klasse}{zweites}>{html.escape(text)}</button>"
+    mit = f" data-daten='{html.escape(json.dumps(daten), quote=True)}'" if daten else ""
+    return f"<button type='button' data-pfad='{pfad}'{klasse}{zweites}{mit}>{html.escape(text)}</button>"
 
 
-def handy_page(stand: dict) -> str:
-    """Der Reiter „Handy“ (seit 2.5.0, gewünscht am 10.10.2026: „wie man das
-    Handy verbindet — das muss schnell ersichtlich sein“). Oben das, was
-    jedes Mal nötig ist (freigeben, Code scannen), darunter das Einrichten:
-    Weg 1 mit Zertifikat, Weg 2 ohne, und „Klappt nicht?“."""
-    meta, aktiv = stand["zertifikat"], stand["aktiv"]
-    teile = [seitenkopf(T("Wingfoilscout · Handy"), CSS + REITER_CSS + HANDY_CSS),
-             "<div class='wrap'>", reiter("/handy"),
-             "<h1>" + T("Wingfoilscout aufs Handy") + "</h1>",
-             "<p class='sub'>" + T("Im selben WLAN zeigt dein iPhone Wingfoilscout — gerechnet wird auf diesem Mac. "
-                                   "Einmal einrichten, danach jedes Mal: freigeben, Code scannen, fertig.") + "</p>"]
+def _handy_qr(url: str, art: str, ansicht: str, schritte: str = "") -> str:
+    """QR-Code, Adresse, die Rückmeldung vom Handy und „Freigabe beenden“."""
+    wort = T("verschlüsselt") if art == "https" else T("unverschlüsselt")
+    return ("<div class='hverbinden'>"
+            f"<div class='hqr'>{qr.svg(url, titel=html.escape(T('QR-Code für das iPhone')))}</div><div>"
+            + schritte
+            + f"<p class='hadresse'><span class='hart {'zu' if art == 'https' else 'offen'}'>{wort}</span>"
+            + html.escape(url) + "</p>"
+            + f"<p class='hlive' id='hlive' data-ansicht='{ansicht}' data-art='{art}' role='status'>"
+            + T("Warte auf dein iPhone …") + "</p>"
+            + "<div class='hknoepfe'>" + _knopf("/handy/beenden", T("Freigabe beenden"), ghost=True) + "</div>"
+            "</div></div>")
 
-    # ── Verbinden — jedes Mal ───────────────────────────────────────────────
-    zustand = (f"<span class='hzustand an'>{T('freigegeben')}</span>" if aktiv else
-               f"<span class='hzustand aus'>{T('nur auf diesem Mac')}</span>")
-    teile.append("<section class='hkarte'><h2>" + T("Verbinden") + zustand + "</h2>")
-    if not aktiv:
-        teile.append("<p>" + T("Wingfoilscout ist gerade nur auf diesem Mac erreichbar. Gib es fürs Handy frei — "
-                               "dann erscheint hier der QR-Code.") + "</p>"
-                     + "<div class='hknoepfe'>" + _knopf("/handy/freigeben", T("Fürs Handy freigeben")) + "</div>"
-                     + "<p class='hklein'>" + T("Nur im eigenen WLAN — nicht im Hotel, im Zug oder auf dem Campingplatz. "
-                                                "Die Freigabe endet, wenn du Wingfoilscout beendest.") + "</p>")
-    else:
-        url = stand["https"] or stand["http"]
-        art = (f"<span class='hart zu'>{T('verschlüsselt')}</span>" if stand["https"] else
-               f"<span class='hart offen'>{T('unverschlüsselt')}</span>")
-        teile.append("<div class='hverbinden'>"
-                     f"<div class='hqr'>{qr.svg(url, titel=html.escape(T('QR-Code für das iPhone')))}</div>"
-                     "<div><ol class='hschritte'>"
-                     "<li>" + _wo("iphone") + T("Ins selbe WLAN wie dieser Mac.") + "</li>"
-                     "<li>" + _wo("iphone") + T("Kamera öffnen, auf den Code richten und den Link antippen.") + "</li>"
-                     "<li>" + _wo("iphone") + T("In Safari: Teilen → „Zum Home-Bildschirm“ — dann startet Wingfoilscout "
-                                               "wie eine App.") + "</li>"
-                     "</ol>"
-                     f"<p class='hadresse'>{art}{html.escape(url)}</p>"
-                     "<div class='hknoepfe'>" + _knopf("/handy/beenden", T("Freigabe beenden"), ghost=True) + "</div>"
-                     "</div></div>")
-        if not stand["https"]:
-            teile.append("<p class='hwarn'>" + T("Ohne Zertifikat öffnet Safari diese Adresse nur, wenn auf dem iPhone "
-                                                 "die Warnung vor nicht sicheren Verbindungen aus ist — sonst kommt "
-                                                 "„Safari kann die Seite nicht öffnen … HTTPS-Only“. Besser: einmal "
-                                                 "Weg 1 unten einrichten.") + "</p>")
-    teile.append("<p class='hmeldung' id='hmeldung' role='status'></p></section>")
 
-    # ── Weg 1: mit Zertifikat ───────────────────────────────────────────────
+def _handy_wechsel() -> str:
+    return f"<a class='hwechsel' href='/handy?weg=wahl'>{T('Anderen Weg wählen')}</a>"
+
+
+def _handy_wahl(aktiv: bool) -> str:
+    """Nichts eingerichtet: erst den Weg wählen — der QR-Code kommt in seinem letzten Schritt."""
+    frei = ""
+    if aktiv:
+        frei = ("<p class='hklein'>" + T("Schon fürs Handy freigegeben — wähl einen Weg, der QR-Code steht dann im "
+                                         "letzten Schritt.") + "</p>"
+                "<div class='hknoepfe'>" + _knopf("/handy/beenden", T("Freigabe beenden"), ghost=True) + "</div>")
+    return ("<section class='hkarte'><h2>" + T("Wie soll dein iPhone Wingfoilscout öffnen?") + "</h2>"
+            "<div class='hwahl'>"
+            "<a class='hweg' href='/handy?weg=sicher'><span class='hwegkopf'>" + T("Sicher")
+            + f"<span class='hempfohlen'>{T('empfohlen')}</span></span><span class='hwegtext'>"
+            + T("Einmal ein Zertifikat aufs iPhone, etwa zwei Minuten. Danach verschlüsselt — und Safari bleibt so "
+                "streng, wie es ist.") + "</span></a>"
+            "<a class='hweg' href='/handy?weg=schnell'><span class='hwegkopf'>" + T("Schnell") + "</span>"
+            "<span class='hwegtext'>" + T("Auf dem iPhone einen Schalter in Safari ausschalten. Unverschlüsselt — und "
+                                          "Safari warnt dann auch bei anderen Websites nicht mehr.") + "</span></a>"
+            "</div>" + frei + "<p class='hmeldung' id='hmeldung' role='status'></p></section>")
+
+
+def _handy_sicher(stand: dict) -> str:
+    """Der sichere Weg: Zertifikat, Profil, installieren, vertrauen — dann der QR-Code."""
+    meta, aktiv, gemerkt = stand["zertifikat"], stand["aktiv"], stand.get("gemerkt") or {}
+    ok = bool(meta and stand["passt"])
     if not meta:
         lage = T("Noch kein Zertifikat.")
     elif meta.get("abgelaufen"):
@@ -1029,21 +1135,30 @@ def handy_page(stand: dict) -> str:
                  erstellt=i18n.datum_jahr(date.fromisoformat(meta["erstellt"])) if meta.get("erstellt") else "?",
                  bis=i18n.datum_jahr(date.fromisoformat(meta["bis"])) if meta.get("bis") else "?")
     datum = html.escape(meta["erstellt"]) if meta and meta.get("erstellt") else "…"
-    teile.append(
-        "<section class='hkarte'><h2>" + T("Einmal einrichten — Weg 1: mit Zertifikat")
-        + f"<span class='hempfohlen'>{T('empfohlen')}</span></h2>"
-        "<p>" + T("Dann öffnet Safari Wingfoilscout verschlüsselt (https) und ohne Warnung — auch wenn auf dem iPhone "
-                  "die Warnung vor nicht sicheren Verbindungen an ist. Das dauert zwei Minuten, einmal.") + "</p>"
-        f"<p class='hklein'>{lage}</p>"
+    geladen = ok and gemerkt.get("profil") == meta.get("kennung")
+    if aktiv and ok and stand["https"]:
+        zuletzt = _handy_qr(stand["https"], "https", "sicher")
+    elif ok:
+        zuletzt = ("<div class='hknoepfe'>" + _knopf("/handy/freigeben", T("QR-Code zeigen"), daten={"weg": "sicher"})
+                   + "</div>")
+    else:
+        zuletzt = "<p class='hklein'>" + T("Geht, sobald Schritt 1 erledigt ist.") + "</p>"
+    erledigt = " class='erledigt'"
+    return (
+        "<section class='hkarte'><h2>" + T("Sicher einrichten") + f"<span class='hempfohlen'>{T('empfohlen')}</span>"
+        + _handy_wechsel() + "</h2>"
+        "<p>" + T("Danach öffnet Safari Wingfoilscout verschlüsselt (https) und ohne Warnung. Einmal, etwa zwei "
+                  "Minuten.") + "</p>"
         "<ol class='hschritte'>"
-        "<li>" + _wo("mac") + T("Zertifikat für diesen Mac erzeugen:")
+        f"<li{erledigt if ok else ''}>" + _wo("mac") + T("Zertifikat für diesen Mac erzeugen:")
+        + f"<p class='hklein'>{lage}</p>"
         + "<div class='hknoepfe'>" + _knopf("/handy/zertifikat", T("Neu erzeugen") if meta else T("Zertifikat erzeugen"),
-                                            ghost=bool(meta and stand["passt"])) + "</div>"
-        + "</li>"
-        "<li>" + _wo("mac") + T("Das Profil laden — der Browser legt es in den Ordner „Downloads“. Dort Rechtsklick "
-                                "auf „Wingfoilscout-iPhone.mobileconfig“ → Teilen → AirDrop → dein iPhone.")
-        + ("<div class='hknoepfe'><a class='hknopf' href='/handy/profil' download>" + T("Profil laden") + "</a></div>"
-           if meta else "")
+                                            ghost=ok) + "</div></li>"
+        f"<li{erledigt if geladen else ''}>" + _wo("mac")
+        + T("Das Profil laden — der Browser legt es in den Ordner „Downloads“. Dort Rechtsklick auf "
+            "„Wingfoilscout-iPhone.mobileconfig“ → Teilen → AirDrop → dein iPhone.")
+        + ("<div class='hknoepfe'><a class='hknopf" + (" ghost" if geladen else "") + "' href='/handy/profil' download>"
+           + T("Profil laden") + "</a></div>" if ok else "")
         + "<p class='hklein'>" + T("Ohne AirDrop: die Datei per Mail an dich selbst schicken und auf dem iPhone den "
                                    "Anhang antippen. Bietet der Mac an, das Profil bei sich zu installieren: nicht "
                                    "nötig — es gehört aufs iPhone.") + "</p></li>"
@@ -1052,36 +1167,81 @@ def handy_page(stand: dict) -> str:
         "<li>" + _wo("iphone") + T("Vertrauen einschalten: Einstellungen → Allgemein → Info → ganz unten "
                                    "<span class='hpfad'>„Zertifikatsvertrauenseinstellungen“</span> → „Wingfoilscout "
                                    "{datum}“ einschalten → Fortfahren.", datum=datum) + "</li>"
-        "<li>" + T("Fertig: oben „Fürs Handy freigeben“ und den Code scannen.") + "</li>"
+        "<li>" + _wo("mac") + T("QR-Code zeigen, dann mit der Kamera des iPhones scannen und den Link antippen.")
+        + zuletzt + "</li>"
         "</ol>"
         "<p class='hklein'>" + T("Sicher: Den Schlüssel, mit dem Wingfoilscout das Zertifikat ausgestellt hat, gibt es "
                                  "schon nicht mehr — niemand kann damit weitere Zertifikate ausstellen, denen dein iPhone "
                                  "vertraut. Entfernen geht jederzeit: Einstellungen → Allgemein → VPN und "
                                  "Geräteverwaltung → „Wingfoilscout im Heimnetz“ → Profil entfernen.") + "</p>"
-        "</section>")
+        "<p class='hmeldung' id='hmeldung' role='status'></p></section>")
 
-    # ── Weg 2: ohne Zertifikat ──────────────────────────────────────────────
-    teile.append(
-        "<section class='hkarte'><h2>" + T("Weg 2: ohne Zertifikat") + "</h2>"
-        "<p>" + T("Safari kann vor unverschlüsselten Seiten warnen: Einstellungen → Apps → Safari, der Schalter für die "
-                  "Warnung vor nicht sicheren Verbindungen (englisch „Not Secure Connection Warning“; auf Deutsch "
-                  "kann er je nach iOS-Version etwas anders heißen). Ist er an, öffnet Safari Wingfoilscout ohne "
-                  "Zertifikat gar nicht: „Safari kann die Seite nicht öffnen … HTTPS-Only“. Schaltest du ihn aus, "
-                  "geht es — über http, unverschlüsselt.") + "</p>"
-        "<p>" + T("Was das kostet: Safari warnt dann bei keiner unverschlüsselten Seite mehr, nicht nur bei "
-                  "Wingfoilscout. Und was dein iPhone und Wingfoilscout austauschen, samt Zugangsschlüssel, geht "
-                  "unverschlüsselt durchs WLAN — zu Hause mit WPA2/WPA3 vertretbar, in fremden WLANs nicht. "
-                  "Deshalb ist Weg 1 besser.") + "</p>"
-        + (f"<p class='hadresse'><span class='hart offen'>{T('unverschlüsselt')}</span>{html.escape(stand['http'])}</p>"
-           if aktiv and stand["https"] and stand["http"] else "")
-        + "</section>")
 
-    # ── Klappt nicht? ───────────────────────────────────────────────────────
-    teile.append(
-        "<section class='hkarte'><h2>" + T("Klappt nicht?") + "</h2><ul class='hprobleme'>"
-        "<li>" + T("<b>„Safari kann die Seite nicht öffnen … HTTPS-Only“:</b> Safari will https — Weg 1 einrichten "
-                   "oder Weg 2.") + "</li>"
-        "<li>" + T("<b>„Diese Verbindung ist nicht privat“:</b> In Weg 1 fehlt Schritt 4 (Vertrauen einschalten) — "
+def _handy_schnell(stand: dict) -> str:
+    """Der schnelle Weg: die Safari-Warnung aus — dann der QR-Code."""
+    if stand["aktiv"] and stand["http"]:
+        zuletzt = _handy_qr(stand["http"], "http", "schnell")
+    else:
+        zuletzt = ("<div class='hknoepfe'>" + _knopf("/handy/freigeben", T("QR-Code zeigen"), daten={"weg": "schnell"})
+                   + "</div>")
+    return (
+        "<section class='hkarte'><h2>" + T("Schnell einrichten") + _handy_wechsel() + "</h2>"
+        "<ol class='hschritte'>"
+        "<li>" + _wo("iphone") + T("Einstellungen → Apps → Safari → unter „Datenschutz & Sicherheit“ "
+                                   "<span class='hpfad'>„Warnung vor unsicherer Verbindung“</span> ausschalten "
+                                   "(englisch „Not Secure Connection Warning“).")
+        + "<p class='hklein'>" + T("Was das kostet: Safari warnt dann bei keiner unverschlüsselten Website mehr, nicht "
+                                   "nur bei Wingfoilscout. Und was dein iPhone und Wingfoilscout austauschen, samt "
+                                   "Zugangsschlüssel, geht unverschlüsselt durchs WLAN — zu Hause mit WPA2/WPA3 "
+                                   "vertretbar, in fremden WLANs nicht. Zurückschalten geht jederzeit; sicherer ist "
+                                   "der andere Weg.") + "</p></li>"
+        "<li>" + _wo("mac") + T("QR-Code zeigen, dann mit der Kamera des iPhones scannen und den Link antippen.")
+        + zuletzt + "</li>"
+        "</ol><p class='hmeldung' id='hmeldung' role='status'></p></section>")
+
+
+def _handy_fertig(stand: dict) -> str:
+    """Eingerichtet: gleich der QR-Code."""
+    gemerkt, aktiv = stand.get("gemerkt") or {}, stand["aktiv"]
+    erprobt = gemerkt.get("bewaehrt") or "http"
+    art = erprobt
+    url = stand["https"] if art == "https" else stand["http"]
+    if aktiv and not url:               # sollte nicht vorkommen — dann eben, was da ist
+        url, art = (stand["https"], "https") if stand["https"] else (stand["http"], "http")
+    zustand = (f"<span class='hzustand an'>{T('freigegeben')}</span>" if aktiv else
+               f"<span class='hzustand aus'>{T('nur auf diesem Mac')}</span>")
+    tag = i18n.datum_jahr(datetime.fromtimestamp(gemerkt["zeit"]).date()) if gemerkt.get("zeit") else "?"
+    eingerichtet = (T("Eingerichtet: verschlüsselt (hat am {datum} geklappt).", datum=tag) if erprobt == "https" else
+                    T("Eingerichtet: unverschlüsselt (hat am {datum} geklappt).", datum=tag))
+    teile = ["<section class='hkarte'><h2>" + T("Verbinden") + zustand + "</h2>",
+             f"<p class='hklein'>{eingerichtet}</p>"]
+    if aktiv and url:
+        teile.append(_handy_qr(url, art, "fertig",
+                               "<ol class='hschritte'>"
+                               "<li>" + _wo("iphone") + T("Ins selbe WLAN wie dieser Mac.") + "</li>"
+                               "<li>" + _wo("iphone") + T("Kamera öffnen, auf den Code richten und den Link "
+                                                          "antippen.") + "</li>"
+                               "<li>" + _wo("iphone") + T("In Safari: Teilen → „Zum Home-Bildschirm“ — dann startet "
+                                                          "Wingfoilscout wie eine App.") + "</li>"
+                               "</ol>"))
+    else:
+        teile.append("<div class='hknoepfe'>" + _knopf("/handy/freigeben", T("QR-Code zeigen")) + "</div>"
+                     "<p class='hklein'>" + T("Nur im eigenen WLAN — nicht im Hotel, im Zug oder auf dem Campingplatz. "
+                                              "Die Freigabe endet, wenn du Wingfoilscout beendest.") + "</p>")
+    weiter = "sicher" if erprobt == "https" else "schnell"
+    teile.append(f"<p class='hwege'><a href='/handy?weg={weiter}'>{T('Weiteres iPhone einrichten')}</a>"
+                 f"<a href='/handy?weg=wahl'>{T('Anderen Weg wählen')}</a></p>"
+                 "<p class='hmeldung' id='hmeldung' role='status'></p></section>")
+    return "".join(teile)
+
+
+def _handy_hilfe() -> str:
+    """Zugeklappt unten: „Klappt nicht?“ und der Zugangsschlüssel."""
+    return (
+        "<details class='hkarte hmehr'><summary>" + T("Klappt nicht?") + "</summary><ul class='hprobleme'>"
+        "<li>" + T("<b>„Safari kann die Seite nicht öffnen … HTTPS-Only“:</b> Safari will https — den sicheren Weg "
+                   "einrichten, oder beim schnellen die „Warnung vor unsicherer Verbindung“ ausschalten.") + "</li>"
+        "<li>" + T("<b>„Diese Verbindung ist nicht privat“:</b> Beim sicheren Weg fehlt das Vertrauen (Schritt 4) — "
                    "oder das Zertifikat ist neu erzeugt und das neue Profil noch nicht auf dem iPhone.") + "</li>"
         "<li>" + T("<b>„Kein Zugang“:</b> den Code hier neu scannen. Nach „Neuer Schlüssel“ geht das alte Symbol auf "
                    "dem Home-Bildschirm nicht mehr — löschen und neu hinzufügen.") + "</li>"
@@ -1092,7 +1252,31 @@ def handy_page(stand: dict) -> str:
         "<p class='hklein'>" + T("Der Zugangsschlüssel bleibt gleich, auch nach einem Neustart — so geht das Symbol auf "
                                  "dem Home-Bildschirm weiter. Ein neuer sperrt alle bisher verbundenen Geräte aus.")
         + "</p><div class='hknoepfe'>" + _knopf("/handy/schluessel", T("Neuer Schlüssel"), ghost=True, zweimal=True)
-        + "</div></section>")
+        + "</div></details>")
+
+
+def handy_page(stand: dict, weg: str = "") -> str:
+    """Der Reiter „Handy“ (seit 2.5.0, gewünscht am 10.10.2026: „wie man das
+    Handy verbindet — das muss schnell ersichtlich sein“). Seit 2.5.1 in der
+    Reihenfolge, in der man es braucht: erst den Weg wählen und einrichten,
+    der QR-Code kommt zuletzt; hat ein Weg einmal geklappt, gleich der
+    QR-Code (handy_ansicht). Solange freigegeben ist, sagt die Seite, was vom
+    iPhone ankommt (handy.js, GET /handy/stand)."""
+    ansicht = handy_ansicht(stand, weg)
+    teile = [seitenkopf(T("Wingfoilscout · Handy"), CSS + REITER_CSS + HANDY_CSS),
+             "<div class='wrap'>", reiter("/handy"),
+             "<h1>" + T("Wingfoilscout aufs Handy") + "</h1>",
+             "<p class='sub'>" + T("Im selben WLAN zeigt dein iPhone Wingfoilscout — gerechnet wird auf diesem Mac. "
+                                   "Einmal einrichten, danach jedes Mal: QR-Code zeigen, scannen, fertig.") + "</p>"]
+    if ansicht == "wahl":
+        teile.append(_handy_wahl(stand["aktiv"]))
+    elif ansicht == "sicher":
+        teile.append(_handy_sicher(stand))
+    elif ansicht == "schnell":
+        teile.append(_handy_schnell(stand))
+    else:
+        teile.append(_handy_fertig(stand))
+    teile.append(_handy_hilfe())
     teile.append(skript("\n" + HANDY_JS + "\n"))
     teile.append(seitenende() + "</body></html>")
     return "".join(teile)
@@ -2380,8 +2564,12 @@ class Handler(BaseHTTPRequestHandler):
                 self.request = huelle      # ab hier trifft die Frist die Hülle
                 try:
                     huelle.do_handshake()
-                except BaseException:
+                except BaseException as exc:
                     self._aufgeben()
+                    # Ein iPhone, das dem Zertifikat (noch) nicht vertraut, bricht
+                    # hier ab — der Reiter „Handy“ sagt es (seit 2.5.1)
+                    if isinstance(exc, (ssl.SSLError, ConnectionError)) and von_aussen(self.client_address):
+                        handy_melden("abgebrochen")
                     raise
         super().setup()
 
@@ -2954,7 +3142,8 @@ class Handler(BaseHTTPRequestHandler):
     def _von_aussen(self) -> bool:
         """Kommt die Anfrage von einem anderen Gerät als diesem Mac? Die
         Regel des Servers (BegrenzterServer.von_aussen; im Test eine eigene)."""
-        return getattr(self.server, "von_aussen", BegrenzterServer.von_aussen)(self.client_address)
+        server = getattr(self, "server", None)
+        return getattr(server, "von_aussen", BegrenzterServer.von_aussen)(self.client_address)
 
     def _handy(self, path: str) -> None:
         """Die Knöpfe im Reiter „Handy“ (seit 2.5.0) — nur am Mac selbst: vom
@@ -2964,13 +3153,14 @@ class Handler(BaseHTTPRequestHandler):
             self._antwort(403, error=T("Das geht nur am Mac selbst."))
             return
         try:
-            self._json()
+            daten = self._json()
         except ValueError as exc:
             self._antwort(400, error=str(exc))
             return
         try:
             if path == "/handy/freigeben":
-                freigeben()
+                weg = daten.get("weg")
+                freigeben(weg=weg if weg in ("sicher", "schnell") else None)
             elif path == "/handy/beenden":
                 freigabe_beenden()
             elif path == "/handy/zertifikat":
@@ -3116,6 +3306,12 @@ class Handler(BaseHTTPRequestHandler):
             zerlegt = urllib.parse.urlparse("")
         k = (urllib.parse.parse_qs(zerlegt.query).get("k") or [""])[0]
         urteil = zugang_pruefen(self.client_address[0], k, self.headers.get("Cookie", ""))
+        if LAN["aktiv"] and self._von_aussen():
+            # Für die Rückmeldung im Reiter „Handy“ (seit 2.5.1)
+            if urteil == "abweisen":
+                handy_melden("ohne_schluessel")
+            else:
+                handy_melden("verbunden", isinstance(getattr(self, "request", None), ssl.SSLSocket))
         if urteil == "frei":
             return True
         if urteil == "setzen":
@@ -3223,7 +3419,14 @@ class Handler(BaseHTTPRequestHandler):
             if self._von_aussen():
                 self._send(200, als_bytes(handy_nur_am_mac()))
             else:
-                self._send(200, als_bytes(handy_page(handy_stand())))
+                weg = (urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query).get("weg") or [""])[0]
+                self._send(200, als_bytes(handy_page(handy_stand(), weg)))
+        elif path == "/handy/stand":
+            # Was vom Handy ankommt (seit 2.5.1) — nur für den Reiter am Mac
+            if self._von_aussen():
+                self._send(404, als_bytes(T("Nicht gefunden.")))
+                return
+            self._send(200, json_bytes(handy_meldung()), "application/json")
         elif path == "/handy/profil":
             # Das Profil fürs iPhone — auch fürs Handy selbst (mit Schlüssel):
             # das Zertifikat darin ist nichts Geheimes
@@ -3231,7 +3434,11 @@ class Handler(BaseHTTPRequestHandler):
             if not datei.is_file():
                 self._send(404, als_bytes(T("Noch kein Zertifikat — erst im Reiter „Handy“ erzeugen.")))
                 return
-            self._send(200, datei.read_bytes(), "application/x-apple-aspen-config",
+            inhalt = datei.read_bytes()
+            meta = handy.zertifikat()
+            if meta and not self._von_aussen():
+                handy.merken(profil=meta["kennung"])        # Schritt 2 im Reiter: erledigt
+            self._send(200, inhalt, "application/x-apple-aspen-config",
                        kopf={"Content-Disposition": f'attachment; filename="{handy.PROFIL}"'})
         elif path == "/manifest.webmanifest":
             self._send(200, als_bytes(MANIFEST), "application/manifest+json; charset=utf-8")
@@ -3454,7 +3661,7 @@ def _serve(port: int, open_browser: bool, config: str | None, lan: bool) -> None
     if wahl["laeuft"]:
         # Seit 2.5.0 kein Neustart mehr nötig: freigeben geht im Reiter „Handy“
         if lan:
-            print(T("Fürs iPhone: im Reiter „Handy“ auf „Fürs Handy freigeben“ drücken."))
+            print(T("Fürs iPhone: im Reiter „Handy“ auf „QR-Code zeigen“ drücken."))
         if open_browser:
             webbrowser.open(wahl["laeuft"] + ("handy" if lan else ""))
         return

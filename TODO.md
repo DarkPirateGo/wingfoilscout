@@ -1,6 +1,11 @@
 # TODO
 
-As of 11 October 2026, version 2.5.0 (962 tests). In it: **the “Phone”
+As of 11 October 2026, version 2.5.1 (978 tests). In it: **the “Phone” tab
+in the order you need it** — it first asks for the option (Secure or Quick),
+the QR code comes as the last step, while sharing it says what arrives from
+the iPhone, and once an option has worked it opens straight with the QR code
+(`handy/zustand.json`; `SECURITY.md`, addendum of 11 October). Before that,
+2.5.0 (962 tests), published on 11 October. In it: **the “Phone”
 tab** — share with the iPhone without a restart, a QR code instead of typing,
 the access key stays the same across restarts, and **HTTPS on the home
 network** for Safari's “Not Secure Connection Warning”: a certificate from a
@@ -115,18 +120,22 @@ wasn't important enough to keep.
 
 ## Open — Philipp
 
-- **Try 2.5.0 once** (restart Wingfoilscout first — the bar at the top says
-  so):
-  - **Phone tab:** open “Phone”, “Create certificate”, “Download profile”,
-    AirDrop it to the iPhone, install it there (Settings → “Profile
-    Downloaded”), switch on trust (Settings → General → About → Certificate
-    Trust Settings), then “Share with phone” and scan the code: Safari should
-    open Wingfoilscout over https without a warning, with “Not Secure
-    Connection Warning” on. Then “Add to Home Screen”, quit Wingfoilscout,
-    start it again, share again — the icon should still work. The iOS labels
-    in the tab come from Apple's documentation, not from a device: tell me
-    what they are called on your iPhone, and whether the Mac offered to
-    install the profile itself after the download.
+- **Try 2.5.1 once** (restart Wingfoilscout first — the bar at the top says
+  so); it includes what 2.5.0 brought:
+  - **Phone tab:** open “Phone” — it should ask “Secure” or “Quick”. With
+    “Secure”: “Create certificate”, “Download profile”, AirDrop it to the
+    iPhone, install it there (Settings → “Profile Downloaded”), switch on
+    trust (Settings → General → About → Certificate Trust Settings), then
+    “Show QR code” and scan it: Safari should open Wingfoilscout over https
+    without a warning, the tab should say “Connected — encrypted” and then
+    switch to the short view with only “Show QR code”. Worth trying once on
+    purpose: scan before switching on trust — the tab should say that the
+    iPhone broke off the encrypted connection. Then “Add to Home Screen”, quit
+    Wingfoilscout, start it again, “Show QR code” — the icon should still
+    work. The iOS labels in the tab come from Apple's documentation and a
+    forum, not from a device: tell me what they are called on your iPhone,
+    and whether the Mac offered to install the profile itself after the
+    download.
   - **Dock app:** double-click “App fürs Dock erstellen”, drag the app from
     the Finder window into the Dock, click it: Wingfoilscout should start
     without a Terminal window and open the browser; a second click only
@@ -184,7 +193,7 @@ wasn't important enough to keep.
   I don't know how far off the model is — I have no number for it; only the
   comparison will tell whether the 8 km grid is good enough at that spot.
 - **Double-check on the iPhone** — I can't do that from here: does the QR
-  code in the “Phone” tab open the interface in Safari (see “Try 2.5.0
+  code in the “Phone” tab open the interface in Safari (see “Try 2.5.1
   once”)? Does the tab bar sit above the home indicator, does no
   input field zoom in when tapped, and does "Share" → "Add to Home Screen"
   work with icon and name? I measured in Chromium at iPhone sizes

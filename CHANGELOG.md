@@ -7,6 +7,51 @@ tell later which version a report was made with. From 2.1.0 on this file is
 written in English; the entries up to 2.0.0 below are in German, as they were
 written at the time.
 
+## 2.5.1 — 11.10.2026
+
+### The “Phone” tab in the order you need it
+
+- **Requested on 11 October:** “Someone who sees it for the first time
+  intuitively clicks to create the QR code and then wonders why it doesn't
+  work.” In 2.5.0 the tab opened with “Share with phone”; the setup that makes
+  the QR code work came below it.
+- **First the option, the QR code last.** As long as nothing is set up, the
+  tab asks how the iPhone should open Wingfoilscout: **Secure** (recommended:
+  certificate, profile by AirDrop, install, trust) or **Quick** (switch off
+  Safari's “Not Secure Connection Warning” — now with the path: Settings →
+  Apps → Safari → under “Privacy & Security”; in German iOS
+  „Warnung vor unsicherer Verbindung“). Each option lists its steps, and
+  **Show QR code** is the last one; what the Mac can tell by itself is ticked
+  off (certificate created, profile downloaded).
+- **The tab says what arrives from the iPhone** while sharing is on, asking
+  every two seconds (`GET /handy/stand`, answered only to the Mac): connected,
+  encrypted or not, with the time; broke off the encrypted connection
+  (usually because the iPhone doesn't trust the certificate yet); came
+  without a valid key; or, after 25 seconds, nothing yet, with the usual
+  reasons — same Wi-Fi? the Safari setting? macOS asking whether Python may
+  accept incoming connections? What Safari blocks before it connects never
+  reaches the Mac; for that case the tab can only say that nothing arrived.
+- **Once an option has worked, the tab opens with the QR code.** The Mac
+  remembers only what it has seen work (`handy/zustand.json`: https with the
+  certificate it was, or http), and only on the option it was shared for — an
+  old Home Screen icon that still comes over http doesn't make http the
+  default while the secure option is being set up. If the remembered option
+  can no longer work (a new certificate, one that no longer fits the
+  address, a certificate created after http had worked), the tab shows the
+  steps again. “Set up another iPhone” and “Choose another option” are always
+  one click away.
+- “Not working?” and “New key” are folded away at the bottom.
+- `tests/test_handy.py` (55 tests, 2.5.0: 39): the views and when each one
+  applies, what is remembered and what isn't, the events on a real server
+  (a TLS client that doesn't trust the certificate, one without a key,
+  successful ones over https and http), the status only for the Mac.
+- **Not tried on an iPhone before the release**, like 2.5.0; checked in
+  Chromium with a stand-in iPhone on 127.0.0.3.
+
+### Tests
+
+- 978 tests (2.5.0: 962).
+
 ## 2.5.0 — 11.10.2026
 
 ### Wingfoilscout on the iPhone: the “Phone” tab, and HTTPS at home

@@ -26,6 +26,27 @@ open. The review was done by hand, line by line; automated tools such as
 from this audit are pinned down as tests in `tests/test_security.py`, so that
 they don't silently disappear in the next rework.
 
+### Addendum 11 October 2026: what the phone tab reports (2.5.1)
+
+2.5.1 lets the "Phone" tab say what arrives from the phone while sharing is
+on. New is `GET /handy/stand`: the times of the last successful connection
+(and whether it was encrypted), of the last TLS handshake a device broke off,
+and of the last request without a valid key. These are kept in memory only,
+cleared whenever sharing starts, and answered only to the Mac itself — other
+devices get 404, after the key check. The answer never contains the key.
+
+`handy/zustand.json` remembers which option has worked: "https" with the
+first 16 hex digits of the SHA-256 of the certificate authority's
+certificate, or "http"; plus a time and for which certificate the profile
+was downloaded. No addresses, no device names. It lives in the personal
+`handy/` folder (0600, never versioned). It is written only when a device
+got through with a valid key, and only on the option sharing was started
+for, so a stray request can't switch the remembered option. At worst a wrong
+entry makes the tab open with the QR code instead of the steps. Choosing an
+option in the tab only changes the address (`?weg=…`, checked against a
+fixed list); `POST /handy/freigeben` accepts `{"weg": "sicher"}` or
+`{"weg": "schnell"}` and ignores anything else.
+
 ### Addendum 10 October 2026: the phone tab and HTTPS on the home network (2.5.0)
 
 Safari on the iPhone refused the Wi-Fi address with an "HTTPS-Only" error:
