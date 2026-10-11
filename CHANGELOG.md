@@ -7,6 +7,85 @@ tell later which version a report was made with. From 2.1.0 on this file is
 written in English; the entries up to 2.0.0 below are in German, as they were
 written at the time.
 
+## 2.5.2 — 11.10.2026
+
+### “Quit” only on the Mac
+
+- **Reported on 11 October**, after trying 2.5.1 on the iPhone (“works”):
+  pressing “Quit” on the iPhone made every further connection fail. The
+  button didn't close the page on the phone — it quit Wingfoilscout on the
+  Mac, the whole program, and with it the sharing; the iPhone couldn't get
+  back in until Wingfoilscout was started again on the Mac and “Show QR code”
+  pressed.
+- **The iPhone shows no “Quit” any more** — you close Safari as with any
+  other page, and Wingfoilscout keeps running on the Mac. At the top right of
+  the phone's pages only the “?” remains, and the first line no longer keeps
+  room for the button. The tab bar learns per request whether it is built for
+  another device (`vom_handy()`, set in `Handler._anfang`, like the CSP
+  nonce).
+- **`POST /shutdown` answers 403 to every other device**, like the phone
+  tab's buttons since 2.5.0 — should an older page on the iPhone still show
+  the button, Wingfoilscout keeps running and the page reloads without it
+  (`web/beenden.js`).
+- **The “Phone” tab on the Mac notices when Wingfoilscout no longer
+  answers** (quit from another browser tab, Terminal window closed): instead
+  of waiting next to a QR code that no longer works, it says “Wingfoilscout
+  isn’t responding — is it still running?” and fades the code. Once
+  Wingfoilscout runs again, the tab reloads — sharing is then off until
+  “Show QR code”, as after every start.
+- README (four languages): “Quit” is on the Mac; on the iPhone you close
+  Safari.
+
+### After an external security review
+
+- **On 11 October** the public code was reviewed from outside, on the
+  maintainer's behalf. The four points of the report and what became of them are in `SECURITY.md`
+  (addendum of 11 October, 2.5.2); the report itself is not in the
+  repository.
+- **The way without a certificate is no longer offered up front.** The
+  “Phone” tab opens with the steps for the certificate even when nothing is
+  set up — until 2.5.1 it first asked “Secure” or “Quick”. Without a
+  certificate is now under **Not working?**, for an iPhone that can't
+  install the profile (a company iPhone, for example), with its own
+  heading, “Set up without a certificate”, and a link back to the encrypted
+  way. What it costs is said plainly: with WPA2 anyone who knows the Wi-Fi
+  password can read along, and with the key sees Wingfoilscout as you do —
+  until 2.5.1 the tab called it “acceptable at home with WPA2/WPA3”. A Mac
+  already set up without a certificate keeps its short view, now with
+  “Set up encrypted (recommended)” next to “Set up another iPhone”.
+- **The key no longer travels unencrypted once https works.** Over https it
+  goes into a cookie of its own with `Secure` (`wingscout_schluessel_https`),
+  which Safari never sends over http; a key an iPhone got over https up to
+  2.5.1 (cookie without `Secure`) moves into it on the next visit. And once
+  the way with a certificate has worked with the current certificate, the
+  Mac refuses plain http from the Wi-Fi (`nur_verschluesselt()`): an old Home
+  Screen icon with `http://` gets a page saying how to continue — scan the
+  QR code again, add the icon anew — without the key being looked at or a
+  cookie set. Except when sharing was started from “Set up without a
+  certificate”, and for a new certificate whose profile hasn't worked yet.
+  The README says to press **New key** once after moving to the
+  certificate if the iPhone was ever used without one.
+- **OpenSSL checks the RSA key in the tests** (`openssl rsa -check`: p and q
+  prime, the rest consistent) — the answer to the report's “own
+  cryptography”, next to the strict `openssl verify` of the chain. With
+  LibreSSL (the Mac's own `openssl`) the test is skipped, like the other one.
+- Left out, with reasons in `SECURITY.md`: the `cryptography` package
+  instead of `zertifikat.py`, name constraints for the certificate authority
+  (whether iOS enforces them is unknown here — to be tried on a device
+  first), GitHub Actions pinned by commit SHA and `pip-audit` in CI, an
+  overall deadline for every request to a data service.
+
+### Tests
+
+- 986 tests (2.5.1: 978): the pages for another device without “Quit”
+  and with room only for the “?”, `/shutdown` refused from there, also
+  through the server on the Wi-Fi address; the tab without the choice up
+  front and the way without a certificate only under “Not working?”; the
+  cookie with `Secure` over https and the move of an old one; http refused
+  once https has worked, allowed again for sharing without a certificate and
+  for a new certificate; both cookies in `zugang_pruefen`; OpenSSL's check of
+  the generated key (`tests/test_handy.py`).
+
 ## 2.5.1 — 11.10.2026
 
 ### The “Phone” tab in the order you need it

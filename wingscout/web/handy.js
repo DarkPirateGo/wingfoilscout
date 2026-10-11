@@ -91,15 +91,29 @@
     return true;
   }
 
+  // Antwortet Wingfoilscout nicht mehr (beendet, Terminalfenster zu), gilt
+  // auch der QR-Code nicht mehr — dann sagt die Seite das (seit 2.5.2), statt
+  // weiter zu warten, und blasst den Code ab. Kommt es wieder (neu
+  // gestartet, Freigabe aus), lädt sie neu.
+  var fehlversuche = 0, block = live.closest ? live.closest('.hverbinden') : null;
   function abfragen() {
     if (document.hidden) { setTimeout(abfragen, 2000); return; }
     fetch('/handy/stand', {cache: 'no-store'})
       .then(function (r) { return r.json(); })
       .then(function (j) {
-        if (!j.aktiv) { location.reload(); return; }          // anderswo beendet
+        fehlversuche = 0;
+        if (block) block.classList.remove('weg');
+        if (!j.aktiv) { location.reload(); return; }          // anderswo beendet — oder neu gestartet
         if (auswerten(j)) setTimeout(abfragen, 2000);
       })
-      .catch(function () { setTimeout(abfragen, 5000); });
+      .catch(function () {
+        fehlversuche += 1;
+        if (fehlversuche >= 2) {
+          zeige(t('Wingfoilscout antwortet nicht — läuft es noch?'), 'achtung');
+          if (block) block.classList.add('weg');
+        }
+        setTimeout(abfragen, 5000);
+      });
   }
   abfragen();
 })();

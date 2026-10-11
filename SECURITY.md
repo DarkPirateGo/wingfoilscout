@@ -26,6 +26,84 @@ open. The review was done by hand, line by line; automated tools such as
 from this audit are pinned down as tests in `tests/test_security.py`, so that
 they don't silently disappear in the next rework.
 
+### Addendum 11 October 2026: an external review, https only, quitting only on the Mac (2.5.2)
+
+**The review.** On 11 October the public code was reviewed from outside,
+on the maintainer's behalf. The report is a reading of the repository and its documents — no
+test against a running Wingfoilscout, no proof of concept. Its four points,
+and what became of them:
+
+1. *The quick option for the iPhone (http) weakens network security* — rated
+   high. Correct in substance: the access key crosses the Wi-Fi unencrypted,
+   and Safari's warning about unencrypted pages is off for every website. Our
+   own wording, "acceptable at home with WPA2/WPA3", was too optimistic: with
+   WPA2-Personal anyone who knows the Wi-Fi password can decrypt other
+   devices' traffic if they capture their login; WPA3 prevents that passive
+   reading, not active attacks from within the network. Whoever has the key
+   sees Wingfoilscout as on the Mac (starting point, logbook, catalogue,
+   searches); no way from there to running code is known. Done in 2.5.2: the
+   option is no longer offered up front, only under "Not working?" for an
+   iPhone that can't install profiles, with the cost said plainly (below).
+2. *Own implementation of certificates and cryptography* (`zertifikat.py`) —
+   rated medium. The RSA key generation (Miller–Rabin with 40 random bases
+   from `secrets`, e = 65537) and the X.509 encoding are textbook; TLS itself
+   is done by Python's `ssl` module. Since 2.5.2 a test has OpenSSL check
+   every generated key independently (`openssl rsa -check`: p and q prime,
+   d and the CRT parts consistent), next to the strict `openssl verify` of
+   the chain. Not done: replacing the code with the `cryptography` package
+   (a compiled dependency on every Mac, for no known defect). Not done
+   either, for now: name constraints that would limit the certificate
+   authority to the Mac's addresses. Installed and trusted on the iPhone it
+   is valid for every website; what protects that is that its private key
+   exists only in memory while it signs. Name constraints would contain the
+   damage should that ever fail, but whether iOS enforces them for a
+   certificate authority installed by the user is unknown here, and every
+   iPhone would need the new profile — to be tried on a device first.
+3. *Dependencies and installation* — rated medium. PyYAML is required as
+   `>=6,<7`, the two GitHub Actions are referenced by tag. Dependabot alerts
+   are on for the repository (`DEVELOPMENT.md`), which is a dependency scan;
+   the workflow has a read-only token and no secrets, so a tampered action
+   could at worst fake a test result. Pinning by commit SHA and `pip-audit`
+   in CI were left out as small gains for ongoing upkeep.
+4. *No overall deadline for every external request* — rated low. Correct;
+   listed below as a known residual point since September (a data service
+   that sends its status line very slowly). Unchanged.
+
+The report did not mention three points that 2.5.2 addresses: the "Quit"
+button on the phone, the key in a cookie without `Secure` over https, and
+plain http still accepted once https worked.
+
+**Quitting only on the Mac.** Up to 2.5.1 any device with the access key
+could quit Wingfoilscout: the "Quit" button sat in the tab bar on the phone
+as well, and `POST /shutdown` checked only origin and host. Pressed on the
+iPhone, it stopped the program on the Mac, and with it the sharing, which
+can't be switched back on from the phone. Found on 11 October without any
+attacker: the owner pressed it to close the page on the phone. Since 2.5.2
+`POST /shutdown` answers 403 to every device other than the Mac itself, like
+the phone tab's buttons since 2.5.0, and the tab bar leaves the button out
+of pages built for other devices. Whether a request comes from another
+device is decided, as before, by the client address
+(`BegrenzterServer.von_aussen`); the page builders learn it from a
+per-request thread-local set at the start of each request (`vom_handy()` in
+`webui.py`, like the CSP nonce). Without a request (tests, the demo report)
+it counts as the Mac.
+
+**The key travels encrypted once https works.** Over https the key now goes
+into a cookie of its own with `Secure` (`wingscout_schluessel_https`), which
+Safari never sends over http — not from an old icon or link either. The
+cookie without `Secure` (`wingscout_schluessel`) remains for the way without
+a certificate; a separate name, because an http page may not overwrite a
+`Secure` cookie of the same name. A key an iPhone received over https up to
+2.5.1 sits in the cookie without `Secure`; on its next https request it moves
+into the new one and the old one is deleted. Once the way with a certificate
+has worked with the current certificate (`handy/zustand.json`, see the 2.5.1
+addendum), the servers on the Wi-Fi refuse plain http with 403 before
+looking at the key and without setting a cookie — the page says how to
+continue. Exceptions: sharing started from "Set up without a certificate",
+and a new certificate whose profile hasn't worked yet. A key that crossed
+the Wi-Fi unencrypted before stays valid until "New key"; the README says to
+press it once after moving to the certificate.
+
 ### Addendum 11 October 2026: what the phone tab reports (2.5.1)
 
 2.5.1 lets the "Phone" tab say what arrives from the phone while sharing is

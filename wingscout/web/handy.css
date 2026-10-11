@@ -43,13 +43,8 @@ ol.hschritte li::before{content:counter(hs);position:absolute;left:0;top:10px;wi
 .hmeldung.gut{color:var(--ok)}
 ul.hprobleme{margin:12px 0 0;padding-left:18px;line-height:1.55}
 ul.hprobleme li{margin:9px 0}
-/* Seit 2.5.1: erst den Weg wählen, dann seine Schritte, der QR-Code zuletzt */
-.hwahl{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:14px}
-a.hweg{display:flex;flex-direction:column;gap:8px;padding:16px 18px;border-radius:12px;text-decoration:none;
-  color:var(--ink);background:var(--surface-2);border:1.5px solid transparent;transition:border-color .12s}
-a.hweg:hover{border-color:var(--accent)}
-.hwegkopf{font-weight:650;font-size:1.05rem;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.hwegtext{font-size:.9rem;line-height:1.5;color:var(--ink-2)}
+/* Seit 2.5.1: die Schritte, der QR-Code zuletzt. Rechts in der Überschrift
+   des Weges ohne Zertifikat der Link zum empfohlenen (seit 2.5.2) */
 .hwechsel{margin-left:auto;font-size:.84rem;font-weight:500}
 .hkarte h2 .hwechsel{white-space:nowrap}
 ol.hschritte li.erledigt::before{content:"✓";background:var(--ok-soft);color:var(--ok)}
@@ -60,3 +55,5 @@ ol.hschritte li.erledigt::before{content:"✓";background:var(--ok-soft);color:v
 .hwege{display:flex;gap:6px 18px;flex-wrap:wrap;margin:14px 0 0;font-size:.88rem}
 details.hmehr summary{cursor:pointer;font-weight:600;font-size:1.02rem}
 details.hmehr[open] summary{margin-bottom:4px}
+/* Wingfoilscout antwortet nicht mehr (seit 2.5.2): der QR-Code gilt nicht mehr */
+.hverbinden.weg .hqr{opacity:.25}

@@ -100,6 +100,10 @@ text-decoration:none;border-bottom:2px solid transparent;margin-bottom:-1px}
      (`report_mit_reitern`) — ohne diese Regel lag „Beenden“ über dem Ende von
      „… erstellt 03.10.2026 21:15“, in jeder Sprache. */
   .reiter + script + .sub{padding-right:124px}
+  /* Am iPhone selbst steht dort nur das „?“ (seit 2.5.2 ohne „Beenden“, das
+     Wingfoilscout auf dem Mac beendet hätte): 12 px Rand, 31 px „?“, Luft. */
+  .reiter.ohneaus + h1,.reiter.ohneaus + .sub,.reiter.ohneaus + .banner,.reiter.ohneaus + .hilfekopf > h1,
+  .reiter.ohneaus + script + .sub{padding-right:44px}
 }
 
 /* Sprachumschalter neben Logo und Version (seit 2.1.0). So breit wie sein

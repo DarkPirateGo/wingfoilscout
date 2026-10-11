@@ -106,6 +106,18 @@ def skript(code: str) -> str:
     return csp.skript(nonce(), code)
 
 
+# ── Wer fragt (seit 2.5.2) ───────────────────────────────────────────────────
+# Kommt die Anfrage von einem anderen Gerät (dem iPhone)? Wie die Nonce im
+# Thread der Anfrage, damit die Seitenbauer es ohne Umbau jeder Signatur
+# wissen — `reiter_leiste` lässt dort „Beenden“ weg. Gesetzt in
+# `Handler._anfang`; ohne Anfrage (Tests, Demo) gilt: am Mac.
+_ANFRAGE = threading.local()
+
+
+def vom_handy() -> bool:
+    return bool(getattr(_ANFRAGE, "von_aussen", False))
+
+
 def mobil_js() -> str:
     """Am Ende jeder Seite: mobil.js, beenden.js, lauf.js — mit Nonce."""
     return skript(MOBIL_JS_ROH)
@@ -163,8 +175,8 @@ def hilfe_knopf(aktiv: str) -> str:
     """Das runde „?“ in der Leiste, zwischen Sprache und „Beenden“: führt zur
     Anleitung und zu „Wie Wingfoilscout rechnet“ (`hilfe_page`,
     `rechnung_page`). Auf den Hilfeseiten ist es hervorgehoben — dort steht
-    kein Reiter auf „an“. Am Handy sitzt es fest oben rechts neben „Beenden“
-    (reiter.css)."""
+    kein Reiter auf „an“. Am Handy sitzt es fest oben rechts — am iPhone
+    allein, ohne „Beenden“ (seit 2.5.2, reiter.css)."""
     hier = " aria-current='page'" if aktiv.startswith(HILFE_PFAD) else ""
     return (f"<a href='{HILFE_PFAD}' class='hilfeknopf' title='{html.escape(T('Hilfe'))}' "
             f"aria-label='{html.escape(T('Hilfe'))}'{hier}>?</a>")
@@ -231,6 +243,14 @@ HANDY_MELDUNG = {"seit": 0.0, "verbunden": 0.0, "verschluesselt": False, "abgebr
 HANDY_GEMERKT = {"bewaehrt": None, "kennung": None, "zeit": 0.0}
 HANDY_MELDUNG_LOCK = threading.Lock()
 COOKIE = "wingscout_schluessel"
+# Seit 2.5.2 (Sicherheitsprüfung vom 11.10.2026): Kommt der Schlüssel über
+# https, landet er in einem eigenen Cookie mit `Secure` — das schickt Safari
+# nie über http, auch nicht über ein altes Symbol oder einen alten Link. Das
+# Cookie ohne `Secure` bleibt für den Weg ohne Zertifikat. Ein eigener Name,
+# weil eine http-Seite ein Secure-Cookie gleichen Namens nicht überschreiben
+# darf: Wer später ohne Zertifikat einrichtet, käme sonst nicht hinein.
+COOKIE_HTTPS = "wingscout_schluessel_https"
+KEKS_DAUER = 34560000                    # 400 Tage — so lange behält Safari ein Cookie höchstens
 
 
 def eigene_adressen() -> list:
@@ -263,9 +283,34 @@ def zugang_pruefen(ip: str, schluessel_in_url: str, cookie_kopf: str) -> str:
         return "setzen"
     for teil in (cookie_kopf or "").split(";"):
         name, _, wert = teil.strip().partition("=")
-        if name == COOKIE and wert and hmac.compare_digest(wert.encode("utf-8"), soll):
+        if name in (COOKIE, COOKIE_HTTPS) and wert and hmac.compare_digest(wert.encode("utf-8"), soll):
             return "frei"
     return "abweisen"
+
+
+def nur_verschluesselt() -> bool:
+    """Nimmt der Mac im WLAN nur noch https an? (seit 2.5.2)
+
+    Ja, sobald der Weg mit Zertifikat geklappt hat — mit dem Zertifikat, das
+    gerade gilt. Sonst schickte ein altes Symbol oder Lesezeichen mit http://
+    den Schlüssel weiter unverschlüsselt durchs WLAN, Tag für Tag. Nein, solange
+    der sichere Weg noch nicht erprobt ist (ein neues Zertifikat, dessen Profil
+    noch fehlt), und wenn aus „Ohne Zertifikat einrichten“ freigegeben wurde."""
+    with LAN_LOCK:
+        tls, weg, kennung = LAN["tls"], LAN["weg"], LAN["kennung"]
+    with HANDY_MELDUNG_LOCK:
+        bewaehrt, erprobt = HANDY_GEMERKT["bewaehrt"], HANDY_GEMERKT["kennung"]
+    return bool(tls and kennung and weg != "schnell" and bewaehrt == "https" and erprobt == kennung)
+
+
+def _keks(name: str, wert: str, sicher: bool) -> str:
+    """Eine Set-Cookie-Zeile für den Schlüssel; leerer Wert: löschen."""
+    dauer = KEKS_DAUER if wert else 0
+    return f"{name}={wert}; Path=/; Max-Age={dauer}; HttpOnly; SameSite=Lax" + ("; Secure" if sicher else "")
+
+
+def _hat_keks(cookie_kopf: str, name: str) -> bool:
+    return any(teil.strip().partition("=")[0] == name for teil in (cookie_kopf or "").split(";"))
 SCHREIB_LOCK = threading.Lock()      # zwei Klicks auf der Prüfseite nacheinander, nicht ineinander
 
 
@@ -1054,20 +1099,27 @@ def handy_ansicht(stand: dict, weg: str = "") -> str:
       noch — dann gleich der QR-Code. https geht, solange es dasselbe
       Zertifikat ist und es zur Adresse passt; http, solange nicht danach ein
       Zertifikat erzeugt wurde (dann ist der sichere Weg im Gang).
-    - "sicher", "schnell": die Schritte dieses Weges, der QR-Code zuletzt.
-    - "wahl": nichts eingerichtet — erst den Weg wählen.
+    - "sicher": die Schritte mit Zertifikat, der QR-Code zuletzt — auch, wenn
+      noch nichts eingerichtet ist. Bis 2.5.1 kam dann zuerst die Wahl
+      zwischen „Sicher“ und „Schnell“.
+    - "schnell": ohne Zertifikat, unverschlüsselt. Seit 2.5.2 nur noch ein
+      Ausweg unter „Klappt nicht?“ (Sicherheitsprüfung vom 11.10.2026: der
+      Zugangsschlüssel ginge unverschlüsselt durchs WLAN, und Safari warnte bei
+      keiner Website mehr).
 
     `weg` aus der Adresse (?weg=…) geht vor: so lässt sich ein weiteres iPhone
-    einrichten oder der Weg wechseln."""
-    if weg in ("wahl", "sicher", "schnell"):
+    einrichten oder der Weg wechseln. Das alte `?weg=wahl` führt zum sicheren."""
+    if weg in ("sicher", "schnell"):
         return weg
+    if weg == "wahl":
+        return "sicher"
     gemerkt, meta = stand.get("gemerkt") or {}, stand.get("zertifikat")
     if (gemerkt.get("bewaehrt") == "https" and meta and stand.get("passt")
             and gemerkt.get("kennung") == meta.get("kennung")):
         return "fertig"
     if gemerkt.get("bewaehrt") == "http" and (not meta or gemerkt.get("zeit", 0.0) >= meta.get("zeit", 0.0)):
         return "fertig"
-    return "sicher" if meta else "wahl"
+    return "sicher"
 
 
 def _wo(art: str) -> str:
@@ -1096,27 +1148,9 @@ def _handy_qr(url: str, art: str, ansicht: str, schritte: str = "") -> str:
             "</div></div>")
 
 
-def _handy_wechsel() -> str:
-    return f"<a class='hwechsel' href='/handy?weg=wahl'>{T('Anderen Weg wählen')}</a>"
-
-
-def _handy_wahl(aktiv: bool) -> str:
-    """Nichts eingerichtet: erst den Weg wählen — der QR-Code kommt in seinem letzten Schritt."""
-    frei = ""
-    if aktiv:
-        frei = ("<p class='hklein'>" + T("Schon fürs Handy freigegeben — wähl einen Weg, der QR-Code steht dann im "
-                                         "letzten Schritt.") + "</p>"
-                "<div class='hknoepfe'>" + _knopf("/handy/beenden", T("Freigabe beenden"), ghost=True) + "</div>")
-    return ("<section class='hkarte'><h2>" + T("Wie soll dein iPhone Wingfoilscout öffnen?") + "</h2>"
-            "<div class='hwahl'>"
-            "<a class='hweg' href='/handy?weg=sicher'><span class='hwegkopf'>" + T("Sicher")
-            + f"<span class='hempfohlen'>{T('empfohlen')}</span></span><span class='hwegtext'>"
-            + T("Einmal ein Zertifikat aufs iPhone, etwa zwei Minuten. Danach verschlüsselt — und Safari bleibt so "
-                "streng, wie es ist.") + "</span></a>"
-            "<a class='hweg' href='/handy?weg=schnell'><span class='hwegkopf'>" + T("Schnell") + "</span>"
-            "<span class='hwegtext'>" + T("Auf dem iPhone einen Schalter in Safari ausschalten. Unverschlüsselt — und "
-                                          "Safari warnt dann auch bei anderen Websites nicht mehr.") + "</span></a>"
-            "</div>" + frei + "<p class='hmeldung' id='hmeldung' role='status'></p></section>")
+def _handy_verschluesselt_link() -> str:
+    """Vom Weg ohne Zertifikat zurück zum empfohlenen (seit 2.5.2)."""
+    return f"<a class='hwechsel' href='/handy?weg=sicher'>{T('Verschlüsselt einrichten (empfohlen)')}</a>"
 
 
 def _handy_sicher(stand: dict) -> str:
@@ -1143,10 +1177,12 @@ def _handy_sicher(stand: dict) -> str:
                    + "</div>")
     else:
         zuletzt = "<p class='hklein'>" + T("Geht, sobald Schritt 1 erledigt ist.") + "</p>"
+        if aktiv:                       # etwa mit --lan gestartet: die Freigabe läuft schon
+            zuletzt += "<div class='hknoepfe'>" + _knopf("/handy/beenden", T("Freigabe beenden"), ghost=True) + "</div>"
     erledigt = " class='erledigt'"
     return (
         "<section class='hkarte'><h2>" + T("Sicher einrichten") + f"<span class='hempfohlen'>{T('empfohlen')}</span>"
-        + _handy_wechsel() + "</h2>"
+        + "</h2>"
         "<p>" + T("Danach öffnet Safari Wingfoilscout verschlüsselt (https) und ohne Warnung. Einmal, etwa zwei "
                   "Minuten.") + "</p>"
         "<ol class='hschritte'>"
@@ -1178,23 +1214,29 @@ def _handy_sicher(stand: dict) -> str:
 
 
 def _handy_schnell(stand: dict) -> str:
-    """Der schnelle Weg: die Safari-Warnung aus — dann der QR-Code."""
+    """Ohne Zertifikat: die Safari-Warnung aus — dann der QR-Code. Seit 2.5.2
+    nur noch ein Ausweg unter „Klappt nicht?“, mit dem, was er kostet; die
+    Sätze dazu sind seit der Sicherheitsprüfung vom 11.10.2026 deutlicher
+    (bis 2.5.1: „zu Hause mit WPA2/WPA3 vertretbar“ — bei WPA2 kann aber
+    jeder mitlesen, der das WLAN-Passwort kennt)."""
     if stand["aktiv"] and stand["http"]:
         zuletzt = _handy_qr(stand["http"], "http", "schnell")
     else:
         zuletzt = ("<div class='hknoepfe'>" + _knopf("/handy/freigeben", T("QR-Code zeigen"), daten={"weg": "schnell"})
                    + "</div>")
     return (
-        "<section class='hkarte'><h2>" + T("Schnell einrichten") + _handy_wechsel() + "</h2>"
+        "<section class='hkarte'><h2>" + T("Ohne Zertifikat einrichten") + _handy_verschluesselt_link() + "</h2>"
+        "<p>" + T("Nur, wenn sich das Profil nicht installieren lässt — etwa auf einem Firmen-iPhone. Ohne "
+                  "Zertifikat geht alles unverschlüsselt durchs WLAN.") + "</p>"
         "<ol class='hschritte'>"
         "<li>" + _wo("iphone") + T("Einstellungen → Apps → Safari → unter „Datenschutz & Sicherheit“ "
                                    "<span class='hpfad'>„Warnung vor unsicherer Verbindung“</span> ausschalten "
                                    "(englisch „Not Secure Connection Warning“).")
         + "<p class='hklein'>" + T("Was das kostet: Safari warnt dann bei keiner unverschlüsselten Website mehr, nicht "
                                    "nur bei Wingfoilscout. Und was dein iPhone und Wingfoilscout austauschen, samt "
-                                   "Zugangsschlüssel, geht unverschlüsselt durchs WLAN — zu Hause mit WPA2/WPA3 "
-                                   "vertretbar, in fremden WLANs nicht. Zurückschalten geht jederzeit; sicherer ist "
-                                   "der andere Weg.") + "</p></li>"
+                                   "Zugangsschlüssel, kann im WLAN mitlesen, wer es darauf anlegt — bei WPA2 schon "
+                                   "jeder, der das WLAN-Passwort kennt. Mit dem Schlüssel sieht er Wingfoilscout wie "
+                                   "du: Startpunkt, Tagebuch, Katalog. Zurückschalten geht jederzeit.") + "</p></li>"
         "<li>" + _wo("mac") + T("QR-Code zeigen, dann mit der Kamera des iPhones scannen und den Link antippen.")
         + zuletzt + "</li>"
         "</ol><p class='hmeldung' id='hmeldung' role='status'></p></section>")
@@ -1228,9 +1270,15 @@ def _handy_fertig(stand: dict) -> str:
         teile.append("<div class='hknoepfe'>" + _knopf("/handy/freigeben", T("QR-Code zeigen")) + "</div>"
                      "<p class='hklein'>" + T("Nur im eigenen WLAN — nicht im Hotel, im Zug oder auf dem Campingplatz. "
                                               "Die Freigabe endet, wenn du Wingfoilscout beendest.") + "</p>")
-    weiter = "sicher" if erprobt == "https" else "schnell"
-    teile.append(f"<p class='hwege'><a href='/handy?weg={weiter}'>{T('Weiteres iPhone einrichten')}</a>"
-                 f"<a href='/handy?weg=wahl'>{T('Anderen Weg wählen')}</a></p>"
+    # Ohne Zertifikat eingerichtet: der empfohlene Weg bleibt einen Klick
+    # entfernt (seit 2.5.2 statt „Anderen Weg wählen“ — den Weg ohne
+    # Zertifikat gibt es nur noch unter „Klappt nicht?“)
+    if erprobt == "https":
+        wege = f"<a href='/handy?weg=sicher'>{T('Weiteres iPhone einrichten')}</a>"
+    else:
+        wege = (f"<a href='/handy?weg=schnell'>{T('Weiteres iPhone einrichten')}</a>"
+                f"<a href='/handy?weg=sicher'>{T('Verschlüsselt einrichten (empfohlen)')}</a>")
+    teile.append(f"<p class='hwege'>{wege}</p>"
                  "<p class='hmeldung' id='hmeldung' role='status'></p></section>")
     return "".join(teile)
 
@@ -1239,8 +1287,8 @@ def _handy_hilfe() -> str:
     """Zugeklappt unten: „Klappt nicht?“ und der Zugangsschlüssel."""
     return (
         "<details class='hkarte hmehr'><summary>" + T("Klappt nicht?") + "</summary><ul class='hprobleme'>"
-        "<li>" + T("<b>„Safari kann die Seite nicht öffnen … HTTPS-Only“:</b> Safari will https — den sicheren Weg "
-                   "einrichten, oder beim schnellen die „Warnung vor unsicherer Verbindung“ ausschalten.") + "</li>"
+        "<li>" + T("<b>„Safari kann die Seite nicht öffnen … HTTPS-Only“:</b> Safari will https — den Weg mit "
+                   "Zertifikat einrichten (oben).") + "</li>"
         "<li>" + T("<b>„Diese Verbindung ist nicht privat“:</b> Beim sicheren Weg fehlt das Vertrauen (Schritt 4) — "
                    "oder das Zertifikat ist neu erzeugt und das neue Profil noch nicht auf dem iPhone.") + "</li>"
         "<li>" + T("<b>„Kein Zugang“:</b> den Code hier neu scannen. Nach „Neuer Schlüssel“ geht das alte Symbol auf "
@@ -1248,6 +1296,11 @@ def _handy_hilfe() -> str:
         "<li>" + T("<b>Die Seite lädt nicht:</b> Ist das iPhone im selben WLAN? Ist der Mac wach und Wingfoilscout "
                    "offen? Ist die Freigabe an? Beim ersten Freigeben fragt macOS womöglich, ob Python eingehende "
                    "Verbindungen annehmen darf — „Erlauben“.") + "</li>"
+        # Der Weg ohne Zertifikat (bis 2.5.1 „Schnell“, gleichrangig zur Wahl):
+        # seit 2.5.2 nur noch hier, als Ausweg
+        "<li>" + T("<b>Das Profil lässt sich nicht installieren</b> (etwa auf einem Firmen-iPhone): Es geht auch "
+                   "ohne Zertifikat — dann unverschlüsselt, und Safari warnt danach bei keiner unverschlüsselten "
+                   "Website mehr.") + f" <a href='/handy?weg=schnell'>{T('Ohne Zertifikat einrichten')}</a></li>"
         "</ul>"
         "<p class='hklein'>" + T("Der Zugangsschlüssel bleibt gleich, auch nach einem Neustart — so geht das Symbol auf "
                                  "dem Home-Bildschirm weiter. Ein neuer sperrt alle bisher verbundenen Geräte aus.")
@@ -1258,9 +1311,10 @@ def _handy_hilfe() -> str:
 def handy_page(stand: dict, weg: str = "") -> str:
     """Der Reiter „Handy“ (seit 2.5.0, gewünscht am 10.10.2026: „wie man das
     Handy verbindet — das muss schnell ersichtlich sein“). Seit 2.5.1 in der
-    Reihenfolge, in der man es braucht: erst den Weg wählen und einrichten,
-    der QR-Code kommt zuletzt; hat ein Weg einmal geklappt, gleich der
-    QR-Code (handy_ansicht). Solange freigegeben ist, sagt die Seite, was vom
+    Reihenfolge, in der man es braucht: erst einrichten, der QR-Code kommt
+    zuletzt; hat ein Weg einmal geklappt, gleich der QR-Code (handy_ansicht).
+    Seit 2.5.2 ist der Weg mit Zertifikat der einzige vorne; der ohne steht
+    unter „Klappt nicht?“. Solange freigegeben ist, sagt die Seite, was vom
     iPhone ankommt (handy.js, GET /handy/stand)."""
     ansicht = handy_ansicht(stand, weg)
     teile = [seitenkopf(T("Wingfoilscout · Handy"), CSS + REITER_CSS + HANDY_CSS),
@@ -1268,9 +1322,7 @@ def handy_page(stand: dict, weg: str = "") -> str:
              "<h1>" + T("Wingfoilscout aufs Handy") + "</h1>",
              "<p class='sub'>" + T("Im selben WLAN zeigt dein iPhone Wingfoilscout — gerechnet wird auf diesem Mac. "
                                    "Einmal einrichten, danach jedes Mal: QR-Code zeigen, scannen, fertig.") + "</p>"]
-    if ansicht == "wahl":
-        teile.append(_handy_wahl(stand["aktiv"]))
-    elif ansicht == "sicher":
+    if ansicht == "sicher":
         teile.append(_handy_sicher(stand))
     elif ansicht == "schnell":
         teile.append(_handy_schnell(stand))
@@ -1343,10 +1395,18 @@ def reiter_leiste(aktiv: str) -> str:
     # „Koordinaten prüfen“), rückt die Gruppe geschlossen nach rechts in die
     # zweite Zeile, statt „Beenden“ allein links darunter zu stellen (bis
     # 2.1.0). Am Handy sind „?“ und „Beenden“ die Gruppe, fest oben rechts.
-    teile.append("<span class='rechts'>" + marke() + sprachwahl() + hilfe_knopf(aktiv)
-                 + "<button type='button' class='aus' id='quit' "
-                 f"title='{html.escape(T('Wingfoilscout beenden — zweimal drücken'))}'>{T('Beenden')}</button></span>")
-    return "<nav class='reiter'>" + "".join(teile) + "</nav>"
+    #
+    # „Beenden“ nur am Mac selbst (seit 2.5.2): Am iPhone beendete der Knopf
+    # nicht die Seite dort, sondern Wingfoilscout auf dem Mac, das ganze
+    # Programm — danach kam das iPhone nicht mehr hinein, bis es am Mac neu
+    # gestartet und wieder freigegeben war (gemeldet am 11.10.2026). Am
+    # iPhone schließt man Safari wie sonst auch; /shutdown lehnt andere Geräte
+    # ab (Handler._post).
+    aus = "" if vom_handy() else (
+        "<button type='button' class='aus' id='quit' "
+        f"title='{html.escape(T('Wingfoilscout beenden — zweimal drücken'))}'>{T('Beenden')}</button>")
+    teile.append("<span class='rechts'>" + marke() + sprachwahl() + hilfe_knopf(aktiv) + aus + "</span>")
+    return ("<nav class='reiter ohneaus'>" if vom_handy() else "<nav class='reiter'>") + "".join(teile) + "</nav>"
 
 
 PRUEF_CSS = _web("pruefen.css")
@@ -2688,6 +2748,8 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Referrer-Policy", "no-referrer")
         for name, wert in (kopf or {}).items():
             self.send_header(name, wert)
+        for zeile in getattr(self, "_kekse", None) or ():   # der Schlüssel ins sichere Cookie (seit 2.5.2)
+            self.send_header("Set-Cookie", zeile)
         self.end_headers()
         self.wfile.write(body)
 
@@ -3305,14 +3367,24 @@ class Handler(BaseHTTPRequestHandler):
         except ValueError:                    # `http://[x/` — unlesbar, also auch kein Schlüssel darin
             zerlegt = urllib.parse.urlparse("")
         k = (urllib.parse.parse_qs(zerlegt.query).get("k") or [""])[0]
-        urteil = zugang_pruefen(self.client_address[0], k, self.headers.get("Cookie", ""))
-        if LAN["aktiv"] and self._von_aussen():
+        verschluesselt = isinstance(getattr(self, "request", None), ssl.SSLSocket)
+        aussen = LAN["aktiv"] and self._von_aussen()
+        if aussen and not verschluesselt and nur_verschluesselt():
+            self._nur_https()
+            return False
+        cookie = self.headers.get("Cookie", "")
+        urteil = zugang_pruefen(self.client_address[0], k, cookie)
+        if aussen:
             # Für die Rückmeldung im Reiter „Handy“ (seit 2.5.1)
             if urteil == "abweisen":
                 handy_melden("ohne_schluessel")
             else:
-                handy_melden("verbunden", isinstance(getattr(self, "request", None), ssl.SSLSocket))
+                handy_melden("verbunden", verschluesselt)
         if urteil == "frei":
+            # Ein Schlüssel von früher im Cookie ohne `Secure` (bis 2.5.1 auch über
+            # https so gesetzt): ab jetzt im sicheren, das alte weg (seit 2.5.2)
+            if aussen and verschluesselt and _hat_keks(cookie, COOKIE):
+                self._kekse = [_keks(COOKIE_HTTPS, LAN["schluessel"], True), _keks(COOKIE, "", False)]
             return True
         if urteil == "setzen":
             # Den Schlüssel ins Cookie und ohne ihn in der Adresse weiterleiten,
@@ -3323,13 +3395,17 @@ class Handler(BaseHTTPRequestHandler):
                 ziel += "?" + rest
             self.send_response(302)
             self.send_header("Location", ziel)
-            self.send_header("Set-Cookie", f"{COOKIE}={LAN['schluessel']}; Path=/; Max-Age=34560000; "
-                                           f"HttpOnly; SameSite=Lax")
+            if verschluesselt:          # seit 2.5.2: über https nur ins Cookie mit `Secure`
+                self.send_header("Set-Cookie", _keks(COOKIE_HTTPS, LAN["schluessel"], True))
+                self.send_header("Set-Cookie", _keks(COOKIE, "", False))
+            else:
+                self.send_header("Set-Cookie", _keks(COOKIE, LAN["schluessel"], False))
             self.send_header("Cache-Control", "no-store")
             self.send_header("Content-Length", "0")
             self.end_headers()
             return False
-        self._send(401, als_bytes("<!doctype html><meta charset='utf-8'><title>Wingfoilscout</title>"
+        self._send(401, als_bytes("<!doctype html><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'>"
+                                  "<title>Wingfoilscout</title>"
                                   "<body style='font:16px/1.5 -apple-system,sans-serif;padding:40px 24px;color:#14303C'>"
                                   "<h1 style='font-size:1.3rem'>" + T("Kein Zugang") + "</h1>"
                                   "<p>" + T("Diese Wingfoilscout-Oberfläche ist für das Heimnetz freigegeben, aber nur "
@@ -3337,13 +3413,29 @@ class Handler(BaseHTTPRequestHandler):
                                             "„Handy“ auf dem Mac.") + "</p></body>"))
         return False
 
+    def _nur_https(self) -> None:
+        """Ein Gerät kommt über http, obwohl der Weg mit Zertifikat geklappt hat
+        (seit 2.5.2, `nur_verschluesselt`) — meist ein altes Symbol auf dem
+        Home-Bildschirm. Der Schlüssel wird nicht angesehen und kein Cookie
+        gesetzt; die Seite sagt, wie es verschlüsselt weitergeht."""
+        self._send(403, als_bytes("<!doctype html><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'>"
+                                  "<title>Wingfoilscout</title>"
+                                  "<body style='font:16px/1.5 -apple-system,sans-serif;padding:40px 24px;color:#14303C'>"
+                                  "<h1 style='font-size:1.3rem'>" + T("Nur noch verschlüsselt") + "</h1>"
+                                  "<p>" + T("Wingfoilscout ist auf diesem Mac verschlüsselt eingerichtet und öffnet sich "
+                                            "über diese unverschlüsselte Adresse nicht mehr. Den QR-Code im Reiter "
+                                            "„Handy“ am Mac neu scannen, dann das Symbol auf dem Home-Bildschirm "
+                                            "löschen und neu hinzufügen.") + "</p></body>"))
+
     def _anfang(self) -> str | None:
         """Was jede Anfrage zuerst braucht: eine Nonce, die Sprache, den Pfad.
         None heißt: die Adresse ist unlesbar — `GET http://[x/` (vor Python
         3.11.4 auch `GET //[x`) ließ `urlparse` bis 2.1.0 mit einem ValueError
         aussteigen und die Verbindung abreißen."""
         self._begonnen = False
+        self._kekse = []                                   # Set-Cookie-Zeilen für die Antwort (_zugang)
         nonce_neu()
+        _ANFRAGE.von_aussen = self._von_aussen()          # für die Leiste: am iPhone kein „Beenden“
         i18n.fuer_anfrage(self.headers.get("Accept-Language"))
         try:
             return urllib.parse.urlparse(self.path).path
@@ -3376,6 +3468,8 @@ class Handler(BaseHTTPRequestHandler):
             # dort nur Daten, eine Fehlerseite lässt `r.json()` scheitern, und
             # die Seite behält, was sie zeigt.
             self._fehler_antwort(exc, als_json=False)
+        finally:
+            _ANFRAGE.von_aussen = False       # gilt nur für diese Anfrage (vom_handy)
 
     def _get(self, path: str) -> None:
         if path == "/":
@@ -3474,6 +3568,8 @@ class Handler(BaseHTTPRequestHandler):
             self._post(path)
         except (KatalogFehler, KonfigFehler, OSError, ValueError) as exc:
             self._fehler_antwort(exc, als_json=True)
+        finally:
+            _ANFRAGE.von_aussen = False       # gilt nur für diese Anfrage (vom_handy)
 
     def _post(self, path: str) -> None:
         if path.startswith("/pruefen/") or path.startswith("/katalog/"):
@@ -3557,6 +3653,12 @@ class Handler(BaseHTTPRequestHandler):
                 return
             gestartet(start_rueckblick(self.cfg_path, tage, max_km))
         elif path == "/shutdown":
+            # Nur am Mac selbst (seit 2.5.2): vom iPhone aus beendete der Knopf
+            # Wingfoilscout auf dem Mac — und dort neu starten kann man vom
+            # iPhone aus nicht. Die Leiste zeigt ihn am iPhone gar nicht erst.
+            if self._von_aussen():
+                self._antwort(403, error=T("Das geht nur am Mac selbst."))
+                return
             self._send(200, b'{"ok":true}', "application/json")
             # Aus dem Bearbeitungs-Thread heraus würde shutdown() sich selbst
             # blockieren — also aus einem eigenen, kurz nachdem die Antwort raus ist.

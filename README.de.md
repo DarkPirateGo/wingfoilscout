@@ -546,41 +546,51 @@ zum Pro Max.
 
 **Im WLAN, mit dem Mac als Rechenknecht — der Reiter „Handy“** (seit 2.5.0).
 Wingfoilscout hört normalerweise nur auf 127.0.0.1. Der Reiter **Handy** auf
-dem Mac fragt zuerst, wie dein iPhone es öffnen soll (seit 2.5.1) — zwei
-Wege, Schritt für Schritt erklärt, der QR-Code im letzten Schritt:
-
-1. **Sicher** (empfohlen; einmal, etwa zwei Minuten): **Zertifikat
-   erzeugen**, dann **Profil laden** und per AirDrop oder Mail aufs iPhone
-   schicken; dort installieren (Einstellungen → „Profil geladen“) und das
-   Vertrauen einschalten (Einstellungen → Allgemein → Info →
-   Zertifikatsvertrauenseinstellungen). Danach öffnet Safari Wingfoilscout
-   über https, ohne Warnung. Die Zertifizierungsstelle, die es ausgestellt
-   hat, gibt es nur, solange sie unterschreibt, und sie wird nie gespeichert —
-   mit ihr lässt sich nie etwas anderes beglaubigen ([SECURITY.md](SECURITY.md)).
-   Ändert sich die Adresse des Macs so, dass das Zertifikat nicht mehr passt,
-   sagt es der Reiter — neu erzeugen und das neue Profil schicken.
-2. **Schnell:** auf dem iPhone Einstellungen → Apps → Safari → unter
-   „Datenschutz & Sicherheit“ **„Warnung vor unsicherer Verbindung“**
-   ausschalten (englisch „Not Secure Connection Warning“). Dann warnt Safari
-   bei keiner unverschlüsselten Website mehr, und alles, samt
-   Zugangsschlüssel, geht unverschlüsselt durchs WLAN — zu Hause mit
-   WPA2/WPA3 vertretbar, in fremden WLANs nicht.
+dem Mac erklärt das Einrichten Schritt für Schritt, der QR-Code im letzten
+Schritt (seit 2.5.1) — einmal, etwa zwei Minuten: **Zertifikat erzeugen**,
+dann **Profil laden** und per AirDrop oder Mail aufs iPhone schicken; dort
+installieren (Einstellungen → „Profil geladen“) und das Vertrauen einschalten
+(Einstellungen → Allgemein → Info → Zertifikatsvertrauenseinstellungen).
+Danach öffnet Safari Wingfoilscout über https, ohne Warnung. Die
+Zertifizierungsstelle, die es ausgestellt hat, gibt es nur, solange sie
+unterschreibt, und sie wird nie gespeichert — mit ihr lässt sich nie etwas
+anderes beglaubigen ([SECURITY.md](SECURITY.md)). Ändert sich die Adresse des
+Macs so, dass das Zertifikat nicht mehr passt, sagt es der Reiter — neu
+erzeugen und das neue Profil schicken.
 
 Dann **QR-Code zeigen**, die Kamera des iPhones darauf richten und den Link
 antippen. Solange freigegeben ist, sagt der Reiter, was vom iPhone ankommt:
 verbunden (verschlüsselt oder nicht), die verschlüsselte Verbindung
-abgebrochen (meist fehlt das Vertrauen), mit einem alten Code gekommen —
-oder noch nichts, mit den üblichen Gründen. Hat ein Weg einmal geklappt,
-öffnet der Reiter beim nächsten Mal gleich mit **QR-Code zeigen**; kann er
-nicht mehr klappen (neues Zertifikat, neue Adresse), zeigt er wieder die
-Schritte.
+abgebrochen (meist fehlt das Vertrauen), ohne gültigen Schlüssel gekommen —
+oder noch nichts, mit den üblichen Gründen. Hat es einmal geklappt, öffnet
+der Reiter beim nächsten Mal gleich mit **QR-Code zeigen**; kann es nicht
+mehr klappen (neues Zertifikat, neue Adresse), zeigt er wieder die Schritte.
+Und von da an lässt der Mac das iPhone nur noch verschlüsselt herein (seit
+2.5.2): Ein altes Symbol auf dem Home-Bildschirm mit einer `http://`-Adresse
+bekommt eine Seite, die das sagt — den QR-Code neu scannen und das Symbol neu
+anlegen.
+
+**Ohne Zertifikat** — nur, wenn sich das Profil nicht installieren lässt,
+etwa auf einem Firmen-iPhone — steht unter **Klappt nicht?** (seit 2.5.2; bis
+2.5.1 der gleichrangige Weg „Schnell“): auf dem iPhone Einstellungen → Apps →
+Safari → unter „Datenschutz & Sicherheit“ **„Warnung vor unsicherer
+Verbindung“** ausschalten (englisch „Not Secure Connection Warning“). Dann
+warnt Safari bei keiner unverschlüsselten Website mehr, und alles, samt
+Zugangsschlüssel, geht unverschlüsselt durchs WLAN: Mitlesen kann, wer im
+selben WLAN darauf aus ist — bei WPA2 jeder, der das WLAN-Passwort kennt —,
+und mit dem Schlüssel sieht er Wingfoilscout wie du.
 
 Die Adresse im QR-Code trägt deinen Zugangsschlüssel: Ohne ihn bekommt jedes
-andere Gerät im Netz eine 401. Der Schlüssel wandert ins Cookie und bleibt
-auch über Neustarts gleich (bis 2.4.0 galt er für einen Lauf) — so geht das
-Symbol auf dem Home-Bildschirm weiter; **Neuer Schlüssel** (unter „Klappt
-nicht?“) sperrt alle bisher verbundenen Geräte aus. Die Freigabe endet mit
-**Freigabe beenden** oder wenn du Wingfoilscout beendest. Die Suche läuft
+andere Gerät im Netz eine 401. Der Schlüssel wandert ins Cookie (über https
+seit 2.5.2 in eines, das Safari nie unverschlüsselt schickt) und bleibt auch
+über Neustarts gleich (bis 2.4.0 galt er für einen Lauf) — so geht das Symbol
+auf dem Home-Bildschirm weiter; **Neuer Schlüssel** (unter „Klappt nicht?“)
+sperrt alle bisher verbundenen Geräte aus. Hast du das iPhone je ohne
+Zertifikat benutzt, drück ihn nach dem Einrichten mit Zertifikat einmal: Bis
+dahin ging der Schlüssel unverschlüsselt durchs WLAN. Die Freigabe endet mit
+**Freigabe beenden** oder wenn du Wingfoilscout am Mac beendest — das iPhone
+hat keinen Knopf **Beenden** (seit 2.5.2; dort beendete er Wingfoilscout auf
+dem Mac, nicht die Seite am Handy). Die Suche läuft
 weiter auf dem Mac — das iPhone zeigt nur an und stößt Suchen an. Ein
 Doppelklick auf **„Wingfoilscout fürs iPhone starten“** oder
 `python3 -m wingscout.webui --lan` gibt gleich beim Start frei und öffnet den
@@ -824,8 +834,10 @@ statt `sunrise`. Dreißig Prozent aller Sessionstunden lagen dadurch zwischen
 
 Die Oberfläche läuft nur auf deinem Rechner (127.0.0.1:8765) und ist von außen
 nicht erreichbar — außer du gibst sie im Reiter „Handy“ fürs Handy frei. Zum Beenden dient der Knopf **Beenden** oben rechts in der
-Reiterleiste, auf jeder Seite (am Handy als kleine Marke oben rechts) —
+Reiterleiste, auf jeder Seite (im schmalen Fenster als kleine Marke oben rechts) —
 zweimal drücken, damit er nicht aus Versehen mitten in einem Lauf auslöst.
+Nur am Mac selbst: Das iPhone zeigt ihn nicht (seit 2.5.2), denn dort beendete
+er Wingfoilscout auf dem Mac; am iPhone schließt du einfach Safari.
 
 Ist Port 8765 schon von einem anderen Programm belegt (ein zweiter lokaler
 Server, etwa eine andere Oberfläche, die denselben Port nimmt), weicht

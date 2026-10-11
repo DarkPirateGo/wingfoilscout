@@ -571,43 +571,54 @@ largeurs de 320 à 430 points — de l’iPhone SE au Pro Max.
 
 **Sur le Wi-Fi, avec le Mac qui fait le travail — l’onglet « Mobile »**
 (depuis la 2.5.0). Normalement, Wingfoilscout n’écoute que sur 127.0.0.1.
-L’onglet **Mobile** sur le Mac demande d’abord comment ton iPhone doit
-l’ouvrir (depuis la 2.5.1) — deux options, expliquées pas à pas, avec le QR
-code à la dernière étape :
-
-1. **Sûre** (recommandée ; une fois, environ deux minutes) : **Créer le
-   certificat**, puis **Télécharger le profil** et l’envoyer sur l’iPhone par
-   AirDrop ou par e-mail ; là, l’installer (Réglages → « Profil téléchargé »)
-   et activer la confiance (Réglages → Général → Informations → Réglages de
-   confiance des certificats). Ensuite, Safari ouvre Wingfoilscout en https,
-   sans avertissement. L’autorité de certification qui l’a émis n’existe que
-   le temps de signer et n’est jamais enregistrée — rien d’autre ne pourra
-   jamais être certifié avec elle ([SECURITY.md](SECURITY.md)). Si l’adresse
-   du Mac change et que le certificat ne convient plus, l’onglet le dit — en
-   créer un nouveau et envoyer le nouveau profil.
-2. **Rapide :** sur l’iPhone, Réglages → Apps → Safari → sous
-   « Confidentialité et sécurité », désactiver l’avertissement de connexion
-   non sécurisée (en anglais **Not Secure Connection Warning**). Safari
-   n’avertit alors plus pour aucun site non chiffré, et tout, clé d’accès
-   comprise, passe en clair sur le Wi-Fi — acceptable chez toi avec
-   WPA2/WPA3, pas sur un Wi-Fi étranger.
+L’onglet **Mobile** sur le Mac explique la configuration pas à pas, avec le
+QR code à la dernière étape (depuis la 2.5.1) — une fois, environ deux
+minutes : **Créer le certificat**, puis **Télécharger le profil** et
+l’envoyer sur l’iPhone par AirDrop ou par e-mail ; là, l’installer
+(Réglages → « Profil téléchargé ») et activer la confiance (Réglages →
+Général → Informations → Réglages de confiance des certificats). Ensuite,
+Safari ouvre Wingfoilscout en https, sans avertissement. L’autorité de
+certification qui l’a émis n’existe que le temps de signer et n’est jamais
+enregistrée — rien d’autre ne pourra jamais être certifié avec elle
+([SECURITY.md](SECURITY.md)). Si l’adresse du Mac change et que le certificat
+ne convient plus, l’onglet le dit — en créer un nouveau et envoyer le nouveau
+profil.
 
 Ensuite **Afficher le QR code**, viser avec l’appareil photo de l’iPhone et
 toucher le lien. Tant que le partage est actif, l’onglet dit ce qui arrive de
 l’iPhone : connecté (chiffré ou non), connexion chiffrée interrompue (le plus
-souvent, la confiance manque), venu avec un ancien code — ou encore rien,
-avec les raisons habituelles. Dès qu’une option a fonctionné, l’onglet
-s’ouvre la fois suivante directement sur **Afficher le QR code** ; si elle ne
-peut plus fonctionner (nouveau certificat, nouvelle adresse), il remontre
-les étapes.
+souvent, la confiance manque), venu sans clé valable — ou encore rien, avec
+les raisons habituelles. Dès que ça a fonctionné, l’onglet s’ouvre la fois
+suivante directement sur **Afficher le QR code** ; si ça ne peut plus
+fonctionner (nouveau certificat, nouvelle adresse), il remontre les étapes.
+Et dès lors, le Mac ne laisse plus entrer l’iPhone qu’en chiffré (depuis la
+2.5.2) : une ancienne icône de l’écran d’accueil avec une adresse `http://`
+reçoit une page qui le dit — scanner de nouveau le QR code et recréer
+l’icône.
+
+**Sans certificat** — seulement si le profil ne s’installe pas, par exemple
+sur un iPhone professionnel — se trouve sous **Ça ne marche pas ?** (depuis
+la 2.5.2 ; jusqu’à la 2.5.1, c’était l’option équivalente « Rapide ») :
+sur l’iPhone, Réglages → Apps → Safari → sous « Confidentialité et
+sécurité », désactiver l’avertissement de connexion non sécurisée (en
+anglais **Not Secure Connection Warning**). Safari n’avertit alors plus pour
+aucun site non chiffré, et tout, clé d’accès comprise, passe en clair sur le
+Wi-Fi : peut le lire qui, sur le même Wi-Fi, s’en donne la peine — avec
+WPA2, toute personne qui connaît le mot de passe du Wi-Fi —, et avec la clé,
+on voit Wingfoilscout comme toi.
 
 L’adresse du QR code porte ta clé d’accès : sans elle, tout autre appareil
-du réseau reçoit une erreur 401. La clé passe dans un cookie et reste la même
-d’un redémarrage à l’autre (jusqu’à la 2.4.0, elle ne valait que pour une
-exécution) — l’icône de l’écran d’accueil continue donc de fonctionner ;
+du réseau reçoit une erreur 401. La clé passe dans un cookie (en https,
+depuis la 2.5.2, un cookie que Safari n’envoie jamais en clair) et reste la
+même d’un redémarrage à l’autre (jusqu’à la 2.4.0, elle ne valait que pour
+une exécution) — l’icône de l’écran d’accueil continue donc de fonctionner ;
 **Nouvelle clé** (sous « Ça ne marche pas ? ») bloque tous les appareils
-connectés jusqu’ici. Le partage s’arrête avec **Arrêter le partage** ou quand
-tu quittes Wingfoilscout. La recherche tourne toujours sur le Mac — l’iPhone
+connectés jusqu’ici. Si tu as déjà utilisé l’iPhone sans certificat, appuie
+dessus une fois après la configuration avec certificat : jusque-là, la clé
+passait en clair sur le Wi-Fi. Le partage s’arrête avec **Arrêter le partage** ou quand
+tu quittes Wingfoilscout sur le Mac — l’iPhone n’a pas de bouton **Quitter**
+(depuis la 2.5.2 ; là, il quittait Wingfoilscout sur le Mac, pas la page
+sur le téléphone). La recherche tourne toujours sur le Mac — l’iPhone
 ne fait qu’afficher les résultats et lancer des recherches. Un double-clic
 sur **« Wingfoilscout fürs iPhone starten »** ou
 `python3 -m wingscout.webui --lan` partage dès le lancement et ouvre
@@ -861,9 +872,11 @@ et la plus longue « session » continue durait 59 heures.
 L’interface tourne uniquement sur ton ordinateur (127.0.0.1:8765) et n’est pas
 accessible de l’extérieur — sauf si tu la partages avec ton mobile dans l’onglet
 « Mobile ». Pour quitter, utilise le bouton **Quitter** en haut
-à droite de la barre d’onglets, sur chaque page (sur téléphone, une petite
-étiquette en haut à droite) — appuie deux fois, pour qu’il ne se déclenche pas
-par accident en pleine exécution.
+à droite de la barre d’onglets, sur chaque page (dans une fenêtre étroite, une
+petite étiquette en haut à droite) — appuie deux fois, pour qu’il ne se déclenche pas
+par accident en pleine exécution. Seulement sur le Mac lui-même : l’iPhone ne
+l’affiche pas (depuis la 2.5.2), car là il quittait Wingfoilscout sur le Mac ;
+sur l’iPhone, ferme simplement Safari.
 
 Si le port 8765 est déjà pris par un autre programme (un second serveur local,
 par exemple une autre interface qui utilise le même port), Wingfoilscout passe

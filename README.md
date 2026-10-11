@@ -536,39 +536,47 @@ iPhone SE to the Pro Max.
 
 **On Wi-Fi, with the Mac doing the work — the “Phone” tab** (since 2.5.0).
 Wingfoilscout normally listens only on 127.0.0.1. The **Phone** tab on the Mac
-first asks how your iPhone should open it (since 2.5.1) — two options,
-explained step by step, with the QR code as the last step:
-
-1. **Secure** (recommended; once, about two minutes): **Create certificate**,
-   then **Download profile** and send it to the iPhone by AirDrop or mail; on
-   the iPhone, install it (Settings → “Profile Downloaded”) and switch on
-   trust (Settings → General → About → Certificate Trust Settings). From then
-   on Safari opens Wingfoilscout over https, without a warning. The
-   certificate authority that signed it exists only while it signs and is
-   never stored, so nothing else can ever be certified with it
-   ([SECURITY.md](SECURITY.md)). If the Mac's address changes so that the
-   certificate no longer fits, the tab says so — create a new one and send
-   the new profile.
-2. **Quick:** on the iPhone, Settings → Apps → Safari → under “Privacy &
-   Security”, switch off **Not Secure Connection Warning**. Safari then warns
-   about no unencrypted website at all, and everything, the access key
-   included, crosses the Wi-Fi unencrypted — acceptable at home with
-   WPA2/WPA3, not on other people's Wi-Fi.
+explains the setup step by step, with the QR code as the last step (since
+2.5.1) — once, about two minutes: **Create certificate**, then **Download
+profile** and send it to the iPhone by AirDrop or mail; on the iPhone, install
+it (Settings → “Profile Downloaded”) and switch on trust (Settings → General →
+About → Certificate Trust Settings). From then on Safari opens Wingfoilscout
+over https, without a warning. The certificate authority that signed it
+exists only while it signs and is never stored, so nothing else can ever be
+certified with it ([SECURITY.md](SECURITY.md)). If the Mac's address changes
+so that the certificate no longer fits, the tab says so — create a new one
+and send the new profile.
 
 Then **Show QR code**, point the iPhone's camera at it and tap the link.
 While sharing is on, the tab says what arrives from the iPhone: connected
 (encrypted or not), broke off the encrypted connection (usually the trust is
-missing), came with an old code — or nothing yet, with the usual reasons.
-Once an option has worked, the tab opens straight with **Show QR code** the
-next time; if it can no longer work (a new certificate, a new address), it
-shows the steps again.
+missing), came without a valid key — or nothing yet, with the usual reasons.
+Once it has worked, the tab opens straight with **Show QR code** the next
+time; if it can no longer work (a new certificate, a new address), it shows
+the steps again. And from then on the Mac lets the iPhone in only encrypted
+(since 2.5.2): an old Home Screen icon with an `http://` address gets a page
+that says so — scan the QR code again and add the icon anew.
+
+**Without a certificate** — only if the profile can't be installed, on a
+company iPhone for example — is under **Not working?** (since 2.5.2; until
+2.5.1 it was the equal option “Quick”): on the iPhone, Settings → Apps →
+Safari → under “Privacy & Security”, switch off **Not Secure Connection
+Warning**. Safari then warns about no unencrypted website at all, and
+everything, the access key included, crosses the Wi-Fi unencrypted: anyone on
+the same Wi-Fi who sets out to can read it — with WPA2, anyone who knows the
+Wi-Fi password — and with the key sees Wingfoilscout as you do.
 
 The address in the QR code carries your access key: without it, every other
-device on the network gets a 401. The key moves into a cookie and stays the
-same across restarts (until 2.4.0 it was valid for one run), so the icon on
-the Home Screen keeps working; **New key** (under “Not working?”) locks out
-every device connected so far. Sharing ends with **Stop sharing** or when you
-quit Wingfoilscout. The search still runs on the Mac — the iPhone only shows
+device on the network gets a 401. The key moves into a cookie (over https,
+since 2.5.2, one that Safari never sends unencrypted) and stays the same
+across restarts (until 2.4.0 it was valid for one run), so the icon on the
+Home Screen keeps working; **New key** (under “Not working?”) locks out every
+device connected so far. If you ever used the iPhone without a certificate,
+press it once after setting up the certificate: until then the key crossed
+the Wi-Fi unencrypted. Sharing ends with **Stop sharing** or when you
+quit Wingfoilscout on the Mac — the iPhone has no **Quit** button (since
+2.5.2; there it quit Wingfoilscout on the Mac, not the page on the phone).
+The search still runs on the Mac — the iPhone only shows
 the results and starts searches. A double-click on **“Wingfoilscout fürs
 iPhone starten”** or `python3 -m wingscout.webui --lan` shares right at the
 start and opens the tab.
@@ -807,8 +815,10 @@ of all session hours lay between 20:00 and 7:00, and the longest continuous
 
 The interface runs only on your computer (127.0.0.1:8765) and can't be reached
 from outside — unless you share it with your phone in the “Phone” tab. To quit, use the **Quit** button at the top right of the tab
-bar, on every page (on phones a small label at the top right) — press it
-twice, so that it isn't triggered by accident in the middle of a run.
+bar, on every page (in a narrow window a small label at the top right) — press it
+twice, so that it isn't triggered by accident in the middle of a run. Only on
+the Mac itself: the iPhone doesn't show it (since 2.5.2), because there it
+quit Wingfoilscout on the Mac; on the iPhone you simply close Safari.
 
 If port 8765 is already taken by another program (a second local server, for
 example another interface that uses the same port), Wingfoilscout moves to the

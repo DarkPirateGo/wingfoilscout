@@ -1,11 +1,21 @@
 # TODO
 
-As of 11 October 2026, version 2.5.1 (978 tests). In it: **the “Phone” tab
-in the order you need it** — it first asks for the option (Secure or Quick),
-the QR code comes as the last step, while sharing it says what arrives from
-the iPhone, and once an option has worked it opens straight with the QR code
-(`handy/zustand.json`; `SECURITY.md`, addendum of 11 October). Before that,
-2.5.0 (962 tests), published on 11 October. In it: **the “Phone”
+As of 11 October 2026, version 2.5.2 (986 tests). In it: **“Quit” only on
+the Mac** — on the iPhone the button quit Wingfoilscout on the Mac, the whole
+program, and the iPhone couldn't get back in; now the iPhone doesn't show it,
+`POST /shutdown` answers 403 to other devices, and the “Phone” tab on the Mac
+says when Wingfoilscout no longer answers. And what came of an **external
+security review**: the way without a certificate only under “Not working?”,
+with its cost said plainly; over https the key only in a cookie with
+`Secure`; plain http from the Wi-Fi refused once https has worked; OpenSSL
+checks the generated key in the tests (`SECURITY.md`, addendum of 11
+October, 2.5.2, with what was left out and why). Before that, 2.5.1 (978 tests), published on 11 October —
+the phone tab works on the iPhone (reported the same day). In it: **the
+“Phone” tab in the order you need it** — it first asks for the option (Secure
+or Quick), the QR code comes as the last step, while sharing it says what
+arrives from the iPhone, and once an option has worked it opens straight with
+the QR code (`handy/zustand.json`; `SECURITY.md`, addendum of 11 October).
+Before that, 2.5.0 (962 tests), published on 11 October. In it: **the “Phone”
 tab** — share with the iPhone without a restart, a QR code instead of typing,
 the access key stays the same across restarts, and **HTTPS on the home
 network** for Safari's “Not Secure Connection Warning”: a certificate from a
@@ -120,22 +130,22 @@ wasn't important enough to keep.
 
 ## Open — Philipp
 
-- **Try 2.5.1 once** (restart Wingfoilscout first — the bar at the top says
-  so); it includes what 2.5.0 brought:
-  - **Phone tab:** open “Phone” — it should ask “Secure” or “Quick”. With
-    “Secure”: “Create certificate”, “Download profile”, AirDrop it to the
-    iPhone, install it there (Settings → “Profile Downloaded”), switch on
-    trust (Settings → General → About → Certificate Trust Settings), then
-    “Show QR code” and scan it: Safari should open Wingfoilscout over https
-    without a warning, the tab should say “Connected — encrypted” and then
-    switch to the short view with only “Show QR code”. Worth trying once on
-    purpose: scan before switching on trust — the tab should say that the
-    iPhone broke off the encrypted connection. Then “Add to Home Screen”, quit
-    Wingfoilscout, start it again, “Show QR code” — the icon should still
-    work. The iOS labels in the tab come from Apple's documentation and a
-    forum, not from a device: tell me what they are called on your iPhone,
-    and whether the Mac offered to install the profile itself after the
-    download.
+- **Try 2.5.2 once** (restart Wingfoilscout first — the bar at the top says
+  so); it includes what 2.5.0 and 2.5.1 brought:
+  - **Phone tab:** the flow works on the iPhone (reported on 11 October,
+    2.5.1). New in 2.5.2: the iPhone shows no “Quit” any more, and the
+    iPhone that already works should keep working — its key moves into the
+    new cookie by itself. If you ever used it without a certificate: “New
+    key” once (under “Not working?”), scan again, add the icon anew. With
+    sharing on, quit Wingfoilscout from a second browser tab on the Mac (or
+    close its Terminal window): within a few seconds the “Phone” tab should
+    say “Wingfoilscout isn’t responding — is it still running?” and fade the
+    QR code; start Wingfoilscout again — the tab reloads with “Show QR code”.
+    Still open from 2.5.1: “Add to Home Screen”, quit Wingfoilscout, start it
+    again, “Show QR code” — does the icon still work? The iOS labels in the
+    tab come from Apple's documentation and a forum, not from a device: tell
+    me if one is called differently on your iPhone, and whether the Mac
+    offered to install the profile itself after the download.
   - **Dock app:** double-click “App fürs Dock erstellen”, drag the app from
     the Finder window into the Dock, click it: Wingfoilscout should start
     without a Terminal window and open the browser; a second click only
@@ -192,9 +202,9 @@ wasn't important enough to keep.
   from the report with BSH (Pegelonline) or Rijkswaterstaat for the same day.
   I don't know how far off the model is — I have no number for it; only the
   comparison will tell whether the 8 km grid is good enough at that spot.
-- **Double-check on the iPhone** — I can't do that from here: does the QR
-  code in the “Phone” tab open the interface in Safari (see “Try 2.5.1
-  once”)? Does the tab bar sit above the home indicator, does no
+- **Double-check on the iPhone** — I can't do that from here (the QR code in
+  the “Phone” tab opens the interface in Safari: works since 11 October).
+  Does the tab bar sit above the home indicator, does no
   input field zoom in when tapped, and does "Share" → "Add to Home Screen"
   work with icon and name? I measured in Chromium at iPhone sizes
   (320–430 pt), not on a device.
@@ -325,6 +335,14 @@ wasn't important enough to keep.
   `build_geometry.py --only bulbjerg --force` fetches the extract afresh
 
 ## Open — development
+
+- **From the security review of 11 October, left out for now** (reasons in
+  `SECURITY.md`, addendum of 11 October, 2.5.2): name constraints for the
+  certificate authority — first find out on an iPhone whether iOS enforces
+  them for a user-installed one, since every iPhone would need the new
+  profile; GitHub Actions pinned by commit SHA and `pip-audit` in CI; an
+  overall deadline for every request to a data service; the `cryptography`
+  package instead of `zertifikat.py`.
 
 - **Stored texts of Review and Logbook** stay in the language they were
   computed in — the reasons a spot has no comparison ("no station within
