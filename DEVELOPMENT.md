@@ -610,9 +610,13 @@ why the rules are written down here, not kept in anyone's head:
   the example report `demo.html`, `bewertung.html` and the images. If the UI
   changes visibly, regenerate the screenshots and the example report — never
   from your own `config.yaml`: copy the folder, give the copy a `config.yaml`
-  with a neutral starting point (so far Hamburg, 53.55 / 9.99), then
-  `python3 -m wingscout.cli --demo --days 3 --radius 500 --sprache en` →
-  `docs/demo.html`. The screenshots: start the UI from the copy in English
+  with a neutral starting point (so far Hamburg, 53.55 / 9.99 — a copy of
+  `config.example.yaml` will do), then, in the copy,
+  `python3 -m wingscout.cli --demo --days 3 --radius 500 --sprache en --favoriten brouwersdam --out docs/demo.html`
+  and copy that `docs/demo.html` over. Brouwersdam is the example's favourite
+  since 2.5.0 — without `--favoriten` the report has no favourites section.
+  The version number shows in the report, so regenerate it with every
+  version. The screenshots: start the UI from the copy in English
   (`WINGSCOUT_SPRACHE=en python3 -m wingscout.webui`, or pick EN in the
   switcher — the choice lands in the copy's own `sprache.txt`) and capture it
   at phone size (390 × 797 points, double resolution, light and dark, demo
@@ -650,10 +654,12 @@ why the rules are written down here, not kept in anyone's head:
   find it in. What Philipp should do himself afterwards (restart, probe,
   trying things out) goes under "Offen — Philipp" ("open — Philipp") with
   commands ready to copy.
-- **One English release note per version**, `Claude outputs/release-vX.Y.Z.md`,
-  for the GitHub release: what's new, the numbers, how to update. The folder
-  is where the desktop app saves files; it is in `.gitignore` but sits inside
-  the project folder; the previous notes are the template.
+- **Two release notes per version** in `Claude outputs/` (in `.gitignore`,
+  but inside the project folder; the previous notes are the template):
+  `release-vX.Y.Z.md` in **German** for Philipp — what's in it, how to try
+  it out, the publish command ready to copy, whether the script will ask
+  about new files — and `release-github-vX.Y.Z.md` in **English**, the text
+  for the GitHub release: what's new, the numbers, how to update.
 - **Languages.** The conversation with Philipp stays **German**.
   Documentation, changelog entries and release notes are written in
   **English** since 2.1.0; `REVIEW.md` and `WAS-SICH-GEAENDERT-HAT.md` stay
@@ -692,6 +698,20 @@ why the rules are written down here, not kept in anyone's head:
 - **After every publish, quit and restart Wingfoilscout** — the running UI
   has said so itself since 1.13.0, but the reminder still belongs in the
   answer.
+- **When Claude works on a copy and moves files to the Mac** (a cloud chat
+  linked to the Mac): first `git status` on the Mac — a clean tree, or
+  nothing of Philipp's gets overwritten; then copy only the changed files
+  and compare checksums (`md5sum -c`) on the Mac. Two things the transfer has
+  done before: the executable bit of `.command` and `.sh` files was lost
+  (`git diff --summary | grep mode` shows it; `chmod +x` puts it back), and
+  an SVG got a C2PA metadata block (`<metadata><c2pa:manifest>…`) that had to
+  be removed again — the checksum shows that too. In the shell on the Mac,
+  deleting is off by default, and git can't remove its own lock files then:
+  only reading git commands, always as `git --no-optional-locks`. Personal
+  files (`config.yaml`, `tagebuch.json`, `handy/`, `cache/`, the list in
+  `tools/persoenliche_daten.py`) are never copied out or overwritten. Only
+  work inside `~/ClaudeCode/wingscout` — other folders there belong to other
+  projects.
 
 ## What to watch out for when making changes
 

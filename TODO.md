@@ -336,6 +336,20 @@ wasn't important enough to keep.
 
 ## Open — development
 
+- **iPhone: a black screen instead of a hint** (requested on 11 October). An
+  iPhone that is set up, but the Mac isn't sharing (no “Show QR code” since
+  Wingfoilscout started): the Home Screen icon opens a black screen.
+  Wanted: a short instruction instead — “On the Mac, in the ‘Phone’ tab,
+  press ‘Show QR code’” (plus: Wingfoilscout running, Mac awake, same Wi-Fi).
+  The catch: without sharing nothing reaches the Mac, so the Mac can't send
+  that page. The page has to be on the iPhone already — a small service
+  worker that stores it on the first visit and shows it when the Mac doesn't
+  answer. Only over https (service workers need a secure context; with the
+  trusted certificate that's given), not on the way without a certificate;
+  the CSP would need `worker-src 'self'`. Whether iOS runs it in a Home
+  Screen app with a self-installed certificate authority: to be tried on a
+  device first. Not an option without asking: sharing that starts by itself —
+  it deliberately never does (`SECURITY.md`, addendum of 10 October).
 - **From the security review of 11 October, left out for now** (reasons in
   `SECURITY.md`, addendum of 11 October, 2.5.2): name constraints for the
   certificate authority — first find out on an iPhone whether iOS enforces
